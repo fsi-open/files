@@ -1,0 +1,22 @@
+language: php
+
+git:
+    depth: 150
+
+cache:
+    directories:
+        - vendor
+
+dist: xenial
+
+php: 7.3
+
+install:
+    - phpenv config-rm xdebug.ini
+    - echo 'date.timezone = "Europe/Warsaw"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+    - echo 'intl.default_locale = "pl"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+    - composer update -n
+
+script:
+    - composer sniffer
+    - composer stan

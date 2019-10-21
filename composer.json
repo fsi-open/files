@@ -1,0 +1,48 @@
+{
+    "name": "fsi-open/files",
+    "license": "proprietary",
+    "type": "library",
+    "description": "A library for handling file upload and storage",
+    "autoload": {
+        "psr-4": {
+            "FSi\\Component\\Files\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FSi\\Tests\\": [
+                "tests/unit",
+                "tests/_support"
+            ]
+        }
+    },
+    "require": {
+        "php": ">=7.3",
+        "ext-fileinfo": "*",
+        "ext-gd": "*",
+        "ext-intl": "*",
+        "beberlei/assert": "^3.2",
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "league/flysystem-memory": "^1.0",
+        "oneup/flysystem-bundle": "^3.0"
+    },
+    "require-dev": {
+        "codeception/codeception": "^3.0",
+        "phpstan/phpstan": "^0.11",
+        "phpstan/phpstan-beberlei-assert": "^0.11",
+        "squizlabs/php_codesniffer": "^3.5"
+    },
+    "scripts": {
+        "sniffer": "vendor/bin/phpcs",
+        "stan": "vendor/bin/phpstan  --ansi analyse -l 7 -c phpstan.neon .",
+        "cept": "vendor/bin/codecept --ansi"
+    },
+    "config": {
+        "bin-dir": "vendor/bin",
+        "preferred-install": {
+            "*": "dist"
+        },
+        "process-timeout": 0,
+        "sort-packages": true
+    }
+}

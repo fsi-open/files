@@ -1,0 +1,19 @@
+---
+namespace: FSi\Tests
+actor_suffix: Tester
+paths:
+    tests: tests
+    output: tests/_output
+    data: tests/_data
+    support: tests/_support
+    envs: tests/_envs
+settings:
+    backup_globals: false
+    be_strict_about_changes_to_global_state: true
+    disallow_test_output: true
+    report_useless_tests: true
+extensions:
+    enabled:
+        - Codeception\Extension\RunFailed
+        - Codeception\Extension\Logger:
+            max_files: 5
