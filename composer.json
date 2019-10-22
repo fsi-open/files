@@ -5,7 +5,7 @@
     "description": "A library for handling file upload and storage",
     "autoload": {
         "psr-4": {
-            "FSi\\Component\\Files\\": ""
+            "FSi\\Component\\Files\\": "src"
         }
     },
     "autoload-dev": {
@@ -22,9 +22,13 @@
         "ext-gd": "*",
         "ext-intl": "*",
         "beberlei/assert": "^3.2",
+        "guzzlehttp/psr7": "^1.5",
         "league/flysystem-aws-s3-v3": "^1.0",
         "league/flysystem-memory": "^1.0",
-        "oneup/flysystem-bundle": "^3.0"
+        "oneup/flysystem-bundle": "^3.0",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "ramsey/uuid": "^3.8"
     },
     "require-dev": {
         "codeception/codeception": "^3.0",
@@ -34,7 +38,7 @@
     },
     "scripts": {
         "sniffer": "vendor/bin/phpcs",
-        "stan": "vendor/bin/phpstan  --ansi analyse -l 7 -c phpstan.neon .",
+        "stan": "vendor/bin/phpstan  --ansi analyse -l 7 -c phpstan.neon src tests",
         "cept": "vendor/bin/codecept --ansi"
     },
     "config": {
