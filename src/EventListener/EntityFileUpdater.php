@@ -22,7 +22,7 @@ use function basename;
 use function mb_strpos;
 use function sprintf;
 
-class EntityFileUpdater
+final class EntityFileUpdater
 {
     /**
      * @var FilePropertyConfigurationResolver
@@ -67,44 +67,81 @@ class EntityFileUpdater
     {
         $configurations = $this->configurationResolver->resolveEntity($entity);
 
-        array_walk($configurations, function (FilePropertyConfiguration $configuration) use ($entity): void {
-            /** @var WebFile|null $newFile */
-            $newFile = $configuration->getFilePropertyReflection()->getValue($entity);
-            Assertion::nullOrIsInstanceOf($newFile, WebFile::class);
+        array_walk(
+            $configurations,
+            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
+                $newFile = $this->readNewFileFromEntity($configuration, $entity);
+                $currentFile = $this->entityFileLoader->fromEntity($configuration, $entity);
+                if (false === $this->shouldFilePropertyBeUpdated($newFile, $currentFile)) {
+                    return;
+                }
 
-            $oldFile = $this->entityFileLoader->fromEntity($configuration, $entity);
-            if (null === $newFile && null === $oldFile) {
-                return;
-            }
-
-            if (null !== $newFile && null !== $oldFile && $newFile->getPath() === $oldFile->getPath()) {
-                return;
-            }
-
-            if (null !== $oldFile) {
-                $this->entityFileRemover->add($oldFile);
-            }
-
-            if (null === $newFile) {
-                $configuration->getPathPropertyReflection()->setValue($entity, null);
-
-                return;
-            }
-
-            $newFile = $this->prepareFile($newFile, $configuration);
-
-            $configuration->getPathPropertyReflection()->setValue($entity, $newFile->getPath());
-            $configuration->getFilePropertyReflection()->setValue($entity, $newFile);
-        });
+                $this->clearCurrentFileIfExists($currentFile);
+                if (null !== $newFile) {
+                    $this->setNewFile($entity, $newFile, $configuration);
+                } else {
+                    $configuration->getPathPropertyReflection()->setValue($entity, null);
+                }
+            },
+            $entity
+        );
     }
 
-    private function prepareFile(WebFile $file, FilePropertyConfiguration $configuration): WebFile
+    private function readNewFileFromEntity(FilePropertyConfiguration $configuration, object $entity): ?WebFile
     {
-        if (true === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
-            return $file;
+        $file = $configuration->getFilePropertyReflection()->getValue($entity);
+        Assertion::nullOrIsInstanceOf($file, WebFile::class, sprintf(
+            'Expected an instance of "%s" or null, got "%s" instead',
+            WebFile::class,
+            true === is_object($file) ? get_class($file) : gettype($file)
+        ));
+
+        return $file;
+    }
+
+    private function shouldFilePropertyBeUpdated(?WebFile $newFile, ?WebFile $currentFile): bool
+    {
+        if (null === $newFile && null === $currentFile) {
+            // No files to remove or update, nothing to do
+            return false;
         }
 
-        $path = $this->path($configuration, basename($file->getPath()));
+        if (null === $newFile) {
+            // There was an old file, but should be removed
+            return true;
+        }
+
+        if (null === $currentFile) {
+            // There is no file, but a new one was uploaded
+            return true;
+        }
+
+        // If the paths are the same, we assume it is the same file
+        return $newFile->getPath() !== $currentFile->getPath();
+    }
+
+    private function clearCurrentFileIfExists(?WebFile $oldFile): void
+    {
+        if (null === $oldFile) {
+            return;
+        }
+
+        $this->entityFileRemover->add($oldFile);
+    }
+
+    private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void
+    {
+        if (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
+            $file = $this->transformFileToFilesystem($file, $configuration);
+        }
+
+        $configuration->getPathPropertyReflection()->setValue($entity, $file->getPath());
+        $configuration->getFilePropertyReflection()->setValue($entity, $file);
+    }
+
+    private function transformFileToFilesystem(WebFile $file, FilePropertyConfiguration $configuration): WebFile
+    {
+        $path = $this->createFilesystemPath($configuration, basename($file->getPath()));
         $this->fileManager->writeStream(
             $configuration->getFileSystemPrefix(),
             $path,
@@ -127,7 +164,7 @@ class EntityFileUpdater
         ;
     }
 
-    private function path(FilePropertyConfiguration $configuration, string $filename): string
+    private function createFilesystemPath(FilePropertyConfiguration $configuration, string $filename): string
     {
         return sprintf(
             '%s/%s/%s',
