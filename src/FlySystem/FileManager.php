@@ -1,0 +1,122 @@
+<?php
+
+/**
+ * (c) FSi sp. z o.o. <info@fsi.pl>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace FSi\Component\Files\FlySystem;
+
+use FSi\Component\Files;
+use FSi\Component\Files\FlySystem;
+use League\Flysystem\Exception;
+use League\Flysystem\FilesystemInterface;
+use League\Flysystem\MountManager;
+use function basename;
+use function count;
+use function dirname;
+use function is_resource;
+use function sprintf;
+
+final class FileManager implements Files\FileManager
+{
+    /**
+     * @var MountManager
+     */
+    private $mountManager;
+
+    public function __construct(MountManager $mountManager)
+    {
+        $this->mountManager = $mountManager;
+    }
+
+    public function create(string $fileSystemPrefix, string $path, string $contents): void
+    {
+        $this->mountManager->getFilesystem($fileSystemPrefix)->put($path, $contents);
+    }
+
+    /**
+     * @param FlySystem\WebFile $file
+     * @return bool
+     */
+    public function exists(Files\WebFile $file): bool
+    {
+        return $this->fileSystemForFile($file)->has($file->getPath());
+    }
+
+    /**
+     * @param FlySystem\WebFile $file
+     * @return string
+     */
+    public function filename(Files\WebFile $file): string
+    {
+        return basename($file->getPath());
+    }
+
+    /**
+     * @param FlySystem\WebFile $file
+     * @return string
+     */
+    public function contents(Files\WebFile $file): string
+    {
+        $contents = $this->fileSystemForFile($file)->read($file->getPath());
+        if (false === $contents) {
+            throw new Exception(sprintf(
+                'Unable to read contents of file "%s" from filesystem "%s"',
+                $file->getPath(),
+                $file->getFileSystemPrefix()
+            ));
+        }
+
+        return $contents;
+    }
+
+    /**
+     * @param FlySystem\WebFile $file
+     */
+    public function remove(Files\WebFile $file): void
+    {
+        $filesystem = $this->fileSystemForFile($file);
+        $filesystem->delete($file->getPath());
+
+        $directory = dirname($file->getPath());
+        if ('.' !== $directory && 0 === count($filesystem->listContents($directory))) {
+            $filesystem->deleteDir($directory);
+        }
+    }
+
+    /**
+     * @param FlySystem\WebFile $file
+     */
+    public function readStream(Files\WebFile $file)
+    {
+        $stream = $this->fileSystemForFile($file)->readStream($file->getPath());
+        if (false === is_resource($stream)) {
+            throw new Exception(sprintf(
+                'Unable to read stream from file "%s" of filesystem "%s"',
+                $file->getPath(),
+                $file->getFileSystemPrefix()
+            ));
+        }
+
+        return $stream;
+    }
+
+    public function writeStream(string $fileSystemPrefix, string $path, $stream): void
+    {
+        $this->mountManager->getFilesystem($fileSystemPrefix)->putStream($path, $stream);
+    }
+
+    /**
+     * @param FlySystem\WebFile $file
+     * @return FilesystemInterface
+     */
+    private function fileSystemForFile(Files\WebFile $file): FilesystemInterface
+    {
+        return $this->mountManager->getFilesystem($file->getFileSystemPrefix());
+    }
+}

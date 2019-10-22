@@ -3,7 +3,5 @@ includes:
 parameters:
     inferPrivatePropertyTypeFromConstructor: true
     excludes_analyse:
-        - '%rootDir%/../../../docker'
         - '%rootDir%/../../../tests/_support/_generated'
         - '%rootDir%/../../../tests/_support/UnitTester.php'
-        - '%rootDir%/../../../vendor'
