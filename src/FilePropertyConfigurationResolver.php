@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\FlySystem;
+namespace FSi\Component\Files;
 
 use Assert\Assertion;
 use RuntimeException;

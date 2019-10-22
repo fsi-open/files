@@ -13,8 +13,8 @@ namespace FSi\Component\Files\EventListener;
 
 use Assert\Assertion;
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
+use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem\WebFile;
 use Ramsey\Uuid\Uuid;
 use function array_walk;
