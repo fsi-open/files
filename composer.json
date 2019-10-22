@@ -20,10 +20,6 @@
         "ext-gd": "*",
         "ext-intl": "*",
         "beberlei/assert": "^3.2",
-        "guzzlehttp/psr7": "^1.5",
-        "league/flysystem-aws-s3-v3": "^1.0",
-        "league/flysystem-memory": "^1.0",
-        "oneup/flysystem-bundle": "^3.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.0",
         "ramsey/uuid": "^3.8"
@@ -31,7 +27,11 @@
     "require-dev": {
         "codeception/codeception": "^3.0",
         "doctrine/orm": "^2.6",
+        "guzzlehttp/psr7": "^1.5",
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "league/flysystem-memory": "^1.0",
         "monolog/monolog": "^1.25",
+        "oneup/flysystem-bundle": "^3.0",
         "phpstan/phpstan": "^0.11.18",
         "phpstan/phpstan-beberlei-assert": "^0.11.2",
         "phpstan/phpstan-doctrine": "^0.11.6",
