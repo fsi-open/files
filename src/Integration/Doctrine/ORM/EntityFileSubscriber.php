@@ -23,7 +23,7 @@ use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
 use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
 use function array_walk;
 
-class EntityFileSubscriber implements EventSubscriber
+final class EntityFileSubscriber implements EventSubscriber
 {
     /**
      * @var FilePropertyConfigurationResolver
@@ -67,14 +67,16 @@ class EntityFileSubscriber implements EventSubscriber
         $entity = $event->getEntity();
         $configurations = $this->configurationResolver->resolveEntity($entity);
 
-        $fileLoader = function (FilePropertyConfiguration $configuration) use ($entity): void {
-            $configuration->getFilePropertyReflection()->setValue(
-                $entity,
-                $this->entityFileLoader->fromEntity($configuration, $entity)
-            );
-        };
-
-        array_walk($configurations, $fileLoader);
+        array_walk(
+            $configurations,
+            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
+                $configuration->getFilePropertyReflection()->setValue(
+                    $entity,
+                    $this->entityFileLoader->fromEntity($configuration, $entity)
+                );
+            },
+            $entity
+        );
     }
 
     public function prePersist(LifecycleEventArgs $event): void
@@ -87,28 +89,29 @@ class EntityFileSubscriber implements EventSubscriber
         $entity = $event->getEntity();
         $configurations = $this->configurationResolver->resolveEntity($entity);
 
-        $fileRemover = function (FilePropertyConfiguration $configuration) use ($entity): void {
-            $file = $this->entityFileLoader->fromEntity($configuration, $entity);
-            if (null === $file) {
-                return;
-            }
+        array_walk(
+            $configurations,
+            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
+                $file = $this->entityFileLoader->fromEntity($configuration, $entity);
+                if (null === $file) {
+                    return;
+                }
 
-            $this->entityFileRemover->add($file);
-        };
-
-        array_walk($configurations, $fileRemover);
+                $this->entityFileRemover->add($file);
+            },
+            $entity
+        );
     }
 
     public function preFlush(PreFlushEventArgs $eventArgs): void
     {
-        $entityManager = $eventArgs->getEntityManager();
-        $unitOfWork = $entityManager->getUnitOfWork();
+        $identityMap = $eventArgs->getEntityManager()->getUnitOfWork()->getIdentityMap();
 
-        foreach ($unitOfWork->getIdentityMap() as $entities) {
-            foreach ($entities as $entity) {
+        array_walk($identityMap, function (array $entities): void {
+            array_walk($entities, function (object $entity): void {
                 $this->entityFileUpdater->updateFiles($entity);
-            }
-        }
+            });
+        });
     }
 
     public function postFlush(PostFlushEventArgs $event): void
