@@ -26,18 +26,12 @@ final class FileFactory implements Files\FileFactory
      */
     private $fileManager;
 
-    /**
-     * @var string
-     */
-    private $fileSystemPrefix;
-
-    public function __construct(FileManager $fileManager, string $fileSystemPrefix)
+    public function __construct(FileManager $fileManager)
     {
         $this->fileManager = $fileManager;
-        $this->fileSystemPrefix = $fileSystemPrefix;
     }
 
-    public function createFromUploadedFile(?UploadedFileInterface $file): ?Files\WebFile
+    public function createFromUploadedFile(string $fileSystemName, ?UploadedFileInterface $file): ?Files\WebFile
     {
         if (null === $file || UPLOAD_ERR_OK !== $file->getError()) {
             return null;
@@ -50,20 +44,20 @@ final class FileFactory implements Files\FileFactory
 
         $path = $this->filenameToPath($clientFilename);
         $this->fileManager->writeStream(
-            $this->fileSystemPrefix,
+            $fileSystemName,
             $path,
             StreamWrapper::getResource($file->getStream())
         );
 
-        return new FlySystem\WebFile($this->fileSystemPrefix, $path);
+        return new FlySystem\WebFile($fileSystemName, $path);
     }
 
-    public function createFromContents(string $filename, string $contents): Files\WebFile
+    public function createFromContents(string $fileSystemName, string $filename, string $contents): Files\WebFile
     {
         $path = $this->filenameToPath($filename);
-        $this->fileManager->create($this->fileSystemPrefix, $path, $contents);
+        $this->fileManager->create($fileSystemName, $path, $contents);
 
-        return new FlySystem\WebFile($this->fileSystemPrefix, $path);
+        return new FlySystem\WebFile($fileSystemName, $path);
     }
 
     private function filenameToPath(string $filename): string

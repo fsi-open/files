@@ -15,6 +15,6 @@ use Psr\Http\Message\UploadedFileInterface;
 
 interface FileFactory
 {
-    public function createFromUploadedFile(?UploadedFileInterface $file): ?WebFile;
-    public function createFromContents(string $filename, string $contents): WebFile;
+    public function createFromUploadedFile(string $fileSystemName, ?UploadedFileInterface $file): ?WebFile;
+    public function createFromContents(string $fileSystemName, string $filename, string $contents): WebFile;
 }

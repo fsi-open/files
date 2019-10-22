@@ -84,7 +84,7 @@ final class EntityFileUpdaterTest extends Unit
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($file, $entity->getFile());
-        $this->assertEquals('fs', $entity->getFile()->getFileSystemPrefix());
+        $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
     }
@@ -116,7 +116,7 @@ final class EntityFileUpdaterTest extends Unit
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($file, $entity->getFile());
-        $this->assertEquals('fs', $entity->getFile()->getFileSystemPrefix());
+        $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
     }
@@ -174,7 +174,7 @@ final class EntityFileUpdaterTest extends Unit
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($tempFile, $entity->getFile());
-        $this->assertEquals('fs', $entity->getFile()->getFileSystemPrefix());
+        $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-new-path.dat#i", $entity->getFilePath());
     }

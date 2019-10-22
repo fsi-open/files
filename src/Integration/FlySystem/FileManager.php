@@ -68,7 +68,7 @@ final class FileManager implements Files\FileManager
             throw new Exception(sprintf(
                 'Unable to read contents of file "%s" from filesystem "%s"',
                 $file->getPath(),
-                $file->getFileSystemPrefix()
+                $file->getFileSystemName()
             ));
         }
 
@@ -99,7 +99,7 @@ final class FileManager implements Files\FileManager
             throw new Exception(sprintf(
                 'Unable to read stream from file "%s" of filesystem "%s"',
                 $file->getPath(),
-                $file->getFileSystemPrefix()
+                $file->getFileSystemName()
             ));
         }
 
@@ -117,6 +117,6 @@ final class FileManager implements Files\FileManager
      */
     private function fileSystemForFile(Files\WebFile $file): FilesystemInterface
     {
-        return $this->mountManager->getFilesystem($file->getFileSystemPrefix());
+        return $this->mountManager->getFilesystem($file->getFileSystemName());
     }
 }

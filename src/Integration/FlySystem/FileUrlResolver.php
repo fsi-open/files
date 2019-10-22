@@ -47,7 +47,7 @@ final class FileUrlResolver implements Files\FileUrlResolver
         Assertion::notNull($url, sprintf(
             'Unable to find Url resolver for file "%s" from filesystem "%s"',
             $file->getPath(),
-            $file->getFileSystemPrefix()
+            $file->getFileSystemName()
         ));
 
         return $url;
