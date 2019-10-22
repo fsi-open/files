@@ -27,23 +27,23 @@ final class S3PrivateUrlAdapter implements UrlAdapter
     /**
      * @var string
      */
-    private $fileSystemPrefix;
+    private $fileSystemName;
 
     /**
      * @var string
      */
     private $amazonBucket;
 
-    public function __construct(S3ClientInterface $s3Client, string $fileSystemPrefix, string $s3Bucket)
+    public function __construct(S3ClientInterface $s3Client, string $fileSystemName, string $s3Bucket)
     {
         $this->amazonClient = $s3Client;
-        $this->fileSystemPrefix = $fileSystemPrefix;
+        $this->fileSystemName = $fileSystemName;
         $this->amazonBucket = $s3Bucket;
     }
 
     public function supports(Files\WebFile $file): bool
     {
-        return $file instanceof FlySystem\WebFile && $this->fileSystemPrefix === $file->getFileSystemPrefix();
+        return true === $file instanceof FlySystem\WebFile && $this->fileSystemName === $file->getFileSystemName();
     }
 
     /**

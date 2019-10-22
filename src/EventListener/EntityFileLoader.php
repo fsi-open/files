@@ -52,6 +52,6 @@ class EntityFileLoader
             return null;
         }
 
-        return new WebFile($configuration->getFileSystemPrefix(), $path);
+        return new WebFile($configuration->getFileSystemName(), $path);
     }
 }

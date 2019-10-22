@@ -143,23 +143,23 @@ final class EntityFileUpdater
     {
         $path = $this->createFilesystemPath($configuration, basename($file->getPath()));
         $this->fileManager->writeStream(
-            $configuration->getFileSystemPrefix(),
+            $configuration->getFileSystemName(),
             $path,
             $this->fileManager->readStream($file)
         );
 
-        if ($this->temporaryFileSystemPrefix === $file->getFileSystemPrefix()) {
+        if ($this->temporaryFileSystemPrefix === $file->getFileSystemName()) {
             $this->entityFileRemover->add($file);
         }
 
-        return new WebFile($configuration->getFileSystemPrefix(), $path);
+        return new WebFile($configuration->getFileSystemName(), $path);
     }
 
     private function isFileSameFilesystemAsInConfiguration(
         WebFile $file,
         FilePropertyConfiguration $configuration
     ): bool {
-        return $file->getFileSystemPrefix() === $configuration->getFileSystemPrefix()
+        return $file->getFileSystemName() === $configuration->getFileSystemName()
             && 0 === mb_strpos($file->getPath(), $configuration->getPathPrefix())
         ;
     }

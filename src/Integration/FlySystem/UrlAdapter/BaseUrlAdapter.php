@@ -24,22 +24,22 @@ final class BaseUrlAdapter implements UrlAdapter
     /**
      * @var string
      */
-    private $fileSystemPrefix;
+    private $fileSystemName;
 
     /**
      * @var UriInterface
      */
     private $baseUrl;
 
-    public function __construct(UriFactoryInterface $uriFactory, string $fileSystemPrefix, string $baseUrl)
+    public function __construct(UriFactoryInterface $uriFactory, string $fileSystemName, string $baseUrl)
     {
-        $this->fileSystemPrefix = $fileSystemPrefix;
+        $this->fileSystemName = $fileSystemName;
         $this->baseUrl = $uriFactory->createUri($baseUrl);
     }
 
     public function supports(Files\WebFile $file): bool
     {
-        return $file instanceof FlySystem\WebFile && $this->fileSystemPrefix === $file->getFileSystemPrefix();
+        return true === $file instanceof FlySystem\WebFile && $this->fileSystemName === $file->getFileSystemName();
     }
 
     /**

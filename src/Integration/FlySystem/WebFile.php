@@ -18,22 +18,22 @@ final class WebFile implements Files\WebFile
     /**
      * @var string
      */
-    private $fileSystemPrefix;
+    private $fileSystemName;
 
     /**
      * @var string
      */
     private $path;
 
-    public function __construct(string $fileSystemPrefix, string $path)
+    public function __construct(string $fileSystemName, string $path)
     {
-        $this->fileSystemPrefix = $fileSystemPrefix;
+        $this->fileSystemName = $fileSystemName;
         $this->path = $path;
     }
 
-    public function getFileSystemPrefix(): string
+    public function getFileSystemName(): string
     {
-        return $this->fileSystemPrefix;
+        return $this->fileSystemName;
     }
 
     public function getPath(): string

@@ -33,7 +33,7 @@ final class FilePropertyConfiguration
     /**
      * @var string
      */
-    private $fileSystemPrefix;
+    private $fileSystemName;
 
     /**
      * @var string
@@ -53,13 +53,13 @@ final class FilePropertyConfiguration
     public function __construct(
         string $entityClass,
         string $filePropertyName,
-        string $fileSystemPrefix,
+        string $fileSystemName,
         string $pathPropertyName,
         string $pathPrefix
     ) {
         $this->entityClass = $entityClass;
         $this->filePropertyName = $filePropertyName;
-        $this->fileSystemPrefix = $fileSystemPrefix;
+        $this->fileSystemName = $fileSystemName;
         $this->pathPropertyName = $pathPropertyName;
         $this->pathPrefix = $pathPrefix;
     }
@@ -84,9 +84,9 @@ final class FilePropertyConfiguration
         return $this->filePropertyReflection;
     }
 
-    public function getFileSystemPrefix(): string
+    public function getFileSystemName(): string
     {
-        return $this->fileSystemPrefix;
+        return $this->fileSystemName;
     }
 
     public function getPathPropertyName(): string
