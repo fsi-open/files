@@ -41,7 +41,8 @@
     "scripts": {
         "sniffer": "vendor/bin/phpcs",
         "stan": "vendor/bin/phpstan  --ansi analyse -l 7 -c phpstan.neon src tests",
-        "cept": "vendor/bin/codecept --ansi"
+        "cept": "vendor/bin/codecept --ansi",
+        "unit": "vendor/bin/codecept --ansi run unit"
     },
     "config": {
         "bin-dir": "vendor/bin",
