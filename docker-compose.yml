@@ -1,0 +1,14 @@
+---
+version: '3'
+
+services:
+    web:
+        build:
+            context: ./docker
+            dockerfile: Dockerfile
+        container_name: files
+        ports:
+            - 80:80
+        volumes:
+            - .:/var/www/application
+            - ~/.composer:/var/www/.composer
