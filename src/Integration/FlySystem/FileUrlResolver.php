@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\FlySystem;
+namespace FSi\Component\Files\Integration\FlySystem;
 
 use Assert\Assertion;
 use FSi\Component\Files;

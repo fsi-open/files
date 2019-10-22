@@ -21,7 +21,7 @@ class TestEntity
     private $file;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $filePath;
 

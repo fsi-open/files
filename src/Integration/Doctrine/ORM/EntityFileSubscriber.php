@@ -9,15 +9,18 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
-use FSi\Component\Files\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\FlySystem\FilePropertyConfigurationResolver;
+use FSi\Component\Files\EventListener\EntityFileLoader;
+use FSi\Component\Files\EventListener\EntityFileRemover;
+use FSi\Component\Files\EventListener\EntityFileUpdater;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
 use function array_walk;
 
 class EntityFileSubscriber implements EventSubscriber

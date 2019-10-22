@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace FSi\Component\Files\EventListener;
 
 use Assert\Assertion;
-use FSi\Component\Files\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\FlySystem\WebFile;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
+use FSi\Component\Files\Integration\FlySystem\WebFile;
 
 class EntityFileLoader
 {

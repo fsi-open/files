@@ -11,8 +11,8 @@ declare(strict_types=1);
 
 namespace FSi\Tests\Component\Files\Flysystem;
 
-use FSi\Component\Files\FlySystem\FileManager;
-use FSi\Component\Files\FlySystem\WebFile;
+use FSi\Component\Files\Integration\FlySystem\FileManager;
+use FSi\Component\Files\Integration\FlySystem\WebFile;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;
 use PHPUnit\Framework\TestCase;

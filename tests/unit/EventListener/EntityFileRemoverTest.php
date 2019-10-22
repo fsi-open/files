@@ -13,7 +13,7 @@ namespace FSi\Tests\Component\Files\EventListener;
 
 use FSi\Component\Files\EventListener\EntityFileRemover;
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\FlySystem\WebFile;
+use FSi\Component\Files\Integration\FlySystem\WebFile;
 use PHPUnit\Framework\TestCase;
 
 final class EntityFileRemoverTest extends TestCase

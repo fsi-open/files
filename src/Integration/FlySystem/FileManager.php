@@ -9,10 +9,10 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\FlySystem;
+namespace FSi\Component\Files\Integration\FlySystem;
 
 use FSi\Component\Files;
-use FSi\Component\Files\FlySystem;
+use FSi\Component\Files\Integration\FlySystem;
 use League\Flysystem\Exception;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;

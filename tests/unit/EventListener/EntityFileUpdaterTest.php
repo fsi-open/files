@@ -16,9 +16,9 @@ use FSi\Component\Files\EventListener\EntityFileLoader;
 use FSi\Component\Files\EventListener\EntityFileRemover;
 use FSi\Component\Files\EventListener\EntityFileUpdater;
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\FlySystem\FilePropertyConfigurationResolver;
-use FSi\Component\Files\FlySystem\WebFile;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
+use FSi\Component\Files\Integration\FlySystem\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
 use function tmpfile;
 
@@ -82,8 +82,10 @@ final class EntityFileUpdaterTest extends Unit
         $this->entityFileRemover->expects($this->once())->method('add')->with($file);
         $this->entityFileUpdater->updateFiles($entity);
 
+        $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($file, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemPrefix());
+        $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
     }
 
@@ -112,8 +114,10 @@ final class EntityFileUpdaterTest extends Unit
         $this->entityFileRemover->expects($this->never())->method('add');
         $this->entityFileUpdater->updateFiles($entity);
 
+        $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($file, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemPrefix());
+        $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
     }
 
@@ -168,8 +172,10 @@ final class EntityFileUpdaterTest extends Unit
 
         $this->entityFileUpdater->updateFiles($entity);
 
+        $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($tempFile, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemPrefix());
+        $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-new-path.dat#i", $entity->getFilePath());
     }
 

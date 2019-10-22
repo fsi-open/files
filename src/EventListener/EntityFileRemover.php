@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\EventListener;
 
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\FlySystem\WebFile;
+use FSi\Component\Files\Integration\FlySystem\WebFile;
 use function array_walk;
 
 class EntityFileRemover
