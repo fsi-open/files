@@ -14,4 +14,5 @@ namespace FSi\Component\Files;
 interface WebFile
 {
     public function getFileSystemName(): string;
+    public function getPath(): string;
 }

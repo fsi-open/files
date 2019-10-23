@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace FSi\Component\Files\EventListener;
 
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
+use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\WebFile;
 use function array_walk;
 
 class EntityFileRemover

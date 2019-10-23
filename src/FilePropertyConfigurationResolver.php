@@ -40,7 +40,6 @@ final class FilePropertyConfigurationResolver
         Assertion::allIsInstanceOf($configurations, FilePropertyConfiguration::class);
 
         $this->configurations = $configurations;
-
         array_walk(
             $configurations,
             function (FilePropertyConfiguration $configuration): void {
@@ -84,13 +83,13 @@ final class FilePropertyConfigurationResolver
     {
         $this->indexedConfigurations[$entityClass] = array_reduce(
             $this->configurations,
-            function (array $foundConfigurations, FilePropertyConfiguration $configuration) use ($entity): array {
+            function (array $accumulator, FilePropertyConfiguration $configuration) use ($entity): array {
                 $configurationEntityClass = $configuration->getEntityClass();
                 if (true === $entity instanceof $configurationEntityClass) {
-                    $foundConfigurations[] = $configuration;
+                    $accumulator[] = $configuration;
                 }
 
-                return $foundConfigurations;
+                return $accumulator;
             },
             []
         );

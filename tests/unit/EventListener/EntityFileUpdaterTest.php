@@ -15,10 +15,12 @@ use Codeception\Test\Unit;
 use FSi\Component\Files\EventListener\EntityFileLoader;
 use FSi\Component\Files\EventListener\EntityFileRemover;
 use FSi\Component\Files\EventListener\EntityFileUpdater;
+use FSi\Component\Files\FileFactory;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
+use FSi\Component\Files\Integration\FlySystem;
+use FSi\Component\Files\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
 use function tmpfile;
 
@@ -35,6 +37,11 @@ final class EntityFileUpdaterTest extends Unit
     private $fileManager;
 
     /**
+     * @var FileFactory|MockObject
+     */
+    private $fileFactory;
+
+    /**
      * @var EntityFileRemover|MockObject
      */
     private $entityFileRemover;
@@ -44,9 +51,14 @@ final class EntityFileUpdaterTest extends Unit
      */
     private $entityFileUpdater;
 
+    /**
+     * @var WebFile|MockObject
+     */
+    private $mockFile;
+
     public function testNewFileOnTargetFileSystem(): void
     {
-        $file = new WebFile('fs', 'prefix/some-path.dat');
+        $file = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($file);
 
         $this->fileManager->expects($this->never())->method('readStream');
@@ -60,7 +72,7 @@ final class EntityFileUpdaterTest extends Unit
 
     public function testNewFileFromTempFileSystem(): void
     {
-        $file = new WebFile('temp', 'some-path.dat');
+        $file = new FlySystem\WebFile('temp', 'some-path.dat');
         $entity = new TestEntity($file);
 
         $readStream = tmpfile();
@@ -70,6 +82,7 @@ final class EntityFileUpdaterTest extends Unit
             ->with($file)
             ->willReturn($readStream)
         ;
+
         $this->fileManager
             ->expects($this->once())
             ->method('writeStream')
@@ -78,6 +91,18 @@ final class EntityFileUpdaterTest extends Unit
                 $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-path.dat#i"),
                 $readStream
             );
+
+        $this->fileFactory->expects($this->once())
+            ->method('createFromPath')
+            ->willReturnCallback(
+                function (string $fileSystemName, string $path): MockObject {
+                    $file = $this->createMock(WebFile::class);
+                    $file->expects($this->once())->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->expects($this->once())->method('getPath')->willReturn($path);
+
+                    return $file;
+                }
+        );
 
         $this->entityFileRemover->expects($this->once())->method('add')->with($file);
         $this->entityFileUpdater->updateFiles($entity);
@@ -91,7 +116,7 @@ final class EntityFileUpdaterTest extends Unit
 
     public function testNewFileFromDifferentPrefixOnTargetFilesystem(): void
     {
-        $file = new WebFile('fs', 'other/some-path.dat');
+        $file = new FlySystem\WebFile('fs', 'other/some-path.dat');
         $entity = new TestEntity($file);
 
         $readStream = tmpfile();
@@ -111,6 +136,18 @@ final class EntityFileUpdaterTest extends Unit
             )
         ;
 
+        $this->fileFactory->expects($this->once())
+            ->method('createFromPath')
+            ->willReturnCallback(
+                function (string $fileSystemName, string $path): MockObject {
+                    $file = $this->createMock(WebFile::class);
+                    $file->expects($this->once())->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->expects($this->once())->method('getPath')->willReturn($path);
+
+                    return $file;
+                }
+        );
+
         $this->entityFileRemover->expects($this->never())->method('add');
         $this->entityFileUpdater->updateFiles($entity);
 
@@ -123,15 +160,17 @@ final class EntityFileUpdaterTest extends Unit
 
     public function testReplacingExistingFile(): void
     {
-        $oldFile = new WebFile('fs', 'prefix/some-path.dat');
+        $oldFile = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($oldFile);
         $entity->setFilePath('prefix/some-path.dat');
 
-        $newFile = new WebFile('fs', 'prefix/some-new-path.dat');
+        $newFile = new FlySystem\WebFile('fs', 'prefix/some-new-path.dat');
         $entity->setFile($newFile);
 
         $this->fileManager->expects($this->never())->method('readStream');
         $this->fileManager->expects($this->never())->method('writeStream');
+
+        $this->fileFactory->expects($this->once())->method('createFromPath')->willReturn($oldFile);
         $this->entityFileRemover->expects($this->once())->method('add')->with($oldFile);
 
         $this->entityFileUpdater->updateFiles($entity);
@@ -141,11 +180,11 @@ final class EntityFileUpdaterTest extends Unit
 
     public function testReplacingExistingFileWithNewTemporaryFile(): void
     {
-        $oldFile = new WebFile('fs', 'prefix/some-path.dat');
+        $oldFile = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($oldFile);
         $entity->setFilePath('prefix/some-path.dat');
 
-        $tempFile = new WebFile('temp', 'some-new-path.dat');
+        $tempFile = new FlySystem\WebFile('temp', 'some-new-path.dat');
         $entity->setFile($tempFile);
 
         $readStream = tmpfile();
@@ -164,6 +203,22 @@ final class EntityFileUpdaterTest extends Unit
                 $readStream
             );
 
+        $this->fileFactory->expects($this->exactly(2))
+            ->method('createFromPath')
+            ->willReturnCallback(
+                function (string $fileSystemName, string $path) use ($oldFile): WebFile {
+                    if ('prefix/some-path.dat' === $path) {
+                        return $oldFile;
+                    }
+
+                    $file = $this->createMock(WebFile::class);
+                    $file->expects($this->any())->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->expects($this->once())->method('getPath')->willReturn($path);
+
+                    return $file;
+                }
+        );
+
         $this->entityFileRemover
             ->expects($this->exactly(2))
             ->method('add')
@@ -181,7 +236,7 @@ final class EntityFileUpdaterTest extends Unit
 
     public function testRemovingExistingFile(): void
     {
-        $oldFile = new WebFile('fs', 'prefix/some-path.dat');
+        $oldFile = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($oldFile);
         $entity->setFilePath('prefix/some-path.dat');
 
@@ -189,6 +244,7 @@ final class EntityFileUpdaterTest extends Unit
 
         $this->fileManager->expects($this->never())->method('readStream');
         $this->fileManager->expects($this->never())->method('writeStream');
+        $this->fileFactory->expects($this->once())->method('createFromPath')->willReturn($oldFile);
         $this->entityFileRemover->expects($this->once())->method('add')->with($oldFile);
 
         $this->entityFileUpdater->updateFiles($entity);
@@ -204,12 +260,16 @@ final class EntityFileUpdaterTest extends Unit
         ]);
 
         $this->fileManager = $this->createMock(FileManager::class);
+        $this->fileFactory = $this->createMock(FileFactory::class);
         $this->entityFileRemover = $this->createMock(EntityFileRemover::class);
+
+        $this->mockFile = $this->createMock(WebFile::class);
 
         $this->entityFileUpdater = new EntityFileUpdater(
             $configurationResolver,
             $this->fileManager,
-            new EntityFileLoader($configurationResolver),
+            $this->fileFactory,
+            new EntityFileLoader($this->fileFactory, $configurationResolver),
             $this->entityFileRemover,
             'temp'
         );

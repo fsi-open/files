@@ -12,10 +12,11 @@ declare(strict_types=1);
 namespace FSi\Component\Files\EventListener;
 
 use Assert\Assertion;
+use FSi\Component\Files\FileFactory;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
+use FSi\Component\Files\WebFile;
 use Ramsey\Uuid\Uuid;
 use function array_walk;
 use function basename;
@@ -35,6 +36,11 @@ final class EntityFileUpdater
     private $fileManager;
 
     /**
+     * @var FileFactory
+     */
+    private $fileFactory;
+
+    /**
      * @var EntityFileLoader
      */
     private $entityFileLoader;
@@ -52,12 +58,14 @@ final class EntityFileUpdater
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
+        FileFactory $fileFactory,
         EntityFileLoader $entityFileLoader,
         EntityFileRemover $entityFileRemover,
         string $temporaryFileSystemPrefix
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
+        $this->fileFactory = $fileFactory;
         $this->entityFileLoader = $entityFileLoader;
         $this->entityFileRemover = $entityFileRemover;
         $this->temporaryFileSystemPrefix = $temporaryFileSystemPrefix;
@@ -152,7 +160,7 @@ final class EntityFileUpdater
             $this->entityFileRemover->add($file);
         }
 
-        return new WebFile($configuration->getFileSystemName(), $path);
+        return $this->fileFactory->createFromPath($configuration->getFileSystemName(), $path);
     }
 
     private function isFileSameFilesystemAsInConfiguration(

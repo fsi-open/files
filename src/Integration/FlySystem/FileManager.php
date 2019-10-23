@@ -34,9 +34,9 @@ final class FileManager implements Files\FileManager
         $this->mountManager = $mountManager;
     }
 
-    public function create(string $fileSystemPrefix, string $path, string $contents): void
+    public function create(string $fileSystemName, string $path, string $contents): void
     {
-        $this->mountManager->getFilesystem($fileSystemPrefix)->put($path, $contents);
+        $this->mountManager->getFilesystem($fileSystemName)->put($path, $contents);
     }
 
     /**
