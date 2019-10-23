@@ -102,7 +102,7 @@ final class FileUpdaterTest extends Unit
 
                     return $file;
                 }
-        );
+            );
 
         $this->entityFileRemover->expects($this->once())->method('add')->with($file);
         $this->entityFileUpdater->updateFiles($entity);
@@ -146,7 +146,7 @@ final class FileUpdaterTest extends Unit
 
                     return $file;
                 }
-        );
+            );
 
         $this->entityFileRemover->expects($this->never())->method('add');
         $this->entityFileUpdater->updateFiles($entity);
@@ -217,7 +217,7 @@ final class FileUpdaterTest extends Unit
 
                     return $file;
                 }
-        );
+            );
 
         $this->entityFileRemover
             ->expects($this->exactly(2))

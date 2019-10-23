@@ -15,7 +15,7 @@ use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
-use FSi\Component\Files\WebFile;
+use FSi\Component\Files\Integration\FlySystem\WebFile;
 use PHPUnit\Framework\TestCase;
 
 final class FileRemoverTest extends TestCase

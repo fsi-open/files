@@ -30,9 +30,9 @@ class FileRemover
     private $fileManager;
 
     /**
-     * @var EntityFileLoader
+     * @var FileLoader
      */
-    private $entityFileLoader;
+    private $fileLoader;
 
     /**
      * @var WebFile[]
@@ -42,11 +42,11 @@ class FileRemover
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
-        EntityFileLoader $entityFileLoader
+        FileLoader $fileLoader
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
-        $this->entityFileLoader = $entityFileLoader;
+        $this->fileLoader = $fileLoader;
         $this->filesToRemove = [];
     }
 
@@ -57,7 +57,7 @@ class FileRemover
         array_walk(
             $configurations,
             function (FilePropertyConfiguration $configuration, $key, object $entity): void {
-                $file = $this->entityFileLoader->fromEntity($configuration, $entity);
+                $file = $this->fileLoader->fromEntity($configuration, $entity);
                 if (null === $file) {
                     return;
                 }
