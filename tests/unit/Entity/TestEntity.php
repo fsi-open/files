@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\EventListener;
+namespace FSi\Tests\Component\Files\Entity;
 
 use FSi\Component\Files\WebFile;
 

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
 use FSi\Component\Files\FileFactory;
@@ -17,7 +17,7 @@ use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
 
-class EntityFileLoader
+class FileLoader
 {
     /**
      * @var FileFactory

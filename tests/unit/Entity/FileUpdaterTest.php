@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\EventListener;
+namespace FSi\Tests\Component\Files\Entity;
 
 use Codeception\Test\Unit;
-use FSi\Component\Files\EventListener\EntityFileLoader;
-use FSi\Component\Files\EventListener\EntityFileRemover;
-use FSi\Component\Files\EventListener\EntityFileUpdater;
+use FSi\Component\Files\Entity\FileLoader;
+use FSi\Component\Files\Entity\FileRemover;
+use FSi\Component\Files\Entity\FileUpdater;
 use FSi\Component\Files\FileFactory;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
@@ -24,7 +24,7 @@ use FSi\Component\Files\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
 use function tmpfile;
 
-final class EntityFileUpdaterTest extends Unit
+final class FileUpdaterTest extends Unit
 {
     /**
      * @var string string
@@ -42,12 +42,12 @@ final class EntityFileUpdaterTest extends Unit
     private $fileFactory;
 
     /**
-     * @var EntityFileRemover|MockObject
+     * @var FileRemover|MockObject
      */
     private $entityFileRemover;
 
     /**
-     * @var EntityFileUpdater
+     * @var FileUpdater
      */
     private $entityFileUpdater;
 
@@ -261,15 +261,15 @@ final class EntityFileUpdaterTest extends Unit
 
         $this->fileManager = $this->createMock(FileManager::class);
         $this->fileFactory = $this->createMock(FileFactory::class);
-        $this->entityFileRemover = $this->createMock(EntityFileRemover::class);
+        $this->entityFileRemover = $this->createMock(FileRemover::class);
 
         $this->mockFile = $this->createMock(WebFile::class);
 
-        $this->entityFileUpdater = new EntityFileUpdater(
+        $this->entityFileUpdater = new FileUpdater(
             $configurationResolver,
             $this->fileManager,
             $this->fileFactory,
-            new EntityFileLoader($this->fileFactory, $configurationResolver),
+            new FileLoader($this->fileFactory, $configurationResolver),
             $this->entityFileRemover,
             'temp'
         );

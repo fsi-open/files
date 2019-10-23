@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
 use FSi\Component\Files\FileFactory;
@@ -23,7 +23,7 @@ use function basename;
 use function mb_strpos;
 use function sprintf;
 
-final class EntityFileUpdater
+final class FileUpdater
 {
     /**
      * @var FilePropertyConfigurationResolver
@@ -41,12 +41,12 @@ final class EntityFileUpdater
     private $fileFactory;
 
     /**
-     * @var EntityFileLoader
+     * @var FileLoader
      */
     private $entityFileLoader;
 
     /**
-     * @var EntityFileRemover
+     * @var FileRemover
      */
     private $entityFileRemover;
 
@@ -59,8 +59,8 @@ final class EntityFileUpdater
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
         FileFactory $fileFactory,
-        EntityFileLoader $entityFileLoader,
-        EntityFileRemover $entityFileRemover,
+        FileLoader $entityFileLoader,
+        FileRemover $entityFileRemover,
         string $temporaryFileSystemPrefix
     ) {
         $this->configurationResolver = $configurationResolver;

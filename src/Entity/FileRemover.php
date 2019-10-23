@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Entity;
 
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
@@ -17,7 +17,7 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
 use function array_walk;
 
-class EntityFileRemover
+class FileRemover
 {
     /**
      * @var FilePropertyConfigurationResolver

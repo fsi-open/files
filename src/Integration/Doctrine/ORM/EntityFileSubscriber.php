@@ -16,32 +16,32 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
-use FSi\Component\Files\EventListener\EntityFileLoader;
-use FSi\Component\Files\EventListener\EntityFileRemover;
-use FSi\Component\Files\EventListener\EntityFileUpdater;
+use FSi\Component\Files\Entity\FileLoader;
+use FSi\Component\Files\Entity\FileRemover;
+use FSi\Component\Files\Entity\FileUpdater;
 use function array_walk;
 
 final class EntityFileSubscriber implements EventSubscriber
 {
     /**
-     * @var EntityFileRemover
+     * @var FileRemover
      */
     private $entityFileRemover;
 
     /**
-     * @var EntityFileUpdater
+     * @var FileUpdater
      */
     private $entityFileUpdater;
 
     /**
-     * @var EntityFileLoader
+     * @var FileLoader
      */
     private $entityFileLoader;
 
     public function __construct(
-        EntityFileLoader $entityFileLoader,
-        EntityFileUpdater $entityFileUpdater,
-        EntityFileRemover $entityFileRemover
+        FileLoader $entityFileLoader,
+        FileUpdater $entityFileUpdater,
+        FileRemover $entityFileRemover
     ) {
         $this->entityFileLoader = $entityFileLoader;
         $this->entityFileUpdater = $entityFileUpdater;
