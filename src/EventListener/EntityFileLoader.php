@@ -13,10 +13,36 @@ namespace FSi\Component\Files\EventListener;
 
 use Assert\Assertion;
 use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem\WebFile;
 
 class EntityFileLoader
 {
+    /**
+     * @var FilePropertyConfigurationResolver
+     */
+    private $configurationResolver;
+
+    public function __construct(FilePropertyConfigurationResolver $configurationResolver)
+    {
+        $this->configurationResolver = $configurationResolver;
+    }
+
+    public function loadEntityFiles(object $entity): void
+    {
+        $configurations = $this->configurationResolver->resolveEntity($entity);
+        array_walk(
+            $configurations,
+            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
+                $configuration->getFilePropertyReflection()->setValue(
+                    $entity,
+                    $this->fromEntity($configuration, $entity)
+                );
+            },
+            $entity
+        );
+    }
+
     public function fromEntity(FilePropertyConfiguration $configuration, object $entity): ?WebFile
     {
         Assertion::isInstanceOf($entity, $configuration->getEntityClass());

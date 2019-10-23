@@ -19,17 +19,10 @@ use Doctrine\ORM\Events;
 use FSi\Component\Files\EventListener\EntityFileLoader;
 use FSi\Component\Files\EventListener\EntityFileRemover;
 use FSi\Component\Files\EventListener\EntityFileUpdater;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
 use function array_walk;
 
 final class EntityFileSubscriber implements EventSubscriber
 {
-    /**
-     * @var FilePropertyConfigurationResolver
-     */
-    private $configurationResolver;
-
     /**
      * @var EntityFileRemover
      */
@@ -46,12 +39,10 @@ final class EntityFileSubscriber implements EventSubscriber
     private $entityFileLoader;
 
     public function __construct(
-        FilePropertyConfigurationResolver $configurationResolver,
         EntityFileLoader $entityFileLoader,
         EntityFileUpdater $entityFileUpdater,
         EntityFileRemover $entityFileRemover
     ) {
-        $this->configurationResolver = $configurationResolver;
         $this->entityFileLoader = $entityFileLoader;
         $this->entityFileUpdater = $entityFileUpdater;
         $this->entityFileRemover = $entityFileRemover;
@@ -64,19 +55,7 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function postLoad(LifecycleEventArgs $event): void
     {
-        $entity = $event->getEntity();
-        $configurations = $this->configurationResolver->resolveEntity($entity);
-
-        array_walk(
-            $configurations,
-            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
-                $configuration->getFilePropertyReflection()->setValue(
-                    $entity,
-                    $this->entityFileLoader->fromEntity($configuration, $entity)
-                );
-            },
-            $entity
-        );
+        $this->entityFileLoader->loadEntityFiles($event->getEntity());
     }
 
     public function prePersist(LifecycleEventArgs $event): void
@@ -86,21 +65,7 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function preRemove(LifecycleEventArgs $event): void
     {
-        $entity = $event->getEntity();
-        $configurations = $this->configurationResolver->resolveEntity($entity);
-
-        array_walk(
-            $configurations,
-            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
-                $file = $this->entityFileLoader->fromEntity($configuration, $entity);
-                if (null === $file) {
-                    return;
-                }
-
-                $this->entityFileRemover->add($file);
-            },
-            $entity
-        );
+        $this->entityFileRemover->clearEntityFiles($event->getEntity());
     }
 
     public function preFlush(PreFlushEventArgs $eventArgs): void

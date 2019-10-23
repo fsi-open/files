@@ -12,24 +12,60 @@ declare(strict_types=1);
 namespace FSi\Component\Files\EventListener;
 
 use FSi\Component\Files\FileManager;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
+use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem\WebFile;
 use function array_walk;
 
 class EntityFileRemover
 {
     /**
-     * @var WebFile[]
+     * @var FilePropertyConfigurationResolver
      */
-    private $filesToRemove = [];
+    private $configurationResolver;
 
     /**
      * @var FileManager
      */
     private $fileManager;
 
-    public function __construct(FileManager $fileManager)
-    {
+    /**
+     * @var EntityFileLoader
+     */
+    private $entityFileLoader;
+
+    /**
+     * @var WebFile[]
+     */
+    private $filesToRemove;
+
+    public function __construct(
+        FilePropertyConfigurationResolver $configurationResolver,
+        FileManager $fileManager,
+        EntityFileLoader $entityFileLoader
+    ) {
+        $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
+        $this->entityFileLoader = $entityFileLoader;
+        $this->filesToRemove = [];
+    }
+
+    public function clearEntityFiles(object $entity): void
+    {
+        $configurations = $this->configurationResolver->resolveEntity($entity);
+
+        array_walk(
+            $configurations,
+            function (FilePropertyConfiguration $configuration, $key, object $entity): void {
+                $file = $this->entityFileLoader->fromEntity($configuration, $entity);
+                if (null === $file) {
+                    return;
+                }
+
+                $this->add($file);
+            },
+            $entity
+        );
     }
 
     public function add(WebFile $file): void

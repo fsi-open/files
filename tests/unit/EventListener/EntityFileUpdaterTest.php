@@ -209,7 +209,7 @@ final class EntityFileUpdaterTest extends Unit
         $this->entityFileUpdater = new EntityFileUpdater(
             $configurationResolver,
             $this->fileManager,
-            new EntityFileLoader(),
+            new EntityFileLoader($configurationResolver),
             $this->entityFileRemover,
             'temp'
         );
