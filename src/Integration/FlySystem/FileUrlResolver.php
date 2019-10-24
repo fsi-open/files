@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Integration\FlySystem;
 
 use Assert\Assertion;
 use FSi\Component\Files;
+use FSi\Component\Files\UrlAdapter;
 use Psr\Http\Message\UriInterface;
 use function array_reduce;
 use function sprintf;
@@ -24,30 +25,21 @@ final class FileUrlResolver implements Files\FileUrlResolver
      */
     private $adapters;
 
-    /**
-     * @param UrlAdapter[] $adapters
-     */
     public function __construct(array $adapters)
     {
         Assertion::allIsInstanceOf($adapters, UrlAdapter::class);
-
         $this->adapters = $adapters;
     }
 
-    /**
-     * @param WebFile $file
-     * @return UriInterface
-     */
     public function resolve(Files\WebFile $file): UriInterface
     {
         Assertion::isInstanceOf($file, WebFile::class);
 
         $url = $this->resolveFlySystemFileToUrl($file);
-
         Assertion::notNull($url, sprintf(
             'Unable to find Url resolver for file "%s" from filesystem "%s"',
             $file->getPath(),
-            $file->getFileSystemPrefix()
+            $file->getFileSystemName()
         ));
 
         return $url;

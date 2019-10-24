@@ -9,20 +9,23 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
+use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\WebFile;
 use Ramsey\Uuid\Uuid;
 use function array_walk;
 use function basename;
 use function mb_strpos;
 use function sprintf;
 
-final class EntityFileUpdater
+/**
+ * @internal
+ */
+final class FileUpdater
 {
     /**
      * @var FilePropertyConfigurationResolver
@@ -35,32 +38,25 @@ final class EntityFileUpdater
     private $fileManager;
 
     /**
-     * @var EntityFileLoader
+     * @var FileLoader
      */
-    private $entityFileLoader;
+    private $fileLoader;
 
     /**
-     * @var EntityFileRemover
+     * @var FileRemover
      */
-    private $entityFileRemover;
-
-    /**
-     * @var string
-     */
-    private $temporaryFileSystemPrefix;
+    private $fileRemover;
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
-        EntityFileLoader $entityFileLoader,
-        EntityFileRemover $entityFileRemover,
-        string $temporaryFileSystemPrefix
+        FileLoader $fileLoader,
+        FileRemover $fileRemover
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
-        $this->entityFileLoader = $entityFileLoader;
-        $this->entityFileRemover = $entityFileRemover;
-        $this->temporaryFileSystemPrefix = $temporaryFileSystemPrefix;
+        $this->fileLoader = $fileLoader;
+        $this->fileRemover = $fileRemover;
     }
 
     public function updateFiles(object $entity): void
@@ -71,7 +67,7 @@ final class EntityFileUpdater
             $configurations,
             function (FilePropertyConfiguration $configuration, $key, object $entity): void {
                 $newFile = $this->readNewFileFromEntity($configuration, $entity);
-                $currentFile = $this->entityFileLoader->fromEntity($configuration, $entity);
+                $currentFile = $this->fileLoader->fromEntity($configuration, $entity);
                 if (false === $this->shouldFilePropertyBeUpdated($newFile, $currentFile)) {
                     return;
                 }
@@ -126,40 +122,33 @@ final class EntityFileUpdater
             return;
         }
 
-        $this->entityFileRemover->add($oldFile);
+        $this->fileRemover->add($oldFile);
     }
 
     private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void
     {
         if (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
-            $file = $this->transformFileToFilesystem($file, $configuration);
+            $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
         }
 
         $configuration->getPathPropertyReflection()->setValue($entity, $file->getPath());
         $configuration->getFilePropertyReflection()->setValue($entity, $file);
     }
 
-    private function transformFileToFilesystem(WebFile $file, FilePropertyConfiguration $configuration): WebFile
+    private function copyFileToConfigurationFilesystem(WebFile $file, FilePropertyConfiguration $configuration): WebFile
     {
-        $path = $this->createFilesystemPath($configuration, basename($file->getPath()));
-        $this->fileManager->writeStream(
-            $configuration->getFileSystemPrefix(),
-            $path,
-            $this->fileManager->readStream($file)
+        return $this->fileManager->copy(
+            $file,
+            $configuration->getFileSystemName(),
+            $this->createFilesystemPath($configuration, basename($file->getPath()))
         );
-
-        if ($this->temporaryFileSystemPrefix === $file->getFileSystemPrefix()) {
-            $this->entityFileRemover->add($file);
-        }
-
-        return new WebFile($configuration->getFileSystemPrefix(), $path);
     }
 
     private function isFileSameFilesystemAsInConfiguration(
         WebFile $file,
         FilePropertyConfiguration $configuration
     ): bool {
-        return $file->getFileSystemPrefix() === $configuration->getFileSystemPrefix()
+        return $file->getFileSystemName() === $configuration->getFileSystemName()
             && 0 === mb_strpos($file->getPath(), $configuration->getPathPrefix())
         ;
     }

@@ -16,36 +16,36 @@ use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
-use FSi\Component\Files\EventListener\EntityFileLoader;
-use FSi\Component\Files\EventListener\EntityFileRemover;
-use FSi\Component\Files\EventListener\EntityFileUpdater;
+use FSi\Component\Files\Entity\FileLoader;
+use FSi\Component\Files\Entity\FileRemover;
+use FSi\Component\Files\Entity\FileUpdater;
 use function array_walk;
 
 final class EntityFileSubscriber implements EventSubscriber
 {
     /**
-     * @var EntityFileRemover
+     * @var FileRemover
      */
-    private $entityFileRemover;
+    private $fileRemover;
 
     /**
-     * @var EntityFileUpdater
+     * @var FileUpdater
      */
-    private $entityFileUpdater;
+    private $fileUpdater;
 
     /**
-     * @var EntityFileLoader
+     * @var FileLoader
      */
-    private $entityFileLoader;
+    private $fileLoader;
 
     public function __construct(
-        EntityFileLoader $entityFileLoader,
-        EntityFileUpdater $entityFileUpdater,
-        EntityFileRemover $entityFileRemover
+        FileLoader $fileLoader,
+        FileUpdater $fileUpdater,
+        FileRemover $fileRemover
     ) {
-        $this->entityFileLoader = $entityFileLoader;
-        $this->entityFileUpdater = $entityFileUpdater;
-        $this->entityFileRemover = $entityFileRemover;
+        $this->fileLoader = $fileLoader;
+        $this->fileUpdater = $fileUpdater;
+        $this->fileRemover = $fileRemover;
     }
 
     public function getSubscribedEvents(): array
@@ -55,17 +55,17 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function postLoad(LifecycleEventArgs $event): void
     {
-        $this->entityFileLoader->loadEntityFiles($event->getEntity());
+        $this->fileLoader->loadEntityFiles($event->getEntity());
     }
 
     public function prePersist(LifecycleEventArgs $event): void
     {
-        $this->entityFileUpdater->updateFiles($event->getEntity());
+        $this->fileUpdater->updateFiles($event->getEntity());
     }
 
     public function preRemove(LifecycleEventArgs $event): void
     {
-        $this->entityFileRemover->clearEntityFiles($event->getEntity());
+        $this->fileRemover->clearEntityFiles($event->getEntity());
     }
 
     public function preFlush(PreFlushEventArgs $eventArgs): void
@@ -74,13 +74,13 @@ final class EntityFileSubscriber implements EventSubscriber
 
         array_walk($identityMap, function (array $entities): void {
             array_walk($entities, function (object $entity): void {
-                $this->entityFileUpdater->updateFiles($entity);
+                $this->fileUpdater->updateFiles($entity);
             });
         });
     }
 
     public function postFlush(PostFlushEventArgs $event): void
     {
-        $this->entityFileRemover->flush();
+        $this->fileRemover->flush();
     }
 }

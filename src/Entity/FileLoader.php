@@ -9,22 +9,33 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
+use FSi\Component\Files\FileManager;
+use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\WebFile;
+use function array_walk;
 
-class EntityFileLoader
+/**
+ * @internal
+ */
+final class FileLoader
 {
+    /**
+     * @var FileManager
+     */
+    private $fileManager;
+
     /**
      * @var FilePropertyConfigurationResolver
      */
     private $configurationResolver;
 
-    public function __construct(FilePropertyConfigurationResolver $configurationResolver)
+    public function __construct(FileManager $fileManager, FilePropertyConfigurationResolver $configurationResolver)
     {
+        $this->fileManager = $fileManager;
         $this->configurationResolver = $configurationResolver;
     }
 
@@ -52,6 +63,6 @@ class EntityFileLoader
             return null;
         }
 
-        return new WebFile($configuration->getFileSystemPrefix(), $path);
+        return $this->fileManager->load($configuration->getFileSystemName(), $path);
     }
 }

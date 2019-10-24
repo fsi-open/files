@@ -9,15 +9,18 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\EventListener;
+namespace FSi\Component\Files\Entity;
 
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfiguration;
-use FSi\Component\Files\Integration\FlySystem\FilePropertyConfigurationResolver;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
+use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\WebFile;
 use function array_walk;
 
-class EntityFileRemover
+/**
+ * @internal
+ */
+final class FileRemover
 {
     /**
      * @var FilePropertyConfigurationResolver
@@ -30,9 +33,9 @@ class EntityFileRemover
     private $fileManager;
 
     /**
-     * @var EntityFileLoader
+     * @var FileLoader
      */
-    private $entityFileLoader;
+    private $fileLoader;
 
     /**
      * @var WebFile[]
@@ -42,11 +45,11 @@ class EntityFileRemover
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
-        EntityFileLoader $entityFileLoader
+        FileLoader $fileLoader
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
-        $this->entityFileLoader = $entityFileLoader;
+        $this->fileLoader = $fileLoader;
         $this->filesToRemove = [];
     }
 
@@ -57,7 +60,7 @@ class EntityFileRemover
         array_walk(
             $configurations,
             function (FilePropertyConfiguration $configuration, $key, object $entity): void {
-                $file = $this->entityFileLoader->fromEntity($configuration, $entity);
+                $file = $this->fileLoader->fromEntity($configuration, $entity);
                 if (null === $file) {
                     return;
                 }

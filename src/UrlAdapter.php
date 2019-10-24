@@ -11,10 +11,10 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files;
 
-use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface;
 
-interface FileFactory
+interface UrlAdapter
 {
-    public function createFromUploadedFile(?UploadedFileInterface $file): ?WebFile;
-    public function createFromContents(string $filename, string $contents): WebFile;
+    public function supports(WebFile $file): bool;
+    public function url(WebFile $file): UriInterface;
 }
