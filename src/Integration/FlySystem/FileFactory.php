@@ -12,12 +12,8 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\FlySystem;
 
 use FSi\Component\Files;
+use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Integration\FlySystem;
-use GuzzleHttp\Psr7\StreamWrapper;
-use Psr\Http\Message\UploadedFileInterface;
-use Ramsey\Uuid\Uuid;
-use const UPLOAD_ERR_OK;
-use function sprintf;
 
 final class FileFactory implements Files\FileFactory
 {
@@ -26,17 +22,24 @@ final class FileFactory implements Files\FileFactory
      */
     private $fileManager;
 
-    public function __construct(FileManager $fileManager)
-    {
+    /**
+     * @var FileRemover
+     */
+    private $entityFileRemover;
+
+    /**
+     * @var string
+     */
+    private $temporaryFileSystemPrefix;
+
+    public function __construct(
+        FileManager $fileManager,
+        FileRemover $entityFileRemover,
+        string $temporaryFileSystemPrefix
+    ) {
         $this->fileManager = $fileManager;
-    }
-
-    public function createFromContents(string $fileSystemName, string $filename, string $contents): Files\WebFile
-    {
-        $path = $this->filenameToPath($filename);
-        $this->fileManager->create($fileSystemName, $path, $contents);
-
-        return new FlySystem\WebFile($fileSystemName, $path);
+        $this->entityFileRemover = $entityFileRemover;
+        $this->temporaryFileSystemPrefix = $temporaryFileSystemPrefix;
     }
 
     public function createFromPath(string $fileSystemName, string $path): Files\WebFile
@@ -44,29 +47,21 @@ final class FileFactory implements Files\FileFactory
         return new FlySystem\WebFile($fileSystemName, $path);
     }
 
-    public function createFromUploadedFile(string $fileSystemName, ?UploadedFileInterface $file): ?Files\WebFile
-    {
-        if (null === $file || UPLOAD_ERR_OK !== $file->getError()) {
-            return null;
-        }
-
-        $clientFilename = $file->getClientFilename();
-        if (null === $clientFilename) {
-            return null;
-        }
-
-        $path = $this->filenameToPath($clientFilename);
+    public function copy(
+        Files\WebFile $sourceFile,
+        string $targetFileSystemName,
+        string $targetPath
+    ): Files\WebFile {
         $this->fileManager->writeStream(
-            $fileSystemName,
-            $path,
-            StreamWrapper::getResource($file->getStream())
+            $targetFileSystemName,
+            $targetPath,
+            $this->fileManager->readStream($sourceFile)
         );
 
-        return new FlySystem\WebFile($fileSystemName, $path);
-    }
+        if ($this->temporaryFileSystemPrefix === $sourceFile->getFileSystemName()) {
+            $this->entityFileRemover->add($sourceFile);
+        }
 
-    private function filenameToPath(string $filename): string
-    {
-        return sprintf('%s/%s', Uuid::uuid4()->toString(), $filename);
+        return $this->createFromPath($targetFileSystemName, $targetPath);
     }
 }

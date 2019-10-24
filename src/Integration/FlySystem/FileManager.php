@@ -39,28 +39,16 @@ final class FileManager implements Files\FileManager
         $this->mountManager->getFilesystem($fileSystemName)->put($path, $contents);
     }
 
-    /**
-     * @param FlySystem\WebFile $file
-     * @return bool
-     */
     public function exists(Files\WebFile $file): bool
     {
         return $this->fileSystemForFile($file)->has($file->getPath());
     }
 
-    /**
-     * @param FlySystem\WebFile $file
-     * @return string
-     */
     public function filename(Files\WebFile $file): string
     {
         return basename($file->getPath());
     }
 
-    /**
-     * @param FlySystem\WebFile $file
-     * @return string
-     */
     public function contents(Files\WebFile $file): string
     {
         $contents = $this->fileSystemForFile($file)->read($file->getPath());
@@ -75,9 +63,6 @@ final class FileManager implements Files\FileManager
         return $contents;
     }
 
-    /**
-     * @param FlySystem\WebFile $file
-     */
     public function remove(Files\WebFile $file): void
     {
         $filesystem = $this->fileSystemForFile($file);
@@ -89,9 +74,6 @@ final class FileManager implements Files\FileManager
         }
     }
 
-    /**
-     * @param FlySystem\WebFile $file
-     */
     public function readStream(Files\WebFile $file)
     {
         $stream = $this->fileSystemForFile($file)->readStream($file->getPath());
@@ -111,10 +93,6 @@ final class FileManager implements Files\FileManager
         $this->mountManager->getFilesystem($fileSystemPrefix)->putStream($path, $stream);
     }
 
-    /**
-     * @param FlySystem\WebFile $file
-     * @return FilesystemInterface
-     */
     private function fileSystemForFile(Files\WebFile $file): FilesystemInterface
     {
         return $this->mountManager->getFilesystem($file->getFileSystemName());

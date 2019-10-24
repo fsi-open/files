@@ -34,10 +34,6 @@ final class FileUrlResolver implements Files\FileUrlResolver
         $this->adapters = $adapters;
     }
 
-    /**
-     * @param WebFile $file
-     * @return UriInterface
-     */
     public function resolve(Files\WebFile $file): UriInterface
     {
         Assertion::isInstanceOf($file, WebFile::class);
