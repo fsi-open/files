@@ -13,7 +13,6 @@ namespace FSi\Component\Files;
 
 interface FileManager
 {
-    public function create(string $fileSystemName, string $path, string $contents): WebFile;
     public function copy(WebFile $source, string $fileSystemName, string $path): WebFile;
     public function load(string $fileSystemName, string $path): WebFile;
     public function exists(WebFile $file): bool;

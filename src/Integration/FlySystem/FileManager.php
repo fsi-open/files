@@ -35,12 +35,6 @@ final class FileManager implements Files\FileManager
         $this->mountManager = $mountManager;
     }
 
-    public function create(string $fileSystemName, string $path, string $contents): Files\WebFile
-    {
-        $this->mountManager->getFilesystem($fileSystemName)->put($path, $contents);
-        return $this->load($fileSystemName, $path);
-    }
-
     public function copy(
         Files\WebFile $sourceFile,
         string $targetFileSystemName,
