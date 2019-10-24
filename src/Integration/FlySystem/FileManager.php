@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\FlySystem;
 
 use FSi\Component\Files;
+use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Integration\FlySystem;
 use League\Flysystem\Exception;
 use League\Flysystem\FilesystemInterface;
@@ -34,9 +35,30 @@ final class FileManager implements Files\FileManager
         $this->mountManager = $mountManager;
     }
 
-    public function create(string $fileSystemName, string $path, string $contents): void
+    public function create(string $fileSystemName, string $path, string $contents): Files\WebFile
     {
         $this->mountManager->getFilesystem($fileSystemName)->put($path, $contents);
+        return $this->load($fileSystemName, $path);
+    }
+
+    public function copy(
+        Files\WebFile $sourceFile,
+        string $targetFileSystemName,
+        string $targetPath
+    ): Files\WebFile {
+        $this->writeStream(
+            $targetFileSystemName,
+            $targetPath,
+            $this->readStream($sourceFile)
+        );
+
+        return $this->load($targetFileSystemName, $targetPath);
+    }
+
+    public function load(string $fileSystemName, string $path): Files\WebFile
+    {
+        // assert file exists?
+        return new FlySystem\WebFile($fileSystemName, $path);
     }
 
     public function exists(Files\WebFile $file): bool
@@ -74,7 +96,7 @@ final class FileManager implements Files\FileManager
         }
     }
 
-    public function readStream(Files\WebFile $file)
+    private function readStream(Files\WebFile $file)
     {
         $stream = $this->fileSystemForFile($file)->readStream($file->getPath());
         if (false === is_resource($stream)) {
@@ -88,7 +110,7 @@ final class FileManager implements Files\FileManager
         return $stream;
     }
 
-    public function writeStream(string $fileSystemPrefix, string $path, $stream): void
+    private function writeStream(string $fileSystemPrefix, string $path, $stream): void
     {
         $this->mountManager->getFilesystem($fileSystemPrefix)->putStream($path, $stream);
     }

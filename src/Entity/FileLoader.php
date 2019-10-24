@@ -12,26 +12,27 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
-use FSi\Component\Files\FileFactory;
+use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
+use function array_walk;
 
 class FileLoader
 {
     /**
-     * @var FileFactory
+     * @var FileManager
      */
-    private $fileFactory;
+    private $fileManager;
 
     /**
      * @var FilePropertyConfigurationResolver
      */
     private $configurationResolver;
 
-    public function __construct(FileFactory $fileFactory, FilePropertyConfigurationResolver $configurationResolver)
+    public function __construct(FileManager $fileManager, FilePropertyConfigurationResolver $configurationResolver)
     {
-        $this->fileFactory = $fileFactory;
+        $this->fileManager = $fileManager;
         $this->configurationResolver = $configurationResolver;
     }
 
@@ -59,6 +60,6 @@ class FileLoader
             return null;
         }
 
-        return $this->fileFactory->createFromPath($configuration->getFileSystemName(), $path);
+        return $this->fileManager->load($configuration->getFileSystemName(), $path);
     }
 }

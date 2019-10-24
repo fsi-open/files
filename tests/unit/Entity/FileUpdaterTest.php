@@ -15,7 +15,7 @@ use Codeception\Test\Unit;
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Entity\FileUpdater;
-use FSi\Component\Files\FileFactory;
+use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem;
@@ -30,9 +30,9 @@ final class FileUpdaterTest extends Unit
     private $uuidRegex = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
 
     /**
-     * @var FileFactory|MockObject
+     * @var FileManager|MockObject
      */
-    private $fileFactory;
+    private $fileManager;
 
     /**
      * @var FileRemover|MockObject
@@ -65,7 +65,7 @@ final class FileUpdaterTest extends Unit
         $file = new FlySystem\WebFile('temp', 'some-path.dat');
         $entity = new TestEntity($file);
 
-        $this->fileFactory->expects($this->once())
+        $this->fileManager->expects($this->once())
             ->method('copy')
             ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-path.dat#i"))
             ->willReturnCallback(
@@ -92,7 +92,7 @@ final class FileUpdaterTest extends Unit
         $file = new FlySystem\WebFile('fs', 'other/some-path.dat');
         $entity = new TestEntity($file);
 
-        $this->fileFactory->expects($this->once())
+        $this->fileManager->expects($this->once())
             ->method('copy')
             ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-path.dat#i"))
             ->willReturnCallback(
@@ -123,8 +123,7 @@ final class FileUpdaterTest extends Unit
         $newFile = new FlySystem\WebFile('fs', 'prefix/some-new-path.dat');
         $entity->setFile($newFile);
 
-        $this->fileFactory->expects($this->once())->method('createFromPath')->willReturn($oldFile);
-        $this->fileFactory->expects($this->never())->method('copy');
+        $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
         $this->entityFileRemover->expects($this->once())->method('add')->with($oldFile);
 
         $this->entityFileUpdater->updateFiles($entity);
@@ -141,9 +140,8 @@ final class FileUpdaterTest extends Unit
         $tempFile = new FlySystem\WebFile('temp', 'some-new-path.dat');
         $entity->setFile($tempFile);
 
-        $this->fileFactory->expects($this->once())->method('createFromPath')->willReturn($oldFile);
-
-        $this->fileFactory->expects($this->once())
+        $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
+        $this->fileManager->expects($this->once())
             ->method('copy')
             ->with($tempFile, 'fs', $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-new-path.dat#i"))
             ->willReturnCallback(
@@ -179,7 +177,7 @@ final class FileUpdaterTest extends Unit
 
         $entity->setFile(null);
 
-        $this->fileFactory->expects($this->once())->method('createFromPath')->willReturn($oldFile);
+        $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
         $this->entityFileRemover->expects($this->once())->method('add')->with($oldFile);
 
         $this->entityFileUpdater->updateFiles($entity);
@@ -194,15 +192,15 @@ final class FileUpdaterTest extends Unit
             new FilePropertyConfiguration(TestEntity::class, 'file', 'fs', 'filePath', 'prefix')
         ]);
 
-        $this->fileFactory = $this->createMock(FileFactory::class);
+        $this->fileManager = $this->createMock(FileManager::class);
         $this->entityFileRemover = $this->createMock(FileRemover::class);
 
         $this->mockFile = $this->createMock(WebFile::class);
 
         $this->entityFileUpdater = new FileUpdater(
             $configurationResolver,
-            $this->fileFactory,
-            new FileLoader($this->fileFactory, $configurationResolver),
+            $this->fileManager,
+            new FileLoader($this->fileManager, $configurationResolver),
             $this->entityFileRemover
         );
     }

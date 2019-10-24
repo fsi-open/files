@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
-use FSi\Component\Files\FileFactory;
+use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
@@ -30,9 +30,9 @@ final class FileUpdater
     private $configurationResolver;
 
     /**
-     * @var FileFactory
+     * @var FileManager
      */
-    private $fileFactory;
+    private $fileManager;
 
     /**
      * @var FileLoader
@@ -46,12 +46,12 @@ final class FileUpdater
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
-        FileFactory $fileFactory,
+        FileManager $fileManager,
         FileLoader $entityFileLoader,
         FileRemover $entityFileRemover
     ) {
         $this->configurationResolver = $configurationResolver;
-        $this->fileFactory = $fileFactory;
+        $this->fileManager = $fileManager;
         $this->entityFileLoader = $entityFileLoader;
         $this->entityFileRemover = $entityFileRemover;
     }
@@ -134,7 +134,7 @@ final class FileUpdater
 
     private function copyFileToConfigurationFilesystem(WebFile $file, FilePropertyConfiguration $configuration): WebFile
     {
-        return $this->fileFactory->copy(
+        return $this->fileManager->copy(
             $file,
             $configuration->getFileSystemName(),
             $this->createFilesystemPath($configuration, basename($file->getPath()))
