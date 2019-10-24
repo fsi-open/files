@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\FlySystem\UrlAdapter;
+namespace FSi\Component\Files\Integration\FlySystem\UrlAdapter;
 
 use Aws\S3\S3ClientInterface;
 use FSi\Component\Files;
-use FSi\Component\Files\FlySystem;
-use FSi\Component\Files\FlySystem\UrlAdapter;
+use FSi\Component\Files\Integration\FlySystem;
+use FSi\Component\Files\Integration\FlySystem\UrlAdapter;
 use Psr\Http\Message\UriInterface;
 
 final class S3PrivateUrlAdapter implements UrlAdapter

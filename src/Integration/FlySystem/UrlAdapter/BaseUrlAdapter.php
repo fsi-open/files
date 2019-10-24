@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\FlySystem\UrlAdapter;
+namespace FSi\Component\Files\Integration\FlySystem\UrlAdapter;
 
 use FSi\Component\Files;
-use FSi\Component\Files\FlySystem;
-use FSi\Component\Files\FlySystem\UrlAdapter;
+use FSi\Component\Files\Integration\FlySystem;
+use FSi\Component\Files\Integration\FlySystem\UrlAdapter;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\UriFactoryInterface;

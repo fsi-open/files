@@ -20,3 +20,4 @@ install:
 script:
     - composer sniffer
     - composer stan
+    - composer unit
