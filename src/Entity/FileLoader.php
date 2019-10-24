@@ -18,7 +18,10 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
 use function array_walk;
 
-class FileLoader
+/**
+ * @internal
+ */
+final class FileLoader
 {
     /**
      * @var FileManager

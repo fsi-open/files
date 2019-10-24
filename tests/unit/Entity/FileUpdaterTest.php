@@ -35,26 +35,21 @@ final class FileUpdaterTest extends Unit
     private $fileManager;
 
     /**
-     * @var FileRemover|MockObject
-     */
-    private $entityFileRemover;
-
-    /**
      * @var FileUpdater
      */
-    private $entityFileUpdater;
+    private $fileUpdater;
 
     /**
-     * @var WebFile|MockObject
+     * @var FileRemover
      */
-    private $mockFile;
+    private $fileRemover;
 
     public function testNewFileOnTargetFileSystem(): void
     {
         $file = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($file);
 
-        $this->entityFileUpdater->updateFiles($entity);
+        $this->fileUpdater->updateFiles($entity);
 
         $this->assertSame($file, $entity->getFile());
         $this->assertEquals($file->getPath(), $entity->getFilePath());
@@ -78,7 +73,7 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
-        $this->entityFileUpdater->updateFiles($entity);
+        $this->fileUpdater->updateFiles($entity);
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($file, $entity->getFile());
@@ -105,13 +100,16 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
-        $this->entityFileUpdater->updateFiles($entity);
+        $this->fileManager->expects($this->never())->method('remove');
+        $this->fileUpdater->updateFiles($entity);
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($file, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
+
+        $this->fileRemover->flush();
     }
 
     public function testReplacingExistingFile(): void
@@ -124,11 +122,12 @@ final class FileUpdaterTest extends Unit
         $entity->setFile($newFile);
 
         $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
-        $this->entityFileRemover->expects($this->once())->method('add')->with($oldFile);
-
-        $this->entityFileUpdater->updateFiles($entity);
+        $this->fileManager->expects($this->once())->method('remove');
+        $this->fileUpdater->updateFiles($entity);
 
         $this->assertSame($newFile, $entity->getFile());
+
+        $this->fileRemover->flush();
     }
 
     public function testReplacingExistingFileWithNewTemporaryFile(): void
@@ -154,19 +153,16 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
-        $this->entityFileRemover
-            ->expects($this->once())
-            ->method('add')
-            ->with($oldFile)
-        ;
-
-        $this->entityFileUpdater->updateFiles($entity);
+        $this->fileManager->expects($this->once())->method('remove');
+        $this->fileUpdater->updateFiles($entity);
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
         $this->assertNotSame($tempFile, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
         $this->assertRegExp("#prefix/$this->uuidRegex/some-new-path.dat#i", $entity->getFilePath());
+
+        $this->fileRemover->flush();
     }
 
     public function testRemovingExistingFile(): void
@@ -178,12 +174,13 @@ final class FileUpdaterTest extends Unit
         $entity->setFile(null);
 
         $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
-        $this->entityFileRemover->expects($this->once())->method('add')->with($oldFile);
-
-        $this->entityFileUpdater->updateFiles($entity);
+        $this->fileManager->expects($this->once())->method('remove');
+        $this->fileUpdater->updateFiles($entity);
 
         $this->assertNull($entity->getFile());
         $this->assertNull($entity->getFilePath());
+
+        $this->fileRemover->flush();
     }
 
     public function setUp(): void
@@ -193,15 +190,14 @@ final class FileUpdaterTest extends Unit
         ]);
 
         $this->fileManager = $this->createMock(FileManager::class);
-        $this->entityFileRemover = $this->createMock(FileRemover::class);
+        $fileLoader = new FileLoader($this->fileManager, $configurationResolver);
+        $this->fileRemover = new FileRemover($configurationResolver, $this->fileManager, $fileLoader);
 
-        $this->mockFile = $this->createMock(WebFile::class);
-
-        $this->entityFileUpdater = new FileUpdater(
+        $this->fileUpdater = new FileUpdater(
             $configurationResolver,
             $this->fileManager,
-            new FileLoader($this->fileManager, $configurationResolver),
-            $this->entityFileRemover
+            $fileLoader,
+            $this->fileRemover
         );
     }
 }

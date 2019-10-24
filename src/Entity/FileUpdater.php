@@ -22,6 +22,9 @@ use function basename;
 use function mb_strpos;
 use function sprintf;
 
+/**
+ * @internal
+ */
 final class FileUpdater
 {
     /**
@@ -37,23 +40,23 @@ final class FileUpdater
     /**
      * @var FileLoader
      */
-    private $entityFileLoader;
+    private $fileLoader;
 
     /**
      * @var FileRemover
      */
-    private $entityFileRemover;
+    private $fileRemover;
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
-        FileLoader $entityFileLoader,
-        FileRemover $entityFileRemover
+        FileLoader $fileLoader,
+        FileRemover $fileRemover
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
-        $this->entityFileLoader = $entityFileLoader;
-        $this->entityFileRemover = $entityFileRemover;
+        $this->fileLoader = $fileLoader;
+        $this->fileRemover = $fileRemover;
     }
 
     public function updateFiles(object $entity): void
@@ -64,7 +67,7 @@ final class FileUpdater
             $configurations,
             function (FilePropertyConfiguration $configuration, $key, object $entity): void {
                 $newFile = $this->readNewFileFromEntity($configuration, $entity);
-                $currentFile = $this->entityFileLoader->fromEntity($configuration, $entity);
+                $currentFile = $this->fileLoader->fromEntity($configuration, $entity);
                 if (false === $this->shouldFilePropertyBeUpdated($newFile, $currentFile)) {
                     return;
                 }
@@ -119,7 +122,7 @@ final class FileUpdater
             return;
         }
 
-        $this->entityFileRemover->add($oldFile);
+        $this->fileRemover->add($oldFile);
     }
 
     private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void

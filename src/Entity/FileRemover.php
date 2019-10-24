@@ -17,7 +17,10 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
 use function array_walk;
 
-class FileRemover
+/**
+ * @internal
+ */
+final class FileRemover
 {
     /**
      * @var FilePropertyConfigurationResolver

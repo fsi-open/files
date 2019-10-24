@@ -27,11 +27,11 @@ final class FileRemoverTest extends TestCase
         $fileManager = $this->createMock(FileManager::class);
         $fileManager->expects($this->once())->method('remove')->with($file);
 
-
+        $configurationResolver = new FilePropertyConfigurationResolver([]);
         $remover = new FileRemover(
-            new FilePropertyConfigurationResolver([]),
+            $configurationResolver,
             $fileManager,
-            $this->createMock(FileLoader::class)
+            new FileLoader($fileManager, $configurationResolver)
         );
 
         $remover->add($file);
