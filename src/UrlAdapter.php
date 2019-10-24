@@ -9,13 +9,12 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\FlySystem;
+namespace FSi\Component\Files;
 
-use FSi\Component\Files;
 use Psr\Http\Message\UriInterface;
 
 interface UrlAdapter
 {
-    public function supports(Files\WebFile $file): bool;
-    public function url(Files\WebFile $file): UriInterface;
+    public function supports(WebFile $file): bool;
+    public function url(WebFile $file): UriInterface;
 }

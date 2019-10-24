@@ -14,7 +14,7 @@ namespace FSi\Component\Files\Integration\FlySystem\UrlAdapter;
 use Aws\S3\S3ClientInterface;
 use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
-use FSi\Component\Files\Integration\FlySystem\UrlAdapter;
+use FSi\Component\Files\UrlAdapter;
 use Psr\Http\Message\UriInterface;
 
 final class S3PrivateUrlAdapter implements UrlAdapter

@@ -12,9 +12,9 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\FlySystem;
 
 use FSi\Component\Files;
-use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Integration\FlySystem;
 use League\Flysystem\Exception;
+use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;
 use function basename;
@@ -57,7 +57,10 @@ final class FileManager implements Files\FileManager
 
     public function load(string $fileSystemName, string $path): Files\WebFile
     {
-        // assert file exists?
+        if (false === $this->mountManager->getFilesystem($fileSystemName)->has($path)) {
+            throw new FileNotFoundException($path);
+        }
+
         return new FlySystem\WebFile($fileSystemName, $path);
     }
 
