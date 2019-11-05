@@ -1,0 +1,10 @@
+actor: FunctionalTester
+modules:
+    enabled:
+        - Asserts
+        - FSi\Tests\Helper\Functional
+        - FSi\Tests\Module\UploadModule
+        - Symfony:
+            app_path: tests/_support/project/src
+            environment: test
+            kernel_class: FSi\Tests\App\Kernel

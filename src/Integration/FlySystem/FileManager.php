@@ -40,12 +40,7 @@ final class FileManager implements Files\FileManager
         string $targetFileSystemName,
         string $targetPath
     ): Files\WebFile {
-        $this->writeStream(
-            $targetFileSystemName,
-            $targetPath,
-            $this->readStream($sourceFile)
-        );
-
+        $this->writeStream($targetFileSystemName, $targetPath, $this->readStream($sourceFile));
         return $this->load($targetFileSystemName, $targetPath);
     }
 

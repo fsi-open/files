@@ -19,5 +19,6 @@ install:
 
 script:
     - composer sniffer
+    - composer cept -- build
     - composer stan
-    - composer unit
+    - composer cept -- run

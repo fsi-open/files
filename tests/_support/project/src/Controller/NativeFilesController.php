@@ -14,7 +14,7 @@ namespace FSi\Tests\App\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 
-final class IndexController
+final class NativeFilesController
 {
     /**
      * @var Environment
@@ -28,6 +28,6 @@ final class IndexController
 
     public function __invoke(): Response
     {
-        return new Response($this->twig->render('index.html.twig'));
+        return new Response($this->twig->render('nativeForm.html.twig'));
     }
 }

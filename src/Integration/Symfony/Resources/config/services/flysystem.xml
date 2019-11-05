@@ -5,12 +5,17 @@
 
     <services>
 
+        <!-- File manager -->
         <service id="FSi\Component\Files\FileManager" alias="FSi\Component\Files\Integration\FlySystem\FileManager" />
         <service id="FSi\Component\Files\Integration\FlySystem\FileManager">
             <argument type="service" id="League\Flysystem\MountManager" />
         </service>
 
         <service id="League\Flysystem\MountManager" alias="oneup_flysystem.mount_manager" />
+
+        <!-- Upload -->
+        <service id="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory" />
+        <service id="FSi\Component\Files\Upload\FileFactory" alias="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory" />
 
     </services>
 

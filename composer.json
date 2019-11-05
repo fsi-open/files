@@ -12,7 +12,10 @@
         "psr-4": {
             "FSi\\Tests\\": "tests/_support",
             "FSi\\Tests\\App\\": "tests/_support/project/src",
-            "FSi\\Tests\\Component\\Files\\": "tests/unit"
+            "FSi\\Tests\\Component\\Files\\": [
+                "tests/functional",
+                "tests/unit"
+            ]
         }
     },
     "require": {

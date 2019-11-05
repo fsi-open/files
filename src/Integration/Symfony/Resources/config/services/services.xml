@@ -5,6 +5,9 @@
 
     <services>
 
+        <service id="FSi\Component\Files\Upload\PhpFilesHandler">
+            <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+        </service>
 
     </services>
 

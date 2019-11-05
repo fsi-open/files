@@ -12,18 +12,21 @@ declare(strict_types=1);
 namespace FSi\Tests\App;
 
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
+use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Tests\App\Controller\IndexController;
+use FSi\Tests\App\Controller\NativeFilesController;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
 use function sprintf;
 
-final class Kernel extends HttpKernel\Kernel
+final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
 {
     use MicroKernelTrait;
 
@@ -45,6 +48,11 @@ final class Kernel extends HttpKernel\Kernel
     public function getLogDir()
     {
         return sprintf('%s/../var/log', __DIR__);
+    }
+
+    public function process(ContainerBuilder $container)
+    {
+        $container->getDefinition(PhpFilesHandler::class)->setPublic(true);
     }
 
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader)
@@ -69,13 +77,21 @@ final class Kernel extends HttpKernel\Kernel
             ]
         ]);
 
-        $controllerDefinition = $container->register(IndexController::class);
-        $controllerDefinition->setAutowired(true);
-        $controllerDefinition->setPublic(true);
+
+        $this->registerPublicControllerService($container, IndexController::class);
+        $this->registerPublicControllerService($container, NativeFilesController::class);
     }
 
     protected function configureRoutes(RouteCollectionBuilder $routes)
     {
         $routes->add('/', IndexController::class, 'index');
+        $routes->add('/native', NativeFilesController::class, 'native_files');
+    }
+
+    private function registerPublicControllerService(ContainerBuilder $container, string $class): void
+    {
+        $definition = $container->register($class);
+        $definition->setAutowired(true);
+        $definition->setPublic(true);
     }
 }

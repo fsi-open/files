@@ -9,18 +9,20 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Configuration;
+namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\HttpKernel\Config\FileLocator;
 use function sprintf;
 
 final class FilesExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
+        $this->processConfiguration(new Configuration(), $configs);
+
         $loader = new XmlFileLoader(
             $container,
             new FileLocator(sprintf('%s/../Resources/config/services', __DIR__))
