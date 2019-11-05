@@ -11,8 +11,31 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony;
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use function sprintf;
 
 final class FilesBundle extends Bundle
 {
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+        $this->loadExternalBundlesServices($container);
+    }
+
+    private function loadExternalBundlesServices(ContainerBuilder $container): void
+    {
+        if (false === $container->hasExtension('oneup_flysystem')) {
+            return;
+        }
+
+        $loader = new XmlFileLoader(
+            $container,
+            new FileLocator(sprintf('%s/Resources/config/services', __DIR__))
+        );
+
+        $loader->load('flysystem.xml');
+    }
 }

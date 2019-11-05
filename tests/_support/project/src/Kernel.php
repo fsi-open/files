@@ -13,6 +13,7 @@ namespace FSi\Tests\App;
 
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Tests\App\Controller\IndexController;
+use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -31,6 +32,7 @@ final class Kernel extends HttpKernel\Kernel
         return [
             new FrameworkBundle(),
             new TwigBundle(),
+            new OneupFlysystemBundle(),
             new FilesBundle()
         ];
     }
@@ -55,6 +57,18 @@ final class Kernel extends HttpKernel\Kernel
             'paths' => [sprintf('%s/../templates', __DIR__)]
         ]);
 
+        $container->loadFromExtension('oneup_flysystem', [
+            'adapters' => [
+                'memory_adapter' => ['memory' => null]
+            ],
+            'filesystems' => [
+                'temporary' => [
+                    'adapter' => 'memory_adapter',
+                    'mount' => 'temporary'
+                ]
+            ]
+        ]);
+
         $controllerDefinition = $container->register(IndexController::class);
         $controllerDefinition->setAutowired(true);
         $controllerDefinition->setPublic(true);
@@ -62,6 +76,6 @@ final class Kernel extends HttpKernel\Kernel
 
     protected function configureRoutes(RouteCollectionBuilder $routes)
     {
-        $routes->add('/', IndexController::class);
+        $routes->add('/', IndexController::class, 'index');
     }
 }
