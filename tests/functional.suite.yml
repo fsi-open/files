@@ -3,6 +3,7 @@ modules:
     enabled:
         - Asserts
         - FSi\Tests\Helper\Functional
+        - FSi\Tests\Module\FormModule
         - FSi\Tests\Module\UploadModule
         - Symfony:
             app_path: tests/_support/project/src

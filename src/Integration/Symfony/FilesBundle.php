@@ -27,15 +27,17 @@ final class FilesBundle extends Bundle
 
     private function loadExternalBundlesServices(ContainerBuilder $container): void
     {
-        if (false === $container->hasExtension('oneup_flysystem')) {
-            return;
-        }
-
         $loader = new XmlFileLoader(
             $container,
             new FileLocator(sprintf('%s/Resources/config/services', __DIR__))
         );
 
-        $loader->load('flysystem.xml');
+        if (true === $container->hasExtension('oneup_flysystem')) {
+            $loader->load('flysystem.xml');
+        }
+
+        if (true === $container->hasExtension('framework')) {
+            $loader->load('symfony.xml');
+        }
     }
 }

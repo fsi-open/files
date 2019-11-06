@@ -15,6 +15,7 @@ use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Tests\App\Controller\IndexController;
 use FSi\Tests\App\Controller\NativeFilesController;
+use FSi\Tests\App\Controller\SymfonyFilesController;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -80,12 +81,14 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
 
         $this->registerPublicControllerService($container, IndexController::class);
         $this->registerPublicControllerService($container, NativeFilesController::class);
+        $this->registerPublicControllerService($container, SymfonyFilesController::class);
     }
 
     protected function configureRoutes(RouteCollectionBuilder $routes)
     {
         $routes->add('/', IndexController::class, 'index');
         $routes->add('/native', NativeFilesController::class, 'native_files');
+        $routes->add('/symfony', SymfonyFilesController::class, 'symfony_files');
     }
 
     private function registerPublicControllerService(ContainerBuilder $container, string $class): void
