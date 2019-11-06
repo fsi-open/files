@@ -1,0 +1,16 @@
+<p>
+    <a href="{{ path('index') }}">Index</a>
+</p>
+<form action="{{ path('native_files') }}" method="post" enctype="multipart/form-data">
+    <div>
+        <label for="single_file">Single file</label>
+        <input id="single_file" type="file" name="single_file" />
+    </div>
+    <div>
+        <label for="multiple_files_1">Multiple files 1</label>
+        <input id="multiple_files_1" type="file" name="multiple_files[]" />
+        <label for="multiple_files_2">Multiple files 2</label>
+        <input id="multiple_files_2" type="file" name="multiple_files[]" />
+    </div>
+    <button>Submit</button>
+</form>

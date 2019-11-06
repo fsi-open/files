@@ -3,7 +3,10 @@ includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
 parameters:
+    autoload_files:
+        - '%rootDir%/../../../vendor/codeception/codeception/autoload.php'
     inferPrivatePropertyTypeFromConstructor: true
     excludes_analyse:
         - '%rootDir%/../../../tests/_support/_generated'
+        - '%rootDir%/../../../tests/_support/project/var'
         - '%rootDir%/../../../tests/_support/UnitTester.php'

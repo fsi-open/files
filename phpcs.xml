@@ -5,6 +5,7 @@
 
     <file>src</file>
     <file>tests</file>
+    <exclude-pattern>*/cache</exclude-pattern>
 
     <arg name="cache" value=".phpcs-cache"/>
     <arg name="encoding" value="utf-8"/>
