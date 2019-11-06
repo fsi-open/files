@@ -16,13 +16,16 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 final class FormTestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('file', WebFileType::class, [
-            'label' => 'Single file'
+            'label' => 'Single file',
+            'constraints' => [new NotBlank()],
+            'required' => false
         ]);
     }
 

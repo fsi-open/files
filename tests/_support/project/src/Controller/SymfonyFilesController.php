@@ -16,6 +16,7 @@ use FSi\Tests\App\Form\FormTestType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
@@ -65,9 +66,11 @@ final class SymfonyFilesController
     private function errorsToMessage(FormErrorIterator $errors): string
     {
         $message = '';
-        /** @var FormError $message */
+        /** @var FormError $error */
         foreach ($errors as $error) {
-            $message .= "[{$error->getOrigin()->getName()}]: {$error->getMessage()}\r\n";
+            /** @var FormInterface $origin */
+            $origin = $error->getOrigin();
+            $message .= "[{$origin->getName()}]: {$error->getMessage()}\r\n";
         }
 
         return $message;

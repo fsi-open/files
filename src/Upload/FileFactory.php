@@ -16,7 +16,7 @@ use FSi\Component\Files\UploadedWebFile;
 interface FileFactory
 {
     public function create(
-        string $path,
+        $stream,
         string $originalName,
         string $type,
         int $size,

@@ -5,12 +5,17 @@
 
     <services>
 
+        <service id="FSi\Component\Files\Integration\Symfony\Transformer\PsrFileToWebFileTransformer">
+            <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+        </service>
+
         <service id="FSi\Component\Files\Integration\Symfony\Transformer\SymfonyFileToWebFileTransformer">
             <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
         </service>
 
         <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
             <argument type="service" id="FSi\Component\Files\Integration\Symfony\Transformer\SymfonyFileToWebFileTransformer" />
+            <argument type="service" id="FSi\Component\Files\Integration\Symfony\Transformer\PsrFileToWebFileTransformer" />
             <tag name="form.type" />
         </service>
 

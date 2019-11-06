@@ -11,14 +11,17 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\Form;
 
+use FSi\Component\Files\Integration\Symfony\Transformer\PsrFileToWebFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Transformer\SymfonyFileToWebFileTransformer;
 use FSi\Component\Files\UploadedWebFile;
+use Psr\Http\Message\UploadedFileInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class WebFileType extends AbstractType
@@ -26,23 +29,37 @@ final class WebFileType extends AbstractType
     /**
      * @var SymfonyFileToWebFileTransformer
      */
-    private $transformer;
+    private $symfonyFileTransformer;
 
-    public function __construct(SymfonyFileToWebFileTransformer $transformer)
-    {
-        $this->transformer = $transformer;
+    /**
+     * @var PsrFileToWebFileTransformer
+     */
+    private $psrFileTransformer;
+
+    public function __construct(
+        SymfonyFileToWebFileTransformer $symfonyFileTransformer,
+        PsrFileToWebFileTransformer $psrFileTransformer
+    ) {
+        $this->symfonyFileTransformer = $symfonyFileTransformer;
+        $this->psrFileTransformer = $psrFileTransformer;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event): void {
-            /** @var File|null $data */
+            /** @var UploadedFile|UploadedFileInterface|null $data */
             $data = $event->getData();
             if (null === $data) {
                 return;
             }
 
-            $event->setData($this->transformer->transform($data));
+            if (true === $data instanceof UploadedFile) {
+                $event->setData($this->symfonyFileTransformer->transform($data));
+            }
+
+            if (true === $data instanceof UploadedFileInterface) {
+                $event->setData($this->psrFileTransformer->transform($data));
+            }
         });
     }
 

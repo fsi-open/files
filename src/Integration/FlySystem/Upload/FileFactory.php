@@ -17,15 +17,14 @@ use FSi\Component\Files\Integration\FlySystem;
 final class FileFactory implements Files\Upload\FileFactory
 {
     public function create(
-        string $path,
+        $resource,
         string $originalName,
         string $type,
         int $size,
         ?int $error
     ): Files\UploadedWebFile {
         return new FlySystem\UploadedWebFile(
-            'php_temp',
-            $path,
+            $resource,
             $originalName,
             $type,
             $size,
