@@ -11,11 +11,14 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Upload;
 
+use GuzzleHttp\Psr7\Stream;
+use RuntimeException;
 use const UPLOAD_ERR_NO_FILE;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function fopen;
 use function is_array;
 
 final class PhpFilesHandler
@@ -70,8 +73,13 @@ final class PhpFilesHandler
             return null;
         }
 
+        $stream = fopen($file['tmp_name'], 'r');
+        if (false === $stream) {
+            throw new RuntimeException(sprintf('Unable to read file "%s"', $file['tmp_name']));
+        }
+
         return $this->fileFactory->create(
-            $file['tmp_name'],
+            new Stream($stream),
             $file['name'],
             $file['type'],
             $file['size'],

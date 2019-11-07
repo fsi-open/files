@@ -13,18 +13,19 @@ namespace FSi\Component\Files\Integration\FlySystem\Upload;
 
 use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
+use Psr\Http\Message\StreamInterface;
 
 final class FileFactory implements Files\Upload\FileFactory
 {
     public function create(
-        $resource,
+        StreamInterface $stream,
         string $originalName,
         string $type,
         int $size,
         ?int $error
     ): Files\UploadedWebFile {
         return new FlySystem\UploadedWebFile(
-            $resource,
+            $stream,
             $originalName,
             $type,
             $size,

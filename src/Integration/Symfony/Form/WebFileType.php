@@ -14,6 +14,7 @@ namespace FSi\Component\Files\Integration\Symfony\Form;
 use FSi\Component\Files\Integration\Symfony\Transformer\PsrFileToWebFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Transformer\SymfonyFileToWebFileTransformer;
 use FSi\Component\Files\UploadedWebFile;
+use InvalidArgumentException;
 use Psr\Http\Message\UploadedFileInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -23,6 +24,10 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use function array_replace;
+use function get_class;
+use function gettype;
+use function is_object;
 
 final class WebFileType extends AbstractType
 {
@@ -47,18 +52,22 @@ final class WebFileType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event): void {
-            /** @var UploadedFile|UploadedFileInterface|null $data */
             $data = $event->getData();
-            if (null === $data) {
+            if (null === $data || '' === $data) {
                 return;
             }
 
             if (true === $data instanceof UploadedFile) {
                 $event->setData($this->symfonyFileTransformer->transform($data));
-            }
-
-            if (true === $data instanceof UploadedFileInterface) {
+            } elseif (true === $data instanceof UploadedFileInterface) {
                 $event->setData($this->psrFileTransformer->transform($data));
+            } else {
+                throw new InvalidArgumentException(sprintf(
+                    'Expected an instance of "%s" or "%s", got "%s" instead.',
+                    UploadedFile::class,
+                    UploadedFileInterface::class,
+                    true === is_object($data) ? get_class($data) : gettype($data)
+                ));
             }
         });
     }

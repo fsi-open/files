@@ -14,7 +14,6 @@ namespace FSi\Component\Files\Integration\Symfony\Transformer;
 use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\UploadedWebFile;
 use GuzzleHttp\Psr7\Stream;
-use GuzzleHttp\Psr7\StreamWrapper;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -39,10 +38,6 @@ final class SymfonyFileToWebFileTransformer
         $filename = $file->getClientOriginalName();
         if (false === is_string($file->getMimeType())) {
             throw new RuntimeException("No mime type for file \"{$filename}\"!");
-        }
-
-        if (0 === $file->getSize()) {
-            throw new RuntimeException("Empty file \"{$filename}\"!");
         }
 
         $stream = fopen($file->getPathname(), 'r');

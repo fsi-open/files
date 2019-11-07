@@ -12,11 +12,12 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Upload;
 
 use FSi\Component\Files\UploadedWebFile;
+use Psr\Http\Message\StreamInterface;
 
 interface FileFactory
 {
     public function create(
-        $stream,
+        StreamInterface $stream,
         string $originalName,
         string $type,
         int $size,

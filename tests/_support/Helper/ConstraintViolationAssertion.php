@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use function count;
 
 /**
- * Copy of 
+ * Copy of \Symfony\Component\Validator\Test\ConstraintViolationAssertion
  *
  * @internal
  */
@@ -34,13 +34,44 @@ final class ConstraintViolationAssertion
      */
     private $assertions;
 
+    /**
+     * @var string
+     */
     private $message;
+
+    /**
+     * @var array
+     */
     private $parameters = [];
+
+    /**
+     * @var string
+     */
     private $invalidValue = 'InvalidValue';
+
+    /**
+     * @var string
+     */
     private $propertyPath = 'property.path';
+
+    /**
+     * @var int|null
+     */
     private $plural;
+
+    /**
+     * @var string
+     */
     private $code;
+
+    /**
+     * @var Constraint|null
+     */
     private $constraint;
+
+    /**
+     * @var string
+     */
     private $cause;
 
     public function __construct(
@@ -72,13 +103,6 @@ final class ConstraintViolationAssertion
     public function setParameters(array $parameters)
     {
         $this->parameters = $parameters;
-
-        return $this;
-    }
-
-    public function setTranslationDomain($translationDomain)
-    {
-        // no-op for BC
 
         return $this;
     }
