@@ -15,6 +15,5 @@ use Symfony\Component\Form\FormEvent;
 
 interface FormFileTransformer
 {
-    public function getFormEvent(): string;
-    public function transform(FormEvent $event): void;
+    public function __invoke(FormEvent $event): void;
 }

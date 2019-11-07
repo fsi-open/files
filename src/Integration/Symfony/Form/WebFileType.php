@@ -11,10 +11,12 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\Form;
 
+use Assert\Assertion;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\UploadedWebFile;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -29,14 +31,18 @@ final class WebFileType extends AbstractType
 
     public function __construct(iterable $fileTransformers)
     {
+        if (false === is_array($fileTransformers)) {
+            $fileTransformers = iterator_to_array($fileTransformers);
+        }
+
+        Assertion::allIsInstanceOf($fileTransformers, FormFileTransformer::class);
         $this->fileTransformers = $fileTransformers;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        /** @var FormFileTransformer $transformer */
         foreach ($this->fileTransformers as $transformer) {
-            $builder->addEventListener($transformer->getFormEvent(), [$transformer, 'transform']);
+            $builder->addEventListener(FormEvents::PRE_SUBMIT, $transformer);
         }
     }
 

@@ -15,7 +15,6 @@ use FSi\Component\Files\Upload\FileFactory;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 
 final class PsrFileToWebFileTransformer implements FormFileTransformer
 {
@@ -29,12 +28,7 @@ final class PsrFileToWebFileTransformer implements FormFileTransformer
         $this->fileFactory = $fileFactory;
     }
 
-    public function getFormEvent(): string
-    {
-        return FormEvents::PRE_SUBMIT;
-    }
-
-    public function transform(FormEvent $event): void
+    public function __invoke(FormEvent $event): void
     {
         $file = $event->getData();
         if (false === $file instanceof UploadedFileInterface) {
