@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Flysystem;
+namespace FSi\Tests\Component\Files\Integration\Flysystem;
 
 use FSi\Component\Files\Integration\FlySystem\FileManager;
 use FSi\Component\Files\Integration\FlySystem\WebFile;
