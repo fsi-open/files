@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Validation;
+namespace FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
