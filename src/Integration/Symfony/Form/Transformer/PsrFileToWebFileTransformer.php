@@ -9,14 +9,15 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Transformer;
+namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
 
 use FSi\Component\Files\Upload\FileFactory;
-use FSi\Component\Files\UploadedWebFile;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
-final class PsrFileToWebFileTransformer
+final class PsrFileToWebFileTransformer implements FormFileTransformer
 {
     /**
      * @var FileFactory
@@ -28,8 +29,18 @@ final class PsrFileToWebFileTransformer
         $this->fileFactory = $fileFactory;
     }
 
-    public function transform(UploadedFileInterface $file): UploadedWebFile
+    public function getFormEvent(): string
     {
+        return FormEvents::PRE_SUBMIT;
+    }
+
+    public function transform(FormEvent $event): void
+    {
+        $file = $event->getData();
+        if (false === $file instanceof UploadedFileInterface) {
+            return;
+        }
+
         if (null === $file->getClientFilename()) {
             throw new RuntimeException('No filename!');
         }
@@ -43,12 +54,14 @@ final class PsrFileToWebFileTransformer
             throw new RuntimeException("No size for file \"{$filename}\"!");
         }
 
-        return $this->fileFactory->create(
-            $file->getStream(),
-            $filename,
-            $file->getClientMediaType(),
-            $file->getSize(),
-            $file->getError()
+        $event->setData(
+            $this->fileFactory->create(
+                $file->getStream(),
+                $filename,
+                $file->getClientMediaType(),
+                $file->getSize(),
+                $file->getError()
+            )
         );
     }
 }

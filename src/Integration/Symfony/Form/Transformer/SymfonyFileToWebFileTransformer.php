@@ -9,15 +9,16 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Transformer;
+namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
 
 use FSi\Component\Files\Upload\FileFactory;
-use FSi\Component\Files\UploadedWebFile;
 use GuzzleHttp\Psr7\Stream;
 use RuntimeException;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-final class SymfonyFileToWebFileTransformer
+final class SymfonyFileToWebFileTransformer implements FormFileTransformer
 {
     /**
      * @var FileFactory
@@ -29,8 +30,18 @@ final class SymfonyFileToWebFileTransformer
         $this->fileFactory = $fileFactory;
     }
 
-    public function transform(UploadedFile $file): UploadedWebFile
+    public function getFormEvent(): string
     {
+        return FormEvents::PRE_SUBMIT;
+    }
+
+    public function transform(FormEvent $event): void
+    {
+        $file = $event->getData();
+        if (false === $file instanceof UploadedFile) {
+            return;
+        }
+
         if (null === $file->getClientOriginalName()) {
             throw new RuntimeException('No filename!');
         }
@@ -45,12 +56,14 @@ final class SymfonyFileToWebFileTransformer
             throw new RuntimeException("Unable to read file \"{$filename}\"");
         }
 
-        return $this->fileFactory->create(
-            new Stream($stream),
-            $file->getClientOriginalName(),
-            $file->getMimeType(),
-            $file->getSize(),
-            $file->getError()
+        $event->setData(
+            $this->fileFactory->create(
+                new Stream($stream),
+                $file->getClientOriginalName(),
+                $file->getMimeType(),
+                $file->getSize(),
+                $file->getError()
+            )
         );
     }
 }
