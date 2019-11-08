@@ -11,19 +11,16 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\FlySystem;
 
+use BadMethodCallException;
 use FSi\Component\Files;
+use Psr\Http\Message\StreamInterface;
 
 final class UploadedWebFile implements Files\UploadedWebFile
 {
     /**
-     * @var string
+     * @var StreamInterface
      */
-    private $fileSystemName;
-
-    /**
-     * @var string
-     */
-    private $path;
+    private $stream;
 
     /**
      * @var string
@@ -46,15 +43,13 @@ final class UploadedWebFile implements Files\UploadedWebFile
     private $error;
 
     public function __construct(
-        string $fileSystemName,
-        string $path,
+        StreamInterface $stream,
         string $originalName,
         string $mimeType,
         int $size,
         ?int $error
     ) {
-        $this->fileSystemName = $fileSystemName;
-        $this->path = $path;
+        $this->stream = $stream;
         $this->originalName = $originalName;
         $this->mimeType = $mimeType;
         $this->size = $size;
@@ -63,12 +58,17 @@ final class UploadedWebFile implements Files\UploadedWebFile
 
     public function getFileSystemName(): string
     {
-        return $this->fileSystemName;
+        throw new BadMethodCallException('Method unimplemented');
     }
 
     public function getPath(): string
     {
-        return $this->path;
+        throw new BadMethodCallException('Method unimplemented');
+    }
+
+    public function getStream(): StreamInterface
+    {
+        return $this->stream;
     }
 
     public function getOriginalName(): string

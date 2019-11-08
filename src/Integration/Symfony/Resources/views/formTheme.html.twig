@@ -1,0 +1,11 @@
+{% block web_file_widget -%}
+    {%- set type = 'file' -%}
+    <div>
+        {{- block('form_widget_simple') -}}
+        <label for="{{ form.vars.id }}" {% with { attr: label_attr } %}{{ block('attributes') }}{% endwith %}>
+            {%- if attr.placeholder is defined -%}
+                {{- translation_domain is same as(false) ? attr.placeholder : attr.placeholder|trans({}, translation_domain) -}}
+            {%- endif -%}
+        </label>
+    </div>
+{% endblock %}

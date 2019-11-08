@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <!-- Form file transformers -->
+        <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\PsrFileToWebFileTransformer">
+            <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+            <tag name="fsi_files.form_file_transformer" />
+        </service>
+
+        <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\SymfonyFileToWebFileTransformer">
+            <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+            <tag name="fsi_files.form_file_transformer" />
+        </service>
+
+        <!-- Form type -->
+        <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
+            <argument type="tagged" tag="fsi_files.form_file_transformer" />
+            <tag name="form.type" />
+        </service>
+
+    </services>
+
+</container>

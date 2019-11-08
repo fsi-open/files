@@ -21,12 +21,6 @@ final class PhpFilesHandlerCest
 {
     public function testAllFilesCorrectUpload(FunctionalTester $I): void
     {
-        $I->amOnPage('/native');
-        $I->seeResponseCodeIs(200);
-
-        $I->see('Single file', 'label');
-        $I->see('Multiple files', 'label');
-
         $testPdfPath = codecept_data_dir('test_pdf.pdf');
         $testJpgPath = codecept_data_dir('test.jpg');
 
@@ -49,11 +43,6 @@ final class PhpFilesHandlerCest
             ]
         ];
 
-        $I->submitForm('form', [], 'Submit');
-
-        $I->seeCurrentUrlEquals('/native');
-        $I->seeResponseCodeIs(200);
-
         $uploadedFiles = $I->grabUploadedPhpFiles();
         $I->assertCount(2, $uploadedFiles);
         $I->assertInstanceOf(UploadedWebFile::class, $uploadedFiles['single_file']);
@@ -62,8 +51,6 @@ final class PhpFilesHandlerCest
 
     public function testCorruptedUpload(FunctionalTester $I): void
     {
-        $I->amOnPage('/native');
-
         $testPdfPath = codecept_data_dir('test_pdf.pdf');
 
         $_FILES = [
@@ -84,11 +71,6 @@ final class PhpFilesHandlerCest
                 ]
             ]
         ];
-
-        $I->submitForm('form', [], 'Submit');
-
-        $I->seeCurrentUrlEquals('/native');
-        $I->seeResponseCodeIs(200);
 
         $uploadedFiles = $I->grabUploadedPhpFiles();
         $I->assertCount(1, $uploadedFiles);

@@ -13,6 +13,7 @@ namespace FSi\Component\Files;
 
 interface UploadedWebFile extends WebFile
 {
+    public function getStream();
     public function getOriginalName(): string;
     public function getMimeType(): string;
     public function getSize(): int;
