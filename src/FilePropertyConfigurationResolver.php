@@ -35,8 +35,12 @@ final class FilePropertyConfigurationResolver
     /**
      * @param FilePropertyConfiguration[] $configurations
      */
-    public function __construct(array $configurations)
+    public function __construct(iterable $configurations)
     {
+        if (false === is_array($configurations)) {
+            $configurations = iterator_to_array($configurations);
+        }
+
         Assertion::allIsInstanceOf($configurations, FilePropertyConfiguration::class);
 
         $this->configurations = $configurations;

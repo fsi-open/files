@@ -16,6 +16,7 @@ use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Tests\App\Controller\IndexController;
 use FSi\Tests\App\Controller\NativeFilesController;
 use FSi\Tests\App\Controller\SymfonyFilesController;
+use FSi\Tests\App\Entity\FileEntity;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -74,10 +75,32 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'temporary' => [
                     'adapter' => 'memory_adapter',
                     'mount' => 'temporary'
+                ],
+                'temporary_other' => [
+                    'adapter' => 'memory_adapter',
+                    'mount' => 'temporary'
                 ]
             ]
         ]);
 
+        $container->loadFromExtension('fsi_files', [
+            'entities' => [
+                [
+                    'class' => FileEntity::class,
+                    'prefix' => 'file_entity',
+                    'filesystem' => 'temporary',
+                    'fields' => [
+                        ['name' => 'file'],
+                        [
+                            'name' => 'anotherFile',
+                            'filesystem' => 'temporary_other',
+                            'pathField' => 'anotherFileKey',
+                            'prefix' => 'anotherFile'
+                        ]
+                    ]
+                ]
+            ]
+        ]);
 
         $this->registerPublicControllerService($container, IndexController::class);
         $this->registerPublicControllerService($container, NativeFilesController::class);

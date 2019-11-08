@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace FSi\Tests\App\Controller;
 
+use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\UploadedWebFile;
+use FSi\Tests\App\Entity\FileEntity;
 use FSi\Tests\App\Form\FormTestType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormErrorIterator;
@@ -34,10 +37,19 @@ final class SymfonyFilesController
      */
     private $formFactory;
 
-    public function __construct(Environment $twig, FormFactoryInterface $formFactory)
-    {
+    /**
+     * @var FilePropertyConfigurationResolver
+     */
+    private $filePropertyConfigurationResolver;
+
+    public function __construct(
+        Environment $twig,
+        FormFactoryInterface $formFactory,
+        FilePropertyConfigurationResolver $filePropertyConfigurationResolver
+    ) {
         $this->twig = $twig;
         $this->formFactory = $formFactory;
+        $this->filePropertyConfigurationResolver = $filePropertyConfigurationResolver;
     }
 
     public function __invoke(Request $request): Response
@@ -50,7 +62,7 @@ final class SymfonyFilesController
             $uploadedFile = $form->getData()['file'];
             $message = "Uploaded file \"{$uploadedFile->getOriginalName()}\"";
         } elseif (0 !== count($form->getErrors())) {
-            $message = $this->errorsToMessage($form->getErrors());
+            $message = $this->formErrorsToMessage($form->getErrors());
         } else {
             $message = null;
         }
@@ -58,12 +70,31 @@ final class SymfonyFilesController
         return new Response(
             $this->twig->render(
                 'symfonyForm.html.twig',
-                ['form' => $form->createView(), 'message' => $message]
+                [
+                    'form' => $form->createView(),
+                    'message' => $message,
+                    'configuration' => $this->createEntityConfigurationDump()
+                ]
             )
         );
     }
 
-    private function errorsToMessage(FormErrorIterator $errors): string
+    private function createEntityConfigurationDump(): array
+    {
+        return array_map(
+            function (FilePropertyConfiguration $configuration): array {
+                return [
+                    'filePropertyName' => $configuration->getFilePropertyName(),
+                    'fileSystemName' => $configuration->getFileSystemName(),
+                    'pathPropertyName' => $configuration->getPathPropertyName(),
+                    'pathPrefix' => $configuration->getPathPrefix()
+                ];
+            },
+            $this->filePropertyConfigurationResolver->resolveEntity(new FileEntity())
+        );
+    }
+
+    private function formErrorsToMessage(FormErrorIterator $errors): string
     {
         $message = '';
         /** @var FormError $error */

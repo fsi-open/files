@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -19,6 +20,32 @@ final class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('fsi_files');
+
+        /** @var ArrayNodeDefinition $root */
+        $root = $treeBuilder->getRootNode();
+        $root
+            ->children()
+                ->arrayNode('entities')
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('class')->cannotBeEmpty()->end()
+                            ->scalarNode('prefix')->cannotBeEmpty()->end()
+                            ->scalarNode('filesystem')->cannotBeEmpty()->end()
+                            ->arrayNode('fields')
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->scalarNode('name')->cannotBeEmpty()->end()
+                                        ->scalarNode('filesystem')->defaultNull()->end()
+                                        ->scalarNode('pathField')->defaultNull()->end()
+                                        ->scalarNode('prefix')->defaultNull()->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
 
         return $treeBuilder;
     }
