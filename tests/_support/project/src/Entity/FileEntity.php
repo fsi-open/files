@@ -16,6 +16,11 @@ use FSi\Component\Files\WebFile;
 final class FileEntity
 {
     /**
+     * @var int|null
+     */
+    private $id;
+
+    /**
      * @var WebFile|null
      */
     private $file;
@@ -34,6 +39,11 @@ final class FileEntity
      * @var string|null
      */
     private $anotherFileKey;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getFile(): ?WebFile
     {

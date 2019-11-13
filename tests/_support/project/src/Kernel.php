@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Tests\App;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Tests\App\Controller\IndexController;
@@ -37,6 +38,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         return [
             new FrameworkBundle(),
             new TwigBundle(),
+            new DoctrineBundle(),
             new OneupFlysystemBundle(),
             new FilesBundle()
         ];
@@ -65,6 +67,29 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
 
         $container->loadFromExtension('twig', [
             'paths' => [sprintf('%s/../templates', __DIR__)]
+        ]);
+
+        $container->loadFromExtension('doctrine', [
+            'dbal' => [
+                'driver' => 'pdo_sqlite',
+                'user' => 'admin',
+                'charset' => 'UTF8',
+                'path' => sprintf('%s/../var/data.sqlite', __DIR__)
+            ],
+            'orm' => [
+                'auto_generate_proxy_classes' => true,
+                'naming_strategy' => 'doctrine.orm.naming_strategy.underscore',
+                'auto_mapping' => true,
+                'mappings' => [
+                    'shared_kernel' => [
+                        'type' => 'xml',
+                        'dir' => sprintf('%s/Resources/config/doctrine', __DIR__),
+                        'alias' => 'FSi',
+                        'prefix' => 'FSi\Tests\App\Entity',
+                        'is_bundle' => false
+                    ]
+                ]
+            ]
         ]);
 
         $container->loadFromExtension('oneup_flysystem', [

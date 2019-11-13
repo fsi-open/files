@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FSi\Tests\App\Controller;
 
+use Assert\Assertion;
+use Doctrine\ORM\EntityManagerInterface;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\UploadedWebFile;
@@ -38,6 +40,11 @@ final class SymfonyFilesController
     private $formFactory;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+
+    /**
      * @var FilePropertyConfigurationResolver
      */
     private $filePropertyConfigurationResolver;
@@ -45,22 +52,33 @@ final class SymfonyFilesController
     public function __construct(
         Environment $twig,
         FormFactoryInterface $formFactory,
+        EntityManagerInterface $entityManager,
         FilePropertyConfigurationResolver $filePropertyConfigurationResolver
     ) {
         $this->twig = $twig;
         $this->formFactory = $formFactory;
+        $this->entityManager = $entityManager;
         $this->filePropertyConfigurationResolver = $filePropertyConfigurationResolver;
     }
 
     public function __invoke(Request $request): Response
     {
-        $form = $this->formFactory->create(FormTestType::class);
+        /** @var FileEntity|null $entity */
+        $entity = $this->entityManager->getRepository(FileEntity::class)->findOneBy([]);
+        if (null === $entity) {
+            $entity = new FileEntity();
+        }
+
+        $form = $this->formFactory->create(FormTestType::class, $entity);
         $form->handleRequest($request);
 
         if (true === $form->isSubmitted() && true === $form->isValid()) {
-            /** @var UploadedWebFile $uploadedFile */
-            $uploadedFile = $form->getData()['file'];
-            $message = "Uploaded file \"{$uploadedFile->getOriginalName()}\"";
+            /** @var UploadedWebFile $file */
+            $file = $entity->getFile();
+            /** @var UploadedWebFile $anotherFile */
+            $anotherFile = $entity->getAnotherFile();
+            $message = "Uploaded file \"{$file->getOriginalName()}\"\r\n";
+            $message .= "Another uploaded file \"{$anotherFile->getOriginalName()}\"";
         } elseif (0 !== count($form->getErrors())) {
             $message = $this->formErrorsToMessage($form->getErrors());
         } else {
@@ -73,13 +91,13 @@ final class SymfonyFilesController
                 [
                     'form' => $form->createView(),
                     'message' => $message,
-                    'configuration' => $this->createEntityConfigurationDump()
+                    'configuration' => $this->createEntityConfigurationDump($entity)
                 ]
             )
         );
     }
 
-    private function createEntityConfigurationDump(): array
+    private function createEntityConfigurationDump(FileEntity $entity): array
     {
         return array_map(
             function (FilePropertyConfiguration $configuration): array {
@@ -90,7 +108,7 @@ final class SymfonyFilesController
                     'pathPrefix' => $configuration->getPathPrefix()
                 ];
             },
-            $this->filePropertyConfigurationResolver->resolveEntity(new FileEntity())
+            $this->filePropertyConfigurationResolver->resolveEntity($entity)
         );
     }
 
