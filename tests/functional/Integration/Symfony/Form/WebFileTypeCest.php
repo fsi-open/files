@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Tests\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
+use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use FSi\Tests\App\Entity\FileEntity;
 use FSi\Tests\FunctionalTester;
@@ -20,7 +21,7 @@ final class WebFileTypeCest
 {
     public function testUpload(FunctionalTester $I): void
     {
-        $I->haveInRepository(FileEntity::class, []);
+        $I->haveInRepository(FileEntity::class, ['id' => 1]);
 
         $I->amOnPage('/symfony');
         $I->seeResponseCodeIs(200);
@@ -32,12 +33,14 @@ final class WebFileTypeCest
 
         $I->submitForm('form', [], 'Submit');
 
-        $I->see('Uploaded file "test_pdf.pdf"');
-
         /** @var FileEntity|null $entity */
-        $entity = $I->grabEntityFromRepository(FileEntity::class);
+        $entity = $I->grabEntityFromRepository(FileEntity::class, ['id' => 1]);
         Assertion::notNull($entity);
+
         $I->assertInstanceOf(WebFile::class, $entity->getFile());
+        $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getFile());
+
         $I->assertInstanceOf(WebFile::class, $entity->getAnotherFile());
+        $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getAnotherFile());
     }
 }

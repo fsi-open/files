@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FSi\Tests\App\Form;
 
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
-use FSi\Component\Files\Integration\Symfony\Validation\UploadedWebFile;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
 use FSi\Tests\App\Entity\FileEntity;
 use Symfony\Component\Form\AbstractType;

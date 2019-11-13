@@ -43,7 +43,7 @@ final class UploadedWebFile implements Files\UploadedWebFile
     private $error;
 
     public function __construct(
-        StreamInterface $stream,
+        $stream,
         string $originalName,
         string $mimeType,
         int $size,

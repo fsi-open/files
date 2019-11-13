@@ -40,6 +40,10 @@ final class FilesBundle extends Bundle
         if (true === $container->hasExtension('framework')) {
             $loader->load('symfony.xml');
         }
+
+        if (true === $container->hasExtension('doctrine')) {
+            $loader->load('doctrine.xml');
+        }
     }
 
     public function getContainerExtension()

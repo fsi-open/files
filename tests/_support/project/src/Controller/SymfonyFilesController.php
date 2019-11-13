@@ -11,19 +11,19 @@ declare(strict_types=1);
 
 namespace FSi\Tests\App\Controller;
 
-use Assert\Assertion;
 use Doctrine\ORM\EntityManagerInterface;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
-use FSi\Component\Files\UploadedWebFile;
 use FSi\Tests\App\Entity\FileEntity;
 use FSi\Tests\App\Form\FormTestType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 use function count;
 
@@ -49,22 +49,29 @@ final class SymfonyFilesController
      */
     private $filePropertyConfigurationResolver;
 
+    /**
+     * @var UrlGeneratorInterface
+     */
+    private $urlGenerator;
+
     public function __construct(
         Environment $twig,
         FormFactoryInterface $formFactory,
         EntityManagerInterface $entityManager,
-        FilePropertyConfigurationResolver $filePropertyConfigurationResolver
+        FilePropertyConfigurationResolver $filePropertyConfigurationResolver,
+        UrlGeneratorInterface $urlGenerator
     ) {
         $this->twig = $twig;
         $this->formFactory = $formFactory;
         $this->entityManager = $entityManager;
         $this->filePropertyConfigurationResolver = $filePropertyConfigurationResolver;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function __invoke(Request $request): Response
     {
         /** @var FileEntity|null $entity */
-        $entity = $this->entityManager->getRepository(FileEntity::class)->findOneBy([]);
+        $entity = $this->entityManager->getRepository(FileEntity::class)->find(1);
         if (null === $entity) {
             $entity = new FileEntity();
         }
@@ -73,12 +80,8 @@ final class SymfonyFilesController
         $form->handleRequest($request);
 
         if (true === $form->isSubmitted() && true === $form->isValid()) {
-            /** @var UploadedWebFile $file */
-            $file = $entity->getFile();
-            /** @var UploadedWebFile $anotherFile */
-            $anotherFile = $entity->getAnotherFile();
-            $message = "Uploaded file \"{$file->getOriginalName()}\"\r\n";
-            $message .= "Another uploaded file \"{$anotherFile->getOriginalName()}\"";
+            $this->entityManager->flush();
+            return new RedirectResponse($this->urlGenerator->generate('symfony_files'));
         } elseif (0 !== count($form->getErrors())) {
             $message = $this->formErrorsToMessage($form->getErrors());
         } else {
