@@ -12,8 +12,6 @@ declare(strict_types=1);
 namespace FSi\Tests\App\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use FSi\Component\Files\FilePropertyConfiguration;
-use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Tests\App\Entity\FileEntity;
 use FSi\Tests\App\Form\FormTestType;
 use Symfony\Component\Form\FormError;
@@ -45,11 +43,6 @@ final class SymfonyFilesController
     private $entityManager;
 
     /**
-     * @var FilePropertyConfigurationResolver
-     */
-    private $filePropertyConfigurationResolver;
-
-    /**
      * @var UrlGeneratorInterface
      */
     private $urlGenerator;
@@ -58,13 +51,11 @@ final class SymfonyFilesController
         Environment $twig,
         FormFactoryInterface $formFactory,
         EntityManagerInterface $entityManager,
-        FilePropertyConfigurationResolver $filePropertyConfigurationResolver,
         UrlGeneratorInterface $urlGenerator
     ) {
         $this->twig = $twig;
         $this->formFactory = $formFactory;
         $this->entityManager = $entityManager;
-        $this->filePropertyConfigurationResolver = $filePropertyConfigurationResolver;
         $this->urlGenerator = $urlGenerator;
     }
 
@@ -93,25 +84,9 @@ final class SymfonyFilesController
                 'symfonyForm.html.twig',
                 [
                     'form' => $form->createView(),
-                    'message' => $message,
-                    'configuration' => $this->createEntityConfigurationDump($entity)
+                    'message' => $message
                 ]
             )
-        );
-    }
-
-    private function createEntityConfigurationDump(FileEntity $entity): array
-    {
-        return array_map(
-            function (FilePropertyConfiguration $configuration): array {
-                return [
-                    'filePropertyName' => $configuration->getFilePropertyName(),
-                    'fileSystemName' => $configuration->getFileSystemName(),
-                    'pathPropertyName' => $configuration->getPathPropertyName(),
-                    'pathPrefix' => $configuration->getPathPrefix()
-                ];
-            },
-            $this->filePropertyConfigurationResolver->resolveEntity($entity)
         );
     }
 

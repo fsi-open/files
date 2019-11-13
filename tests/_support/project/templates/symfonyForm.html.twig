@@ -9,11 +9,3 @@
     {{ form_rest(form) }}
     <button>Submit</button>
 {{ form_end(form) }}
-<p>FSi\Tests\App\Entity\FileEntity configuration:</p>
-<br/>
-{% for field in configuration %}
-    {% for key, value in field %}
-        <p>{{ key }}: {{ value }}</p>
-    {% endfor %}
-    {% if not loop.last %}<br/>{% endif %}
-{% endfor %}

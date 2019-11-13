@@ -38,7 +38,7 @@ final class FilesExtension extends Extension
         $resolverDefinition->replaceArgument('$configurations', $entityConfigurations);
     }
 
-    public function getAlias()
+    public function getAlias(): string
     {
         return 'fsi_files';
     }

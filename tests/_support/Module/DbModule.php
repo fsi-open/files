@@ -13,10 +13,11 @@ namespace FSi\Tests\Module;
 
 use Codeception\Module;
 use Codeception\Module\Symfony;
-use Codeception\TestInterface;
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use function file_exists;
+use function sprintf;
+use function unlink;
 
 final class DbModule extends Module
 {
@@ -26,44 +27,38 @@ final class DbModule extends Module
     private $schemaTool;
 
     /**
-     * @var ClassMetadata[]
-     */
-    private $allMetadata;
-
-    /**
      * @phpcs:disable
      */
-    public function _before(TestInterface $test)
+    public function _beforeSuite($settings = array())
     {
+        $this->removeDatabaseFile();
+
         /** @var Symfony $symfony */
         $symfony = $this->getModule('Symfony');
 
         /** @var EntityManagerInterface $manager */
         $manager = $symfony->_getEntityManager();
-        $this->allMetadata = $manager->getMetadataFactory()->getAllMetadata();
 
         $schemaTool = new SchemaTool($manager);
         $this->schemaTool = $schemaTool;
-        $this->schemaTool->createSchema($this->allMetadata);
+        $this->schemaTool->createSchema($manager->getMetadataFactory()->getAllMetadata());
     }
 
     /**
      * @phpcs:disable
      */
-    public function _after(TestInterface $test)
+    public function _afterSuite()
     {
-        $this->dropSchema();
+        $this->removeDatabaseFile();
     }
 
-    private function dropSchema(): void
+    private function removeDatabaseFile(): void
     {
-        $databaseFile = sprintf('%s/../project/var/data.sqlite', __DIR__);
-        if (false === file_exists($databaseFile)) {
+        $filePath = sprintf('%s/../project/var/data.sqlite', __DIR__);
+        if (false === file_exists($filePath)) {
             return;
         }
 
-        $this->schemaTool->dropSchema($this->allMetadata);
-        $this->schemaTool->dropDatabase();
-        unlink($databaseFile);
+        unlink($filePath);
     }
 }

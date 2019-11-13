@@ -14,6 +14,7 @@ namespace FSi\Component\Files\Integration\Symfony;
 use FSi\Component\Files\Integration\Symfony\DependencyInjection\FilesExtension;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use function sprintf;
@@ -46,7 +47,7 @@ final class FilesBundle extends Bundle
         }
     }
 
-    public function getContainerExtension()
+    public function getContainerExtension(): ?ExtensionInterface
     {
         if (null === $this->extension) {
             $this->extension = new FilesExtension();
