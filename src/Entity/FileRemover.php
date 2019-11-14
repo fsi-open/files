@@ -65,21 +65,25 @@ final class FileRemover
                     return;
                 }
 
-                $this->add($file);
+                $this->add($configuration->getPathPrefix(), $file);
             },
             $entity
         );
     }
 
-    public function add(WebFile $file): void
+    public function add(string $pathPrefix, WebFile $file): void
     {
-        $this->filesToRemove[] = $file;
+        $this->filesToRemove[$pathPrefix] = $file;
     }
 
     public function flush(): void
     {
         array_walk($this->filesToRemove, function (WebFile $file): void {
             $this->fileManager->remove($file);
+        });
+
+        array_walk($this->filesToRemove, function (WebFile $file, string $pathPrefix): void {
+            $this->fileManager->removeFileEmptyParentDirectories($pathPrefix, $file);
         });
 
         $this->filesToRemove = [];

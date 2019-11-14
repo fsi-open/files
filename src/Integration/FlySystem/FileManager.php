@@ -89,13 +89,40 @@ final class FileManager implements Files\FileManager
 
     public function remove(Files\WebFile $file): void
     {
-        $filesystem = $this->fileSystemForFile($file);
-        $filesystem->delete($file->getPath());
+        $this->fileSystemForFile($file)->delete($file->getPath());
+    }
 
+    public function removeFileEmptyParentDirectories(string $pathPrefix, Files\WebFile $file): void
+    {
         $directory = dirname($file->getPath());
-        if ('.' !== $directory && 0 === count($filesystem->listContents($directory))) {
+        $filesystem = $this->fileSystemForFile($file);
+        if (true === $this->isEmptyDirectory($filesystem, $directory)) {
             $filesystem->deleteDir($directory);
+            $this->removeParentDirectoryIfEmpty($filesystem, $pathPrefix, $directory);
         }
+    }
+
+    private function removeParentDirectoryIfEmpty(
+        FilesystemInterface $filesystem,
+        string $pathPrefix,
+        string $directory
+    ): void {
+        $parentDirectory = dirname($directory);
+        if ($pathPrefix === $parentDirectory) {
+            return;
+        }
+
+        if (false === $this->isEmptyDirectory($filesystem, $parentDirectory)) {
+            return;
+        }
+
+        $filesystem->deleteDir($parentDirectory);
+        $this->removeParentDirectoryIfEmpty($filesystem, $pathPrefix, $parentDirectory);
+    }
+
+    private function isEmptyDirectory(FilesystemInterface $filesystem, string $path): bool
+    {
+        return '.' !== $path && 0 === count($filesystem->listContents($path));
     }
 
     private function readStream(Files\WebFile $file)

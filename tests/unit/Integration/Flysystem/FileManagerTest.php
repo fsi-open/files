@@ -21,33 +21,45 @@ final class FileManagerTest extends TestCase
 {
     public function testRemovingEmptyParentDirectory(): void
     {
-        $file = new WebFile('fs', 'some-dir/some-path');
+        $file = new WebFile('fs', 'path-prefix/0/1/2/3/some-path');
 
         $fileSystem = $this->createMock(FilesystemInterface::class);
-        $fileSystem->expects($this->once())->method('listContents')->with('some-dir')->willReturn([]);
-        $fileSystem->expects($this->once())->method('deleteDir')->with('some-dir');
+        $fileSystem->expects($this->exactly(4))
+            ->method('listContents')
+            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'], ['path-prefix/0'])
+            ->willReturnOnConsecutiveCalls([], [], [], [])
+        ;
+        $fileSystem->expects($this->exactly(4))
+            ->method('deleteDir')
+            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'], ['path-prefix/0'])
+        ;
 
         $mountManager = $this->createMock(MountManager::class);
         $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
 
         $fileManager = new FileManager($mountManager);
-        $fileManager->remove($file);
+        $fileManager->removeFileEmptyParentDirectories('path-prefix', $file);
     }
 
     public function testNotRemovingNonEmptyParentDirectory(): void
     {
-        $file = new WebFile('fs', 'some-dir/some-path');
+        $file = new WebFile('fs', 'path-prefix/0/1/2/3/some-path');
 
         $fileSystem = $this->createMock(FilesystemInterface::class);
+        $fileSystem->expects($this->exactly(4))
+            ->method('listContents')
+            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'], ['path-prefix/0'])
+            ->willReturnOnConsecutiveCalls([], [], [], ['a_file'])
+        ;
+        $fileSystem->expects($this->exactly(3))
+            ->method('deleteDir')
+            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'])
+        ;
 
         $mountManager = $this->createMock(MountManager::class);
         $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
 
-        $fileSystem->expects($this->once())->method('delete')->with('some-dir/some-path');
-        $fileSystem->expects($this->once())->method('listContents')->with('some-dir')->willReturn(['some-other-path']);
-        $fileSystem->expects($this->never())->method('deleteDir');
-
         $fileManager = new FileManager($mountManager);
-        $fileManager->remove($file);
+        $fileManager->removeFileEmptyParentDirectories('path-prefix', $file);
     }
 }

@@ -27,7 +27,7 @@ final class FileUpdaterTest extends Unit
     /**
      * @var string string
      */
-    private $uuidRegex = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
+    private $uuidRegex = '[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{23}';
 
     /**
      * @var FileManager|MockObject

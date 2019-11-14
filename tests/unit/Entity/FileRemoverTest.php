@@ -34,7 +34,7 @@ final class FileRemoverTest extends TestCase
             new FileLoader($fileManager, $configurationResolver)
         );
 
-        $remover->add($file);
+        $remover->add('path-prefix', $file);
 
         $remover->flush();
     }

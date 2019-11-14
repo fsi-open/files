@@ -26,4 +26,5 @@ interface FileManager
     public function filename(WebFile $file): string;
     public function contents(WebFile $file): string;
     public function remove(WebFile $file): void;
+    public function removeFileEmptyParentDirectories(string $pathPrefix, WebFile $file): void;
 }
