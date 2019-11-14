@@ -99,8 +99,8 @@ final class PhpFilesHandler
      * It's safe to pass an already converted array, in which case this method
      * just returns the original array unmodified.
      *
+     * @see \Symfony\Component\HttpFoundation\FileBag
      * @param array $data
-     *
      * @return array
      */
     protected function fixPhpFilesArray(array $data): array

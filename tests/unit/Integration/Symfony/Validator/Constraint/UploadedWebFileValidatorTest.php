@@ -86,6 +86,17 @@ final class UploadedWebFileValidatorTest extends Unit
         $this->assertNoViolation();
     }
 
+    public function testStandardWebFileIsNotValidated(): void
+    {
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate(
+            new FlySystem\WebFile('temp', codecept_data_dir('test_pdf.pdf')),
+            new UploadedWebFile()
+        );
+
+        $this->assertNoViolation();
+    }
+
     public function testExpectsUploadedWebFile(): void
     {
         $this->expectException(UnexpectedValueException::class);

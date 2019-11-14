@@ -11,11 +11,13 @@ declare(strict_types=1);
 
 namespace FSi\Tests\App;
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Tests\App\Controller\IndexController;
 use FSi\Tests\App\Controller\NativeFilesController;
 use FSi\Tests\App\Controller\SymfonyFilesController;
+use FSi\Tests\App\Entity\FileEntity;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -36,6 +38,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         return [
             new FrameworkBundle(),
             new TwigBundle(),
+            new DoctrineBundle(),
             new OneupFlysystemBundle(),
             new FilesBundle()
         ];
@@ -66,6 +69,29 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
             'paths' => [sprintf('%s/../templates', __DIR__)]
         ]);
 
+        $container->loadFromExtension('doctrine', [
+            'dbal' => [
+                'driver' => 'pdo_sqlite',
+                'user' => 'admin',
+                'charset' => 'UTF8',
+                'path' => sprintf('%s/../var/data.sqlite', __DIR__)
+            ],
+            'orm' => [
+                'auto_generate_proxy_classes' => true,
+                'naming_strategy' => 'doctrine.orm.naming_strategy.underscore',
+                'auto_mapping' => true,
+                'mappings' => [
+                    'shared_kernel' => [
+                        'type' => 'xml',
+                        'dir' => sprintf('%s/Resources/config/doctrine', __DIR__),
+                        'alias' => 'FSi',
+                        'prefix' => 'FSi\Tests\App\Entity',
+                        'is_bundle' => false
+                    ]
+                ]
+            ]
+        ]);
+
         $container->loadFromExtension('oneup_flysystem', [
             'adapters' => [
                 'memory_adapter' => ['memory' => null]
@@ -74,10 +100,32 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'temporary' => [
                     'adapter' => 'memory_adapter',
                     'mount' => 'temporary'
+                ],
+                'temporary_other' => [
+                    'adapter' => 'memory_adapter',
+                    'mount' => 'temporary'
                 ]
             ]
         ]);
 
+        $container->loadFromExtension('fsi_files', [
+            'entities' => [
+                [
+                    'class' => FileEntity::class,
+                    'prefix' => 'file_entity',
+                    'filesystem' => 'temporary',
+                    'fields' => [
+                        ['name' => 'file'],
+                        [
+                            'name' => 'anotherFile',
+                            'filesystem' => 'temporary_other',
+                            'pathField' => 'anotherFileKey',
+                            'prefix' => 'anotherFile'
+                        ]
+                    ]
+                ]
+            ]
+        ]);
 
         $this->registerPublicControllerService($container, IndexController::class);
         $this->registerPublicControllerService($container, NativeFilesController::class);

@@ -15,6 +15,7 @@ use Assert\Assertion;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Ramsey\Uuid\Uuid;
 use function array_walk;
@@ -112,6 +113,11 @@ final class FileUpdater
             return true;
         }
 
+        if (true === $newFile instanceof UploadedWebFile) {
+            // These always need to be transformed into target filesystem
+            return true;
+        }
+
         // If the paths are the same, we assume it is the same file
         return $newFile->getPath() !== $currentFile->getPath();
     }
@@ -127,7 +133,9 @@ final class FileUpdater
 
     private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void
     {
-        if (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
+        if (true === $file instanceof UploadedWebFile) {
+            $file = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
+        } elseif (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
             $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
         }
 
@@ -141,6 +149,17 @@ final class FileUpdater
             $file,
             $configuration->getFileSystemName(),
             $this->createFilesystemPath($configuration, basename($file->getPath()))
+        );
+    }
+
+    private function writeUploadedFileToTargetFilesystem(
+        UploadedWebFile $file,
+        FilePropertyConfiguration $configuration
+    ): WebFile {
+        return $this->fileManager->copyFromStream(
+            $file->getStream(),
+            $configuration->getFileSystemName(),
+            $this->createFilesystemPath($configuration, $file->getOriginalName())
         );
     }
 

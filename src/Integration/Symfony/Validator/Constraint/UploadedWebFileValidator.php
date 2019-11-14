@@ -57,6 +57,10 @@ final class UploadedWebFileValidator extends ConstraintValidator
             ));
         }
 
+        if (true === $value instanceof Files\WebFile && false === $value instanceof Files\UploadedWebFile) {
+            return;
+        }
+
         if (false === $value instanceof Files\UploadedWebFile) {
             throw new UnexpectedValueException($value, Files\UploadedWebFile::class);
         }

@@ -5,8 +5,30 @@
 
     <services>
 
+        <service id="FSi\Component\Files\FilePropertyConfigurationResolver">
+            <argument key="$configurations" type="collection" />
+        </service>
+
         <service id="FSi\Component\Files\Upload\PhpFilesHandler">
             <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+        </service>
+
+        <service id="FSi\Component\Files\Entity\FileLoader">
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+        </service>
+
+        <service id="FSi\Component\Files\Entity\FileUpdater">
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <argument type="service" id="FSi\Component\Files\Entity\FileLoader" />
+            <argument type="service" id="FSi\Component\Files\Entity\FileRemover" />
+        </service>
+
+        <service id="FSi\Component\Files\Entity\FileRemover">
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <argument type="service" id="FSi\Component\Files\Entity\FileLoader" />
         </service>
 
     </services>

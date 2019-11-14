@@ -11,9 +11,11 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files;
 
+use Psr\Http\Message\StreamInterface;
+
 interface UploadedWebFile extends WebFile
 {
-    public function getStream();
+    public function getStream(): StreamInterface;
     public function getOriginalName(): string;
     public function getMimeType(): string;
     public function getSize(): int;

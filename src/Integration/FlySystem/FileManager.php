@@ -17,6 +17,7 @@ use League\Flysystem\Exception;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;
+use Psr\Http\Message\StreamInterface;
 use function basename;
 use function count;
 use function dirname;
@@ -41,6 +42,15 @@ final class FileManager implements Files\FileManager
         string $targetPath
     ): Files\WebFile {
         $this->writeStream($targetFileSystemName, $targetPath, $this->readStream($sourceFile));
+        return $this->load($targetFileSystemName, $targetPath);
+    }
+
+    public function copyFromStream(
+        StreamInterface $stream,
+        string $targetFileSystemName,
+        string $targetPath
+    ): Files\WebFile {
+        $this->writeStream($targetFileSystemName, $targetPath, $stream->detach());
         return $this->load($targetFileSystemName, $targetPath);
     }
 

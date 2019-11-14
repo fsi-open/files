@@ -11,9 +11,16 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files;
 
+use Psr\Http\Message\StreamInterface;
+
 interface FileManager
 {
     public function copy(WebFile $source, string $fileSystemName, string $path): WebFile;
+    public function copyFromStream(
+        StreamInterface $stream,
+        string $targetFileSystemName,
+        string $targetPath
+    ): WebFile;
     public function load(string $fileSystemName, string $path): WebFile;
     public function exists(WebFile $file): bool;
     public function filename(WebFile $file): string;

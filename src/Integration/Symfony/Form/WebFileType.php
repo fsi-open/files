@@ -13,7 +13,7 @@ namespace FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
-use FSi\Component\Files\UploadedWebFile;
+use FSi\Component\Files\WebFile;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
@@ -58,7 +58,7 @@ final class WebFileType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefault('allow_file_upload', true);
-        $resolver->setDefault('data_class', UploadedWebFile::class);
+        $resolver->setDefault('data_class', WebFile::class);
         $resolver->setDefault('compound', false);
         $resolver->setDefault('empty_data', null);
     }
