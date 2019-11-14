@@ -148,7 +148,12 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $this->registerPublicControllerService($container, SymfonyFilesController::class);
         $uriFactory = $container->register(UriFactory::class);
         $this->registerBaseUrlAdapterService($container, 'fsi_files.url_adapter.public', $uriFactory, '/files/');
-        $this->registerBaseUrlAdapterService($container, 'fsi_files.url_adapter.other_public', $uriFactory, '/other_files/');
+        $this->registerBaseUrlAdapterService(
+            $container,
+            'fsi_files.url_adapter.other_public',
+            $uriFactory,
+            '/other_files/'
+        );
     }
 
     protected function configureRoutes(RouteCollectionBuilder $routes)

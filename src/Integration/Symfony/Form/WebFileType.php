@@ -76,7 +76,7 @@ final class WebFileType extends AbstractType
 
     private function createFileUrl(?WebFile $file): ?string
     {
-        if (true === $this->isNonUploadedWebFile($file)) {
+        if (null === $file || true === $file instanceof UploadedWebFile) {
             return null;
         }
 
@@ -85,15 +85,10 @@ final class WebFileType extends AbstractType
 
     private function createFileBasename(?WebFile $file): ?string
     {
-        if (true === $this->isNonUploadedWebFile($file)) {
+        if (null === $file || true === $file instanceof UploadedWebFile) {
             return null;
         }
 
         return basename($file->getPath());
-    }
-
-    private function isNonUploadedWebFile(?WebFile $file): bool
-    {
-        return null === $file || true === $file instanceof UploadedWebFile;
     }
 }

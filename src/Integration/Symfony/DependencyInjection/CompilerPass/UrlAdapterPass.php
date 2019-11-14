@@ -15,16 +15,12 @@ use FSi\Component\Files\FileUrlResolver;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use function sprintf;
 
 final class UrlAdapterPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
         $resolver = $container->getDefinition(FileUrlResolver::class);
-        if (null === $resolver) {
-            throw new RuntimeException(sprintf('%s" is not registered!', FileUrlResolver::class));
-        }
 
         $adaptersServices = array_reduce(
             array_keys($container->findTaggedServiceIds('fsi_files.url_adapter')),
