@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\UrlAdapter;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -25,16 +26,18 @@ final class FilesExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
-        $configuration = $this->processConfiguration(new Configuration(), $configs);
-
         $loader = new XmlFileLoader(
             $container,
             new FileLocator(sprintf('%s/../Resources/config/services', __DIR__))
         );
         $loader->load('services.xml');
 
-        $resolverDefinition = $container->getDefinition(FilePropertyConfigurationResolver::class);
+        $container->registerForAutoconfiguration(UrlAdapter::class)->addTag('fsi_files.url_adapter');
+
+        $configuration = $this->processConfiguration(new Configuration(), $configs);
         $entityConfigurations = $this->createEntitiesFieldsConfigurations($configuration);
+
+        $resolverDefinition = $container->getDefinition(FilePropertyConfigurationResolver::class);
         $resolverDefinition->replaceArgument('$configurations', $entityConfigurations);
     }
 
@@ -86,7 +89,7 @@ final class FilesExtension extends Extension
         $definition->setArguments([
             $class,
             $name,
-            $filesystem,
+            $fieldConfiguration['filesystem'] ?? $filesystem,
             $fieldConfiguration['pathField'] ?? "{$name}Path",
             $fieldConfiguration['prefix'] ?? $filesystemPrefix
         ]);

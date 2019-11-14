@@ -7,5 +7,8 @@
                 {{- translation_domain is same as(false) ? attr.placeholder : attr.placeholder|trans({}, translation_domain) -}}
             {%- endif -%}
         </label>
+        {% if url is not empty and basename is not empty %}
+            <a href="{{ url }}" target="_blank">{{ basename }}</a>
+        {% endif %}
     </div>
 {% endblock %}

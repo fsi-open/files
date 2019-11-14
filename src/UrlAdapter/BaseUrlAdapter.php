@@ -9,11 +9,10 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\FlySystem\UrlAdapter;
+namespace FSi\Component\Files\UrlAdapter;
 
-use FSi\Component\Files;
-use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\UrlAdapter;
+use FSi\Component\Files\WebFile;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\UriFactoryInterface;
@@ -22,27 +21,16 @@ use Psr\Http\Message\UriInterface;
 final class BaseUrlAdapter implements UrlAdapter
 {
     /**
-     * @var string
-     */
-    private $fileSystemName;
-
-    /**
      * @var UriInterface
      */
     private $baseUrl;
 
-    public function __construct(UriFactoryInterface $uriFactory, string $fileSystemName, string $baseUrl)
+    public function __construct(UriFactoryInterface $uriFactory, string $baseUrl)
     {
-        $this->fileSystemName = $fileSystemName;
         $this->baseUrl = $uriFactory->createUri($baseUrl);
     }
 
-    public function supports(Files\WebFile $file): bool
-    {
-        return true === $file instanceof FlySystem\WebFile && $this->fileSystemName === $file->getFileSystemName();
-    }
-
-    public function url(Files\WebFile $file): UriInterface
+    public function url(WebFile $file): UriInterface
     {
         return UriResolver::resolve($this->baseUrl, new Uri($file->getPath()));
     }

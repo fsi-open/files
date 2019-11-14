@@ -33,6 +33,8 @@ final class WebFileTypeCest
 
         $I->submitForm('form', [], 'Submit');
 
+        $I->see('test_pdf.pdf', 'a');
+
         /** @var FileEntity|null $entity */
         $entity = $I->grabEntityFromRepository(FileEntity::class, ['id' => 1]);
         Assertion::notNull($entity);

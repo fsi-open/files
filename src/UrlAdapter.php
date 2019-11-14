@@ -15,6 +15,5 @@ use Psr\Http\Message\UriInterface;
 
 interface UrlAdapter
 {
-    public function supports(WebFile $file): bool;
     public function url(WebFile $file): UriInterface;
 }

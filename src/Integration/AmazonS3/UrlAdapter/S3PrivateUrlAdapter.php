@@ -9,12 +9,11 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\FlySystem\UrlAdapter;
+namespace FSi\Component\Files\Integration\AmazonS3\UrlAdapter;
 
 use Aws\S3\S3ClientInterface;
-use FSi\Component\Files;
-use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\UrlAdapter;
+use FSi\Component\Files\WebFile;
 use Psr\Http\Message\UriInterface;
 
 final class S3PrivateUrlAdapter implements UrlAdapter
@@ -27,30 +26,15 @@ final class S3PrivateUrlAdapter implements UrlAdapter
     /**
      * @var string
      */
-    private $fileSystemName;
-
-    /**
-     * @var string
-     */
     private $amazonBucket;
 
-    public function __construct(S3ClientInterface $s3Client, string $fileSystemName, string $s3Bucket)
+    public function __construct(S3ClientInterface $amazonClient, string $amazonBucket)
     {
-        $this->amazonClient = $s3Client;
-        $this->fileSystemName = $fileSystemName;
-        $this->amazonBucket = $s3Bucket;
+        $this->amazonClient = $amazonClient;
+        $this->amazonBucket = $amazonBucket;
     }
 
-    public function supports(Files\WebFile $file): bool
-    {
-        return true === $file instanceof FlySystem\WebFile && $this->fileSystemName === $file->getFileSystemName();
-    }
-
-    /**
-     * @param FlySystem\WebFile $file
-     * @return UriInterface
-     */
-    public function url(Files\WebFile $file): UriInterface
+    public function url(WebFile $file): UriInterface
     {
         $cmd = $this->amazonClient->getCommand('GetObject', [
             'Bucket' => $this->amazonBucket,

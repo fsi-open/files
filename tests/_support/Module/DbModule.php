@@ -13,25 +13,23 @@ namespace FSi\Tests\Module;
 
 use Codeception\Module;
 use Codeception\Module\Symfony;
+use DirectoryIterator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use function file_exists;
+use function rmdir;
 use function sprintf;
 use function unlink;
 
 final class DbModule extends Module
 {
     /**
-     * @var SchemaTool
-     */
-    private $schemaTool;
-
-    /**
      * @phpcs:disable
      */
     public function _beforeSuite($settings = array())
     {
         $this->removeDatabaseFile();
+        $this->clearUploadedTestFiles();
 
         /** @var Symfony $symfony */
         $symfony = $this->getModule('Symfony');
@@ -39,9 +37,7 @@ final class DbModule extends Module
         /** @var EntityManagerInterface $manager */
         $manager = $symfony->_getEntityManager();
 
-        $schemaTool = new SchemaTool($manager);
-        $this->schemaTool = $schemaTool;
-        $this->schemaTool->createSchema($manager->getMetadataFactory()->getAllMetadata());
+        (new SchemaTool($manager))->createSchema($manager->getMetadataFactory()->getAllMetadata());
     }
 
     /**
@@ -50,6 +46,7 @@ final class DbModule extends Module
     public function _afterSuite()
     {
         $this->removeDatabaseFile();
+        $this->clearUploadedTestFiles();
     }
 
     private function removeDatabaseFile(): void
@@ -60,5 +57,37 @@ final class DbModule extends Module
         }
 
         unlink($filePath);
+    }
+
+    private function clearUploadedTestFiles(): void
+    {
+        $public = sprintf('%s/../project/public/files', __DIR__);
+        if (true === file_exists($public)) {
+            $this->clearDirectory($public);
+        }
+
+        $otherPublic = sprintf('%s/../project/public/other_files', __DIR__);
+        if (true === file_exists($otherPublic)) {
+            $this->clearDirectory($otherPublic);
+        }
+
+    }
+
+    private function clearDirectory(string $path): void
+    {
+        $iterator = new DirectoryIterator($path);
+        foreach ($iterator as $file) {
+            if (true === $file->isDot()) {
+                continue;
+            }
+
+            if (true === $file->isDir()) {
+                $this->clearDirectory($file->getPathname());
+            } elseif ($file->isFile()) {
+                unlink($file->getPathname());
+            }
+        }
+
+        rmdir($path);
     }
 }

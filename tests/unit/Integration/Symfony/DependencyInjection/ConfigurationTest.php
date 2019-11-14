@@ -28,6 +28,9 @@ final class ConfigurationTest extends Unit
             new Configuration(),
             [
                 [
+                    'adapters' => [
+                        ['filesystem' => 'temporary', 'service' => 'adapter_service_id']
+                    ],
                     'entities' => [
                         [
                             'class' => 'stdClass',
@@ -50,6 +53,9 @@ final class ConfigurationTest extends Unit
 
         $this->assertSame(
             [
+                'adapters' => [
+                    ['filesystem' => 'temporary', 'service' => 'adapter_service_id']
+                ],
                 'entities' => [
                     [
                         'class' => 'stdClass',
