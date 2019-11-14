@@ -174,10 +174,13 @@ final class FileUpdater
 
     private function createFilesystemPath(FilePropertyConfiguration $configuration, string $filename): string
     {
+        $uuid = Uuid::uuid4()->toString();
+        // Mitigate filesystem limits for maximum number of subdirectories
+        $splitUuid = sprintf('%s/%s/%s', mb_substr($uuid, 0, 3), mb_substr($uuid, 3, 3), mb_substr($uuid, 6));
         return sprintf(
             '%s/%s/%s',
             $configuration->getPathPrefix(),
-            Uuid::uuid4()->toString(),
+            str_replace('-', '', $splitUuid),
             $filename
         );
     }
