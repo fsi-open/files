@@ -12,54 +12,43 @@ declare(strict_types=1);
 namespace FSi\Tests\Component\Files\Integration\Flysystem;
 
 use FSi\Component\Files\Integration\FlySystem\FileManager;
-use FSi\Component\Files\Integration\FlySystem\WebFile;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;
 use PHPUnit\Framework\TestCase;
 
 final class FileManagerTest extends TestCase
 {
-    public function testRemovingEmptyParentDirectory(): void
+    public function testNotRemovingNonEmptyDirectory(): void
     {
-        $file = new WebFile('fs', 'path-prefix/0/1/2/3/some-path');
-
         $fileSystem = $this->createMock(FilesystemInterface::class);
-        $fileSystem->expects($this->exactly(4))
-            ->method('listContents')
-            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'], ['path-prefix/0'])
-            ->willReturnOnConsecutiveCalls([], [], [], [])
-        ;
-        $fileSystem->expects($this->exactly(4))
-            ->method('deleteDir')
-            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'], ['path-prefix/0'])
-        ;
+        $fileSystem->expects($this->once())->method('listContents')->with('parent/child')->willReturn(['a file']);
+        $fileSystem->expects($this->never())->method('deleteDir');
 
         $mountManager = $this->createMock(MountManager::class);
         $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
 
-        $fileManager = new FileManager($mountManager);
-        $fileManager->removeFileEmptyParentDirectories('path-prefix', $file);
+        (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
     }
 
-    public function testNotRemovingNonEmptyParentDirectory(): void
+    public function testRemovingEmptyDirectory(): void
     {
-        $file = new WebFile('fs', 'path-prefix/0/1/2/3/some-path');
-
         $fileSystem = $this->createMock(FilesystemInterface::class);
-        $fileSystem->expects($this->exactly(4))
-            ->method('listContents')
-            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'], ['path-prefix/0'])
-            ->willReturnOnConsecutiveCalls([], [], [], ['a_file'])
-        ;
-        $fileSystem->expects($this->exactly(3))
-            ->method('deleteDir')
-            ->withConsecutive(['path-prefix/0/1/2/3'], ['path-prefix/0/1/2'], ['path-prefix/0/1'])
-        ;
+        $fileSystem->expects($this->once())->method('listContents')->with('parent/child')->willReturn([]);
+        $fileSystem->expects($this->once())->method('deleteDir')->with('parent/child')->willReturn(true);
 
         $mountManager = $this->createMock(MountManager::class);
         $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
 
-        $fileManager = new FileManager($mountManager);
-        $fileManager->removeFileEmptyParentDirectories('path-prefix', $file);
+        (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
+    }
+
+    public function provideDirectories(): array
+    {
+        return [
+            ['path-prefix/0/1/2/3', []],
+            ['path-prefix/0/1/2', []],
+            ['path-prefix/0/1', []],
+            ['path-prefix/0', ['a file']]
+        ];
     }
 }

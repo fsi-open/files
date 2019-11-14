@@ -92,32 +92,14 @@ final class FileManager implements Files\FileManager
         $this->fileSystemForFile($file)->delete($file->getPath());
     }
 
-    public function removeFileEmptyParentDirectories(string $pathPrefix, Files\WebFile $file): void
+    public function removeDirectoryIfEmpty(string $fileSystemName, string $path): bool
     {
-        $directory = dirname($file->getPath());
-        $filesystem = $this->fileSystemForFile($file);
-        if (true === $this->isEmptyDirectory($filesystem, $directory)) {
-            $filesystem->deleteDir($directory);
-            $this->removeParentDirectoryIfEmpty($filesystem, $pathPrefix, $directory);
-        }
-    }
-
-    private function removeParentDirectoryIfEmpty(
-        FilesystemInterface $filesystem,
-        string $pathPrefix,
-        string $directory
-    ): void {
-        $parentDirectory = dirname($directory);
-        if ($pathPrefix === $parentDirectory) {
-            return;
+        $filesystem = $this->fileSystemForName($fileSystemName);
+        if (false === $this->isEmptyDirectory($filesystem, $path)) {
+            return false;
         }
 
-        if (false === $this->isEmptyDirectory($filesystem, $parentDirectory)) {
-            return;
-        }
-
-        $filesystem->deleteDir($parentDirectory);
-        $this->removeParentDirectoryIfEmpty($filesystem, $pathPrefix, $parentDirectory);
+        return $filesystem->deleteDir($path);
     }
 
     private function isEmptyDirectory(FilesystemInterface $filesystem, string $path): bool
@@ -146,6 +128,11 @@ final class FileManager implements Files\FileManager
 
     private function fileSystemForFile(Files\WebFile $file): FilesystemInterface
     {
-        return $this->mountManager->getFilesystem($file->getFileSystemName());
+        return $this->fileSystemForName($file->getFileSystemName());
+    }
+
+    private function fileSystemForName(string $name): FilesystemInterface
+    {
+        return $this->mountManager->getFilesystem($name);
     }
 }

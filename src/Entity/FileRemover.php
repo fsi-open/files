@@ -38,7 +38,7 @@ final class FileRemover
     private $fileLoader;
 
     /**
-     * @var WebFile[]
+     * @var array<array<string,WebFile>>
      */
     private $filesToRemove;
 
@@ -73,19 +73,46 @@ final class FileRemover
 
     public function add(string $pathPrefix, WebFile $file): void
     {
-        $this->filesToRemove[$pathPrefix] = $file;
+        $this->filesToRemove[] = [$pathPrefix => $file];
     }
 
     public function flush(): void
     {
-        array_walk($this->filesToRemove, function (WebFile $file): void {
-            $this->fileManager->remove($file);
+        array_walk($this->filesToRemove, function (array $file): void {
+            $this->fileManager->remove(reset($file));
         });
 
-        array_walk($this->filesToRemove, function (WebFile $file, string $pathPrefix): void {
-            $this->fileManager->removeFileEmptyParentDirectories($pathPrefix, $file);
+        array_walk($this->filesToRemove, function (array $file): void {
+            /** @var string $fileSystem */
+            $fileSystem = key($file);
+            /** @var WebFile $webFile */
+            $webFile = reset($file);
+            $this->removeFileEmptyParentDirectories($fileSystem, $webFile);
         });
 
         $this->filesToRemove = [];
+    }
+
+    private function removeFileEmptyParentDirectories(string $pathPrefix, WebFile $file): void
+    {
+        $directory = dirname($file->getPath());
+        if (true === $this->fileManager->removeDirectoryIfEmpty($file->getFileSystemName(), $directory)) {
+            $this->removeParentDirectoryIfEmpty($file->getFileSystemName(), $pathPrefix, $directory);
+        }
+    }
+
+    private function removeParentDirectoryIfEmpty(
+        string $fileSystemName,
+        string $pathPrefix,
+        string $directory
+    ): void {
+        $parentDirectory = dirname($directory);
+        if ($pathPrefix === $parentDirectory) {
+            return;
+        }
+
+        if (true === $this->fileManager->removeDirectoryIfEmpty($fileSystemName, $parentDirectory)) {
+            $this->removeParentDirectoryIfEmpty($fileSystemName, $pathPrefix, $parentDirectory);
+        }
     }
 }
