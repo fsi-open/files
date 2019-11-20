@@ -40,7 +40,7 @@ final class FileRemover
     private $fileLoader;
 
     /**
-     * @var array<array<string, WebFile>>
+     * @var array<string, array<WebFile>>
      */
     private $filesToRemove;
 
