@@ -41,14 +41,4 @@ final class FileManagerTest extends TestCase
 
         (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
     }
-
-    public function provideDirectories(): array
-    {
-        return [
-            ['path-prefix/0/1/2/3', []],
-            ['path-prefix/0/1/2', []],
-            ['path-prefix/0/1', []],
-            ['path-prefix/0', ['a file']]
-        ];
-    }
 }

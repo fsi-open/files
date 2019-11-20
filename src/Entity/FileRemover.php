@@ -15,7 +15,9 @@ use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
+use function array_key_exists;
 use function array_walk;
+use function dirname;
 
 /**
  * @internal
@@ -38,7 +40,7 @@ final class FileRemover
     private $fileLoader;
 
     /**
-     * @var array<array<string,WebFile>>
+     * @var array<array<string, WebFile>>
      */
     private $filesToRemove;
 
@@ -73,40 +75,46 @@ final class FileRemover
 
     public function add(string $pathPrefix, WebFile $file): void
     {
-        $this->filesToRemove[] = [$pathPrefix => $file];
+        if (false === array_key_exists($pathPrefix, $this->filesToRemove)) {
+            $this->filesToRemove[$pathPrefix] = [];
+        }
+
+        $this->filesToRemove[$pathPrefix][] = $file;
     }
 
     public function flush(): void
     {
-        array_walk($this->filesToRemove, function (array $file): void {
-            $this->fileManager->remove(reset($file));
+        // Remove files
+        array_walk($this->filesToRemove, function (array $files): void {
+            array_walk($files, function (WebFile $file): void {
+                $this->fileManager->remove($file);
+            });
         });
 
-        array_walk($this->filesToRemove, function (array $file): void {
-            /** @var string $fileSystem */
-            $fileSystem = key($file);
-            /** @var WebFile $webFile */
-            $webFile = reset($file);
-            $this->removeFileEmptyParentDirectories($fileSystem, $webFile);
+        // Clear empty directories left after file removal
+        array_walk($this->filesToRemove, function (array $files, string $pathPrefix): void {
+            array_walk(
+                $files,
+                function (WebFile $file, $key, string $pathPrefix): void {
+                    $this->removeParentDirectoryIfEmpty(
+                        $file->getFileSystemName(),
+                        $pathPrefix,
+                        $file->getPath()
+                    );
+                },
+                $pathPrefix
+            );
         });
 
         $this->filesToRemove = [];
     }
 
-    private function removeFileEmptyParentDirectories(string $pathPrefix, WebFile $file): void
-    {
-        $directory = dirname($file->getPath());
-        if (true === $this->fileManager->removeDirectoryIfEmpty($file->getFileSystemName(), $directory)) {
-            $this->removeParentDirectoryIfEmpty($file->getFileSystemName(), $pathPrefix, $directory);
-        }
-    }
-
     private function removeParentDirectoryIfEmpty(
         string $fileSystemName,
         string $pathPrefix,
-        string $directory
+        string $path
     ): void {
-        $parentDirectory = dirname($directory);
+        $parentDirectory = dirname($path);
         if ($pathPrefix === $parentDirectory) {
             return;
         }
