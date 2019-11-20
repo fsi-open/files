@@ -27,7 +27,7 @@ final class FileUpdaterTest extends Unit
     /**
      * @var string string
      */
-    private $uuidRegex = '[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{23}';
+    private $filePathRegex = '[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{23}';
 
     /**
      * @var FileManager|MockObject
@@ -62,7 +62,7 @@ final class FileUpdaterTest extends Unit
 
         $this->fileManager->expects($this->once())
             ->method('copy')
-            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-path.dat#i"))
+            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-path.dat#i"))
             ->willReturnCallback(
                 function (WebFile $sourceFile, string $fileSystemName, string $path): MockObject {
                     $file = $this->createMock(WebFile::class);
@@ -79,7 +79,7 @@ final class FileUpdaterTest extends Unit
         $this->assertNotSame($file, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
-        $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
+        $this->assertRegExp("#prefix/$this->filePathRegex/some-path.dat#i", $entity->getFilePath());
     }
 
     public function testNewFileFromDifferentPrefixOnTargetFilesystem(): void
@@ -89,7 +89,7 @@ final class FileUpdaterTest extends Unit
 
         $this->fileManager->expects($this->once())
             ->method('copy')
-            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-path.dat#i"))
+            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-path.dat#i"))
             ->willReturnCallback(
                 function (WebFile $sourceFile, string $fileSystemName, string $path): MockObject {
                     $file = $this->createMock(WebFile::class);
@@ -107,7 +107,7 @@ final class FileUpdaterTest extends Unit
         $this->assertNotSame($file, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
-        $this->assertRegExp("#prefix/$this->uuidRegex/some-path.dat#i", $entity->getFilePath());
+        $this->assertRegExp("#prefix/$this->filePathRegex/some-path.dat#i", $entity->getFilePath());
 
         $this->fileRemover->flush();
     }
@@ -142,7 +142,7 @@ final class FileUpdaterTest extends Unit
         $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
         $this->fileManager->expects($this->once())
             ->method('copy')
-            ->with($tempFile, 'fs', $this->matchesRegularExpression("#prefix/$this->uuidRegex/some-new-path.dat#i"))
+            ->with($tempFile, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-new-path.dat#i"))
             ->willReturnCallback(
                 function (WebFile $sourceFile, string $fileSystemName, string $path): WebFile {
                     $file = $this->createMock(WebFile::class);
@@ -160,7 +160,7 @@ final class FileUpdaterTest extends Unit
         $this->assertNotSame($tempFile, $entity->getFile());
         $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
         $this->assertNotNull($entity->getFilePath());
-        $this->assertRegExp("#prefix/$this->uuidRegex/some-new-path.dat#i", $entity->getFilePath());
+        $this->assertRegExp("#prefix/$this->filePathRegex/some-new-path.dat#i", $entity->getFilePath());
 
         $this->fileRemover->flush();
     }

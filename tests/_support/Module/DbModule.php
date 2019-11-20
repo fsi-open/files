@@ -83,7 +83,7 @@ final class DbModule extends Module
 
             if (true === $file->isDir()) {
                 $this->clearDirectory($file->getPathname());
-            } elseif ($file->isFile()) {
+            } elseif (true === $file->isFile()) {
                 unlink($file->getPathname());
             }
         }
