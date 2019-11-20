@@ -180,6 +180,5 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $definition->setClass(BaseUrlAdapter::class);
         $definition->setArgument('$uriFactory', $uriFactory);
         $definition->setArgument('$baseUrl', $publicDirectory);
-        $definition->addTag('fsi_files.url_adapter');
     }
 }

@@ -11,53 +11,69 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection\CompilerPass;
 
+use Assert\Assertion;
 use FSi\Component\Files\FileUrlResolver;
-use RuntimeException;
+use FSi\Component\Files\UrlAdapter;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
+use function array_reduce;
+use function sprintf;
 
 final class UrlAdapterPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
-        $resolver = $container->getDefinition(FileUrlResolver::class);
-
-        $adaptersServices = array_reduce(
-            array_keys($container->findTaggedServiceIds('fsi_files.url_adapter')),
-            function (array $accumulator, string $id) use ($container): array {
-                $accumulator[$id] = $container->getDefinition($id);
-                return $accumulator;
-            },
-            []
-        );
-
-        $resolver->replaceArgument(
+        $container->getDefinition(FileUrlResolver::class)->replaceArgument(
             '$adapters',
             array_reduce(
                 $container->getExtensionConfig('fsi_files')[0]['adapters'],
-                function (array $accumulator, array $configuration) use ($adaptersServices): array {
+                function (array $accumulator, array $configuration) use ($container): array {
                     $filesystem = $configuration['filesystem'];
-                    if (true === array_key_exists($filesystem, $accumulator)) {
-                        throw new RuntimeException("Duplicate entry for filesystem \"{$filesystem}\".");
-                    }
+                    Assertion::keyNotExists(
+                        $accumulator,
+                        $filesystem,
+                        "Duplicate entry for filesystem \"{$filesystem}\"."
+                    );
 
-                    $service = $configuration['service'];
-                    if (false === array_key_exists($service, $adaptersServices)) {
-                        throw new RuntimeException(
-                            "Service \"{$service}\" does not exist for filesystem \"{$filesystem}\"."
-                        );
-                    }
+                    $definition = $container->getDefinition($configuration['service']);
+                    $this->validateAdapterServiceDefinition(
+                        $definition,
+                        $accumulator,
+                        $configuration['service'],
+                        $filesystem
+                    );
 
-                    $adapter = $adaptersServices[$service];
-                    if (true === in_array($adapter, $accumulator, true)) {
-                        throw new RuntimeException("Service \"{$service}\" is used more than one time.");
-                    }
-
-                    $accumulator[$filesystem] = $adapter;
+                    $accumulator[$filesystem] = $definition;
                     return $accumulator;
                 },
                 []
             )
+        );
+    }
+
+    private function validateAdapterServiceDefinition(
+        Definition $definition,
+        array $usedAdapters,
+        string $id,
+        string $filesystem
+    ): void {
+        Assertion::notNull($definition->getClass(), "Service \"{$id}\" has no class.");
+        Assertion::subclassOf(
+            $definition->getClass(),
+            UrlAdapter::class,
+            sprintf(
+                'Service "%s" for filesystem "%s" does not implement "%s".',
+                $id,
+                $filesystem,
+                UrlAdapter::class
+            )
+        );
+
+        Assertion::notInArray(
+            $definition,
+            $usedAdapters,
+            "Service \"{$id}\" is used more than one time."
         );
     }
 }

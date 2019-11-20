@@ -13,7 +13,6 @@ namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
-use FSi\Component\Files\UrlAdapter;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -31,8 +30,6 @@ final class FilesExtension extends Extension
             new FileLocator(sprintf('%s/../Resources/config/services', __DIR__))
         );
         $loader->load('services.xml');
-
-        $container->registerForAutoconfiguration(UrlAdapter::class)->addTag('fsi_files.url_adapter');
 
         $configuration = $this->processConfiguration(new Configuration(), $configs);
         $entityConfigurations = $this->createEntitiesFieldsConfigurations($configuration);

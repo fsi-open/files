@@ -20,7 +20,7 @@ use function sprintf;
 final class FileUrlResolver
 {
     /**
-     * @var UrlAdapter[]
+     * @var array<string, UrlAdapter>
      */
     private $adapters;
 
