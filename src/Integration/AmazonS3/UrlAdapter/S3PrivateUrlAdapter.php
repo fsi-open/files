@@ -21,26 +21,26 @@ final class S3PrivateUrlAdapter implements UrlAdapter
     /**
      * @var S3ClientInterface
      */
-    private $amazonClient;
+    private $s3Client;
 
     /**
      * @var string
      */
-    private $amazonBucket;
+    private $s3Bucket;
 
-    public function __construct(S3ClientInterface $amazonClient, string $amazonBucket)
+    public function __construct(S3ClientInterface $s3Client, string $s3Bucket)
     {
-        $this->amazonClient = $amazonClient;
-        $this->amazonBucket = $amazonBucket;
+        $this->s3Client = $s3Client;
+        $this->s3Bucket = $s3Bucket;
     }
 
     public function url(WebFile $file): UriInterface
     {
-        $cmd = $this->amazonClient->getCommand('GetObject', [
-            'Bucket' => $this->amazonBucket,
+        $cmd = $this->s3Client->getCommand('GetObject', [
+            'Bucket' => $this->s3Bucket,
             'Key' => $file->getPath()
         ]);
 
-        return $this->amazonClient->createPresignedRequest($cmd, '+1 hour')->getUri();
+        return $this->s3Client->createPresignedRequest($cmd, '+1 hour')->getUri();
     }
 }
