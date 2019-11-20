@@ -50,6 +50,7 @@
         "symfony/http-foundation": "^4.3",
         "symfony/http-kernel": "^4.3",
         "symfony/routing": "^4.3",
+        "symfony/translation": "^4.3",
         "symfony/twig-bundle": "^4.3",
         "symfony/validator": "^4.3",
         "twig/twig": "^2.12"
@@ -58,7 +59,9 @@
         "sniffer": "vendor/bin/phpcs",
         "stan": "vendor/bin/phpstan  --ansi analyse -l 7 -c phpstan.neon src tests",
         "cept": "vendor/bin/codecept --ansi",
-        "unit": "vendor/bin/codecept --ansi run unit"
+        "func": "vendor/bin/codecept --ansi run functional",
+        "unit": "vendor/bin/codecept --ansi run unit",
+        "cl": "tests/_support/project/bin/console --ansi"
     },
     "config": {
         "bin-dir": "vendor/bin",

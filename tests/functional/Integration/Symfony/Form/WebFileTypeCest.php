@@ -44,5 +44,17 @@ final class WebFileTypeCest
 
         $I->assertInstanceOf(WebFile::class, $entity->getAnotherFile());
         $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getAnotherFile());
+
+        $I->amOnPage('/symfony');
+        $I->checkOption('Remove file');
+        $I->submitForm('form', [], 'Submit');
+
+        /** @var FileEntity|null $entity */
+        $entity = $I->grabEntityFromRepository(FileEntity::class, ['id' => 1]);
+        Assertion::notNull($entity);
+        $I->assertNull($entity->getFile());
+
+        $I->assertInstanceOf(WebFile::class, $entity->getAnotherFile());
+        $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getAnotherFile());
     }
 }

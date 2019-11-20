@@ -26,7 +26,8 @@ final class FormTestType extends AbstractType
     {
         $builder->add('file', WebFileType::class, [
             'label' => 'File',
-            'constraints' => [new NotBlank(), new UploadedWebFile()],
+            'constraints' => [new UploadedWebFile()],
+            'removable' => true,
             'required' => false
         ]);
 

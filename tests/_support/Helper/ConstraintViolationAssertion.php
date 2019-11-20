@@ -172,7 +172,7 @@ final class ConstraintViolationAssertion
     private function getViolation()
     {
         return new ConstraintViolation(
-            null,
+            '',
             $this->message,
             $this->parameters,
             $this->context->getRoot(),
