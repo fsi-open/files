@@ -41,4 +41,26 @@ final class FileManagerTest extends TestCase
 
         (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
     }
+
+    /**
+     * @dataProvider provideEmptyOrRootDirectoryPaths()
+     */
+    public function testNotRemovingEmptyOrRootDirectories(string $path): void
+    {
+        $fileSystem = $this->createMock(FilesystemInterface::class);
+        $fileSystem->expects($this->never())->method('listContents');
+        $fileSystem->expects($this->never())->method('deleteDir');
+
+        $mountManager = $this->createMock(MountManager::class);
+        $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
+
+        $this->assertFalse(
+            (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', $path)
+        );
+    }
+
+    public function provideEmptyOrRootDirectoryPaths(): array
+    {
+        return [[''], ['/'], ['.']];
+    }
 }

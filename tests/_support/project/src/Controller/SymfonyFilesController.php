@@ -23,7 +23,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
-use function count;
 
 final class SymfonyFilesController
 {
@@ -75,8 +74,8 @@ final class SymfonyFilesController
         if (true === $form->isSubmitted() && true === $form->isValid()) {
             $this->entityManager->flush();
             return new RedirectResponse($this->urlGenerator->generate('symfony_files'));
-        } elseif (0 !== count($form->getErrors())) {
-            $message = $this->formErrorsToMessage($form->getErrors());
+        } elseif (true === $form->isSubmitted()) {
+            $message = $this->formErrorsToMessage($form->getErrors(true));
         } else {
             $message = null;
         }

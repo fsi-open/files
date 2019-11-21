@@ -122,7 +122,7 @@ final class FileUpdaterTest extends Unit
         $entity->setFile($newFile);
 
         $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
-        $this->fileManager->expects($this->once())->method('remove');
+        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
         $this->assertSame($newFile, $entity->getFile());
@@ -153,7 +153,7 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
-        $this->fileManager->expects($this->once())->method('remove');
+        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());
@@ -174,7 +174,7 @@ final class FileUpdaterTest extends Unit
         $entity->setFile(null);
 
         $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
-        $this->fileManager->expects($this->once())->method('remove');
+        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
         $this->assertNull($entity->getFile());
