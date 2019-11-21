@@ -25,16 +25,16 @@ final class FilesExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
-        $configuration = $this->processConfiguration(new Configuration(), $configs);
-
         $loader = new XmlFileLoader(
             $container,
             new FileLocator(sprintf('%s/../Resources/config/services', __DIR__))
         );
         $loader->load('services.xml');
 
-        $resolverDefinition = $container->getDefinition(FilePropertyConfigurationResolver::class);
+        $configuration = $this->processConfiguration(new Configuration(), $configs);
         $entityConfigurations = $this->createEntitiesFieldsConfigurations($configuration);
+
+        $resolverDefinition = $container->getDefinition(FilePropertyConfigurationResolver::class);
         $resolverDefinition->replaceArgument('$configurations', $entityConfigurations);
     }
 
@@ -86,7 +86,7 @@ final class FilesExtension extends Extension
         $definition->setArguments([
             $class,
             $name,
-            $filesystem,
+            $fieldConfiguration['filesystem'] ?? $filesystem,
             $fieldConfiguration['pathField'] ?? "{$name}Path",
             $fieldConfiguration['prefix'] ?? $filesystemPrefix
         ]);

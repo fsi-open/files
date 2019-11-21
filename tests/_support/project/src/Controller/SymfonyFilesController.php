@@ -65,6 +65,8 @@ final class SymfonyFilesController
         $entity = $this->entityManager->getRepository(FileEntity::class)->find(1);
         if (null === $entity) {
             $entity = new FileEntity();
+            $entity->setId(1);
+            $this->entityManager->persist($entity);
         }
 
         $form = $this->formFactory->create(FormTestType::class, $entity);
@@ -82,10 +84,7 @@ final class SymfonyFilesController
         return new Response(
             $this->twig->render(
                 'symfonyForm.html.twig',
-                [
-                    'form' => $form->createView(),
-                    'message' => $message
-                ]
+                ['form' => $form->createView(), 'message' => $message]
             )
         );
     }

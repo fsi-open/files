@@ -16,10 +16,19 @@
             <tag name="fsi_files.form_file_transformer" />
         </service>
 
+        <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\NullToExistingWebFileTransformer">
+            <tag name="fsi_files.form_file_transformer" />
+        </service>
+
         <!-- Form type -->
         <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
+            <argument type="service" id="FSi\Component\Files\FileUrlResolver" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
             <tag name="form.type" />
+        </service>
+
+        <service id="FSi\Component\Files\FileUrlResolver">
+            <argument key="$adapters" type="collection" />
         </service>
 
     </services>

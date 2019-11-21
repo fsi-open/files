@@ -11,9 +11,36 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files;
 
+use Assert\Assertion;
 use Psr\Http\Message\UriInterface;
+use RuntimeException;
+use function array_key_exists;
+use function sprintf;
 
-interface FileUrlResolver
+final class FileUrlResolver
 {
-    public function resolve(WebFile $file): UriInterface;
+    /**
+     * @var array<string, UrlAdapter>
+     */
+    private $adapters;
+
+    public function __construct(array $adapters)
+    {
+        Assertion::allIsInstanceOf($adapters, UrlAdapter::class);
+        $this->adapters = $adapters;
+    }
+
+    public function resolve(WebFile $file): UriInterface
+    {
+        if (false === array_key_exists($file->getFileSystemName(), $this->adapters)) {
+            throw new RuntimeException(sprintf(
+                'Unable to resolve url for file "%s" of class "%s" from filesystem "%s"',
+                $file->getPath(),
+                get_class($file),
+                $file->getFileSystemName()
+            ));
+        }
+
+        return $this->adapters[$file->getFileSystemName()]->url($file);
+    }
 }

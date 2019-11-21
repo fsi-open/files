@@ -14,10 +14,12 @@ namespace FSi\Tests\App;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\PhpFilesHandler;
+use FSi\Component\Files\UrlAdapter\BaseUrlAdapter;
 use FSi\Tests\App\Controller\IndexController;
 use FSi\Tests\App\Controller\NativeFilesController;
 use FSi\Tests\App\Controller\SymfonyFilesController;
 use FSi\Tests\App\Entity\FileEntity;
+use FSi\Tests\App\Http\UriFactory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -25,6 +27,7 @@ use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\Routing\RouteCollectionBuilder;
 use function sprintf;
@@ -94,31 +97,44 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
 
         $container->loadFromExtension('oneup_flysystem', [
             'adapters' => [
-                'memory_adapter' => ['memory' => null]
+                'local_adapter' => [
+                    'local' => [
+                        'directory' => sprintf('%s/../public/files', __DIR__)
+                    ]
+                ],
+                'other_local_adapter' => [
+                    'local' => [
+                        'directory' => sprintf('%s/../public/other_files', __DIR__)
+                    ]
+                ]
             ],
             'filesystems' => [
-                'temporary' => [
-                    'adapter' => 'memory_adapter',
-                    'mount' => 'temporary'
+                'public' => [
+                    'adapter' => 'local_adapter',
+                    'mount' => 'public'
                 ],
-                'temporary_other' => [
-                    'adapter' => 'memory_adapter',
-                    'mount' => 'temporary'
+                'other_public' => [
+                    'adapter' => 'other_local_adapter',
+                    'mount' => 'other_public'
                 ]
             ]
         ]);
 
         $container->loadFromExtension('fsi_files', [
+            'adapters' => [
+                ['filesystem' => 'public', 'service' => 'fsi_files.url_adapter.public'],
+                ['filesystem' => 'other_public', 'service' => 'fsi_files.url_adapter.other_public']
+            ],
             'entities' => [
                 [
                     'class' => FileEntity::class,
                     'prefix' => 'file_entity',
-                    'filesystem' => 'temporary',
+                    'filesystem' => 'public',
                     'fields' => [
                         ['name' => 'file'],
                         [
                             'name' => 'anotherFile',
-                            'filesystem' => 'temporary_other',
+                            'filesystem' => 'other_public',
                             'pathField' => 'anotherFileKey',
                             'prefix' => 'anotherFile'
                         ]
@@ -130,6 +146,14 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $this->registerPublicControllerService($container, IndexController::class);
         $this->registerPublicControllerService($container, NativeFilesController::class);
         $this->registerPublicControllerService($container, SymfonyFilesController::class);
+        $uriFactory = $container->register(UriFactory::class);
+        $this->registerBaseUrlAdapterService($container, 'fsi_files.url_adapter.public', $uriFactory, '/files/');
+        $this->registerBaseUrlAdapterService(
+            $container,
+            'fsi_files.url_adapter.other_public',
+            $uriFactory,
+            '/other_files/'
+        );
     }
 
     protected function configureRoutes(RouteCollectionBuilder $routes)
@@ -144,5 +168,17 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $definition = $container->register($class);
         $definition->setAutowired(true);
         $definition->setPublic(true);
+    }
+
+    private function registerBaseUrlAdapterService(
+        ContainerBuilder $container,
+        string $id,
+        Definition $uriFactory,
+        string $publicDirectory
+    ): void {
+        $definition = $container->register($id);
+        $definition->setClass(BaseUrlAdapter::class);
+        $definition->setArgument('$uriFactory', $uriFactory);
+        $definition->setArgument('$baseUrl', $publicDirectory);
     }
 }

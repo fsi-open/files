@@ -73,7 +73,7 @@ final class FileUpdater
                     return;
                 }
 
-                $this->clearCurrentFileIfExists($currentFile);
+                $this->clearCurrentFileIfExists($configuration->getPathPrefix(), $currentFile);
                 if (null !== $newFile) {
                     $this->setNewFile($entity, $newFile, $configuration);
                 } else {
@@ -122,13 +122,13 @@ final class FileUpdater
         return $newFile->getPath() !== $currentFile->getPath();
     }
 
-    private function clearCurrentFileIfExists(?WebFile $oldFile): void
+    private function clearCurrentFileIfExists(string $pathPrefix, ?WebFile $oldFile): void
     {
         if (null === $oldFile) {
             return;
         }
 
-        $this->fileRemover->add($oldFile);
+        $this->fileRemover->add($pathPrefix, $oldFile);
     }
 
     private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void
@@ -174,10 +174,20 @@ final class FileUpdater
 
     private function createFilesystemPath(FilePropertyConfiguration $configuration, string $filename): string
     {
+        // Mitigate filesystem limits for maximum number of subdirectories
+        $uuid = str_replace('-', '', Uuid::uuid4()->toString());
+        $splitUuid = sprintf(
+            '%s/%s/%s/%s',
+            mb_substr($uuid, 0, 3),
+            mb_substr($uuid, 3, 3),
+            mb_substr($uuid, 6, 3),
+            mb_substr($uuid, 9)
+        );
+
         return sprintf(
             '%s/%s/%s',
             $configuration->getPathPrefix(),
-            Uuid::uuid4()->toString(),
+            $splitUuid,
             $filename
         );
     }

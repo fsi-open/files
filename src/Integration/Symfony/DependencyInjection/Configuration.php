@@ -28,6 +28,12 @@ final class Configuration implements ConfigurationInterface
         /** @var NodeBuilder $rootChildren */
         $rootChildren = $root->children();
 
+        /** @var NodeBuilder $adaptersChildren */
+        $adaptersChildren = $rootChildren->arrayNode('adapters')->arrayPrototype()->children();
+        $adaptersChildren->scalarNode('filesystem')->cannotBeEmpty()->end();
+        $adaptersChildren->scalarNode('service')->cannotBeEmpty()->end();
+        $adaptersChildren->end();
+
         /** @var NodeBuilder $entitiesChildren */
         $entitiesChildren = $rootChildren->arrayNode('entities')->arrayPrototype()->children();
         $entitiesChildren->scalarNode('class')->cannotBeEmpty()->end();

@@ -89,13 +89,22 @@ final class FileManager implements Files\FileManager
 
     public function remove(Files\WebFile $file): void
     {
-        $filesystem = $this->fileSystemForFile($file);
-        $filesystem->delete($file->getPath());
+        $this->fileSystemForFile($file)->delete($file->getPath());
+    }
 
-        $directory = dirname($file->getPath());
-        if ('.' !== $directory && 0 === count($filesystem->listContents($directory))) {
-            $filesystem->deleteDir($directory);
+    public function removeDirectoryIfEmpty(string $fileSystemName, string $path): bool
+    {
+        $filesystem = $this->fileSystemForName($fileSystemName);
+        if (false === $this->isEmptyDirectory($filesystem, $path)) {
+            return false;
         }
+
+        return $filesystem->deleteDir($path);
+    }
+
+    private function isEmptyDirectory(FilesystemInterface $filesystem, string $path): bool
+    {
+        return '.' !== $path && 0 === count($filesystem->listContents($path));
     }
 
     private function readStream(Files\WebFile $file)
@@ -119,6 +128,11 @@ final class FileManager implements Files\FileManager
 
     private function fileSystemForFile(Files\WebFile $file): FilesystemInterface
     {
-        return $this->mountManager->getFilesystem($file->getFileSystemName());
+        return $this->fileSystemForName($file->getFileSystemName());
+    }
+
+    private function fileSystemForName(string $name): FilesystemInterface
+    {
+        return $this->mountManager->getFilesystem($name);
     }
 }

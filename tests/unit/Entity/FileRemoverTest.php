@@ -22,10 +22,18 @@ final class FileRemoverTest extends TestCase
 {
     public function testRemoving(): void
     {
-        $file = new WebFile('fs', 'some-path');
+        $file = new WebFile('fs', 'path-prefix/directory/subdirectory/file');
 
         $fileManager = $this->createMock(FileManager::class);
         $fileManager->expects($this->once())->method('remove')->with($file);
+        $fileManager->expects($this->exactly(2))
+            ->method('removeDirectoryIfEmpty')
+            ->withConsecutive(
+                ['fs', 'path-prefix/directory/subdirectory'],
+                ['fs', 'path-prefix/directory']
+            )
+            ->willReturnOnConsecutiveCalls(true, false)
+        ;
 
         $configurationResolver = new FilePropertyConfigurationResolver([]);
         $remover = new FileRemover(
@@ -34,7 +42,7 @@ final class FileRemoverTest extends TestCase
             new FileLoader($fileManager, $configurationResolver)
         );
 
-        $remover->add($file);
+        $remover->add('path-prefix', $file);
 
         $remover->flush();
     }
