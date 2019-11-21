@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Tests\App\Form;
 
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
+use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImage;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
 use FSi\Tests\App\Entity\FileEntity;
 use Symfony\Component\Form\AbstractType;
@@ -25,15 +26,16 @@ final class FormTestType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('file', WebFileType::class, [
-            'label' => 'File',
+            'label' => 'Standard file',
             'constraints' => [new UploadedWebFile()],
             'removable' => true,
             'required' => false
         ]);
 
         $builder->add('anotherFile', WebFileType::class, [
-            'label' => 'Another file',
-            'constraints' => [new NotBlank(), new UploadedWebFile()],
+            'label' => 'Image file',
+            'constraints' => [new NotBlank(), new UploadedImage()],
+            'image' => true,
             'required' => false
         ]);
     }
