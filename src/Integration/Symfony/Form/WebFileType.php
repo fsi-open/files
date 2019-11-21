@@ -53,7 +53,7 @@ final class WebFileType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if (true === $options['compound']) {
+        if (true === $options['removable']) {
             /** @var array $fileFieldOptions */
             $fileFieldOptions = array_replace($options, [
                 'allow_file_upload' => true,
