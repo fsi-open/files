@@ -75,11 +75,16 @@ final class SymfonyFilesController
             $this->entityManager->flush();
             return new RedirectResponse($this->urlGenerator->generate('symfony_files'));
         } elseif (true === $form->isSubmitted()) {
-            var_dump($this->formErrorsToMessage($form->getErrors(true)));
+            $message = $this->formErrorsToMessage($form->getErrors(true));
+        } else {
+            $message = null;
         }
 
         return new Response(
-            $this->twig->render('symfonyForm.html.twig', ['form' => $form->createView()])
+            $this->twig->render(
+                'symfonyForm.html.twig',
+                ['form' => $form->createView(), 'message' => $message]
+            )
         );
     }
 

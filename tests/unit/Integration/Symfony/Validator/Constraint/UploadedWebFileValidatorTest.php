@@ -348,27 +348,18 @@ final class UploadedWebFileValidatorTest extends Unit
 
     private function createContext(): ExecutionContextInterface
     {
-        $validator = $this->createMock(ValidatorInterface::class);
-        $context = new ExecutionContext(
-            $validator,
-            'root',
-            $this->createMock(TranslatorInterface::class)
-        );
-
         // Initialize the context with some constraint so that we can
         // successfully build a violation.
         $this->constraint = new NotNull();
+
+        $context = new ExecutionContext(
+            $this->createMock(ValidatorInterface::class),
+            'root',
+            $this->createMock(TranslatorInterface::class)
+        );
         $context->setGroup('MyGroup');
         $context->setNode('InvalidValue', null, null, 'property.path');
         $context->setConstraint($this->constraint);
-
-        $validator->expects($this->any())
-            ->method('inContext')
-            ->with($context)
-            ->willReturn(
-                $this->createMock(ContextualValidatorInterface::class)
-            )
-        ;
 
         $this->context = $context;
         return $context;

@@ -162,14 +162,13 @@ final class ConstraintViolationAssertion
         );
 
         reset($violations);
-
         foreach ($expected as $violation) {
             Assert::assertEquals($violation, current($violations));
             next($violations);
         }
     }
 
-    private function getViolation()
+    private function getViolation(): ConstraintViolation
     {
         return new ConstraintViolation(
             '',

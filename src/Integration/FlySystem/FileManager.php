@@ -94,7 +94,9 @@ final class FileManager implements Files\FileManager
     public function removeDirectoryIfEmpty(string $fileSystemName, string $path): bool
     {
         $filesystem = $this->fileSystemForName($fileSystemName);
-        if (true === $this->isEmptyOrRootDirectory($path) || false === $this->isEmptyDirectory($filesystem, $path)) {
+        if (true === $this->isEmptyPathOrRootDirectory($path)
+            || false === $this->isEmptyDirectory($filesystem, $path)
+        ) {
             return false;
         }
 
@@ -106,7 +108,7 @@ final class FileManager implements Files\FileManager
         return 0 === count($filesystem->listContents($path));
     }
 
-    private function isEmptyOrRootDirectory(string $path): bool
+    private function isEmptyPathOrRootDirectory(string $path): bool
     {
         return '' === $path || '.' === $path || '/' === $path;
     }
