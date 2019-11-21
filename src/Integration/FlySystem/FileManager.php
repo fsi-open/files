@@ -20,7 +20,6 @@ use League\Flysystem\MountManager;
 use Psr\Http\Message\StreamInterface;
 use function basename;
 use function count;
-use function dirname;
 use function is_resource;
 use function sprintf;
 
@@ -95,7 +94,7 @@ final class FileManager implements Files\FileManager
     public function removeDirectoryIfEmpty(string $fileSystemName, string $path): bool
     {
         $filesystem = $this->fileSystemForName($fileSystemName);
-        if (false === $this->isEmptyDirectory($filesystem, $path)) {
+        if (true === $this->isEmptyOrRootDirectory($path) || false === $this->isEmptyDirectory($filesystem, $path)) {
             return false;
         }
 
@@ -104,7 +103,12 @@ final class FileManager implements Files\FileManager
 
     private function isEmptyDirectory(FilesystemInterface $filesystem, string $path): bool
     {
-        return '.' !== $path && 0 === count($filesystem->listContents($path));
+        return 0 === count($filesystem->listContents($path));
+    }
+
+    private function isEmptyOrRootDirectory(string $path): bool
+    {
+        return '' === $path || '.' === $path || '/' === $path;
     }
 
     private function readStream(Files\WebFile $file)
