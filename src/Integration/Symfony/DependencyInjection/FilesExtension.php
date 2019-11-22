@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
+use Assert\Assertion;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use Symfony\Component\Config\FileLocator;
@@ -19,7 +20,9 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use function array_map;
+use function mb_strlen;
 use function sprintf;
+use function trim;
 
 final class FilesExtension extends Extension
 {
@@ -51,6 +54,10 @@ final class FilesExtension extends Extension
                 $class = $entityConfiguration['class'];
                 $filesystem = $entityConfiguration['filesystem'];
                 $filesystemPrefix = $entityConfiguration['prefix'];
+                Assertion::false(
+                    $this->startsOrEndsWithSlashes($filesystemPrefix),
+                    "Prefix for filesystem \"{$filesystem}\" cannot start or end with a slash"
+                );
 
                 $entityFieldsConfiguration = array_map(
                     function (array $fieldConfiguration) use (
@@ -81,6 +88,15 @@ final class FilesExtension extends Extension
         array $fieldConfiguration
     ): Definition {
         $name = $fieldConfiguration['name'];
+        $filePrefix = $fieldConfiguration['prefix'];
+        if (null !== $filePrefix) {
+            Assertion::false(
+                $this->startsOrEndsWithSlashes($filePrefix),
+                "Prefix for filesystem \"{$filesystem}\" and field \"{$name}\""
+                . " cannot start or end with a slash"
+            );
+        }
+
         $definition = new Definition(FilePropertyConfiguration::class);
         $definition->setPublic(false);
         $definition->setArguments([
@@ -88,9 +104,14 @@ final class FilesExtension extends Extension
             $name,
             $fieldConfiguration['filesystem'] ?? $filesystem,
             $fieldConfiguration['pathField'] ?? "{$name}Path",
-            $fieldConfiguration['prefix'] ?? $filesystemPrefix
+            $filePrefix ?? $filesystemPrefix
         ]);
 
         return $definition;
+    }
+
+    private function startsOrEndsWithSlashes(string $prefix): bool
+    {
+        return mb_strlen($prefix) !== mb_strlen(trim($prefix, '/'));
     }
 }
