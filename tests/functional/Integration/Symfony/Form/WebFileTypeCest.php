@@ -26,14 +26,15 @@ final class WebFileTypeCest
         $I->amOnPage('/symfony');
         $I->seeResponseCodeIs(200);
 
-        $I->see('File', 'label');
-        $I->see('Another file', 'label');
-        $I->attachFile('File', 'test_pdf.pdf');
-        $I->attachFile('Another file', 'test_pdf.pdf');
+        $I->see('Standard file', 'label');
+        $I->see('Image file', 'label');
+        $I->attachFile('Standard file', 'test_pdf.pdf');
+        $I->attachFile('Image file', 'test.jpg');
 
         $I->submitForm('form', [], 'Submit');
 
         $I->see('test_pdf.pdf', 'a');
+        $I->seeElement('img[alt="test.jpg"]');
 
         /** @var FileEntity|null $entity */
         $entity = $I->grabEntityFromRepository(FileEntity::class, ['id' => 1]);

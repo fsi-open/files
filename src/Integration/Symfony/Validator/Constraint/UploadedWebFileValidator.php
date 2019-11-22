@@ -28,7 +28,7 @@ use function strstr;
  *
  * @see \Symfony\Component\Validator\Constraints\FileValidator
  */
-final class UploadedWebFileValidator extends ConstraintValidator
+class UploadedWebFileValidator extends ConstraintValidator
 {
     private const KB_BYTES = 1000;
     private const MB_BYTES = 1000000;
@@ -164,28 +164,45 @@ final class UploadedWebFileValidator extends ConstraintValidator
             }
         }
 
-        if (0 !== count($constraint->mimeTypes)) {
-            $mime = $value->getMimeType();
-            foreach ($constraint->mimeTypes as $mimeType) {
-                if ($mimeType === $mime) {
-                    return;
-                }
+        $constraintMimeTypes = $constraint->mimeTypes;
+        if (null === $constraintMimeTypes
+            || '' === $constraintMimeTypes
+            || (true === is_array($constraintMimeTypes) && 0 === count($constraintMimeTypes))
+        ) {
+            return;
+        }
 
-                $discrete = strstr($mimeType, '/*', true);
-                if (false !== $discrete) {
-                    if (strstr($mime, '/', true) === $discrete) {
-                        return;
-                    }
-                }
+        $this->validateMimeTypes($constraintMimeTypes, $value->getMimeType(), $constraint->mimeTypesMessage, $basename);
+    }
+
+    private function validateMimeTypes($mimeTypes, string $mime, string $message, string $basename): void
+    {
+        if (true === is_string($mimeTypes)) {
+            $mimeTypes = (array) $mimeTypes;
+        }
+
+        if (0 === count($mimeTypes)) {
+            return;
+        }
+
+        foreach ($mimeTypes as $mimeType) {
+            if ($mimeType === $mime) {
+                return;
             }
 
-            $this->context->buildViolation($constraint->mimeTypesMessage)
-                ->setParameter('{{ type }}', $this->formatValue($mime))
-                ->setParameter('{{ types }}', $this->formatValues($constraint->mimeTypes))
-                ->setParameter('{{ name }}', $this->formatValue($basename))
-                ->setCode(UploadedWebFile::INVALID_MIME_TYPE_ERROR)
-                ->addViolation();
+            $discrete = strstr($mimeType, '/*', true);
+            if (false !== $discrete && strstr($mime, '/', true) === $discrete) {
+                return;
+            }
         }
+
+        $this->context->buildViolation($message)
+            ->setParameter('{{ type }}', $this->formatValue($mime))
+            ->setParameter('{{ types }}', $this->formatValues($mimeTypes))
+            ->setParameter('{{ name }}', $this->formatValue($basename))
+            ->setCode(UploadedWebFile::INVALID_MIME_TYPE_ERROR)
+            ->addViolation()
+        ;
     }
 
     private static function moreDecimalsThan($double, $numberOfDecimals)

@@ -84,6 +84,7 @@ final class WebFileType extends AbstractType
         $removable = $options['removable'];
         $view->vars = array_replace($view->vars, [
             'basename' => false === $removable ? $this->createFileBasename($data) : null,
+            'image' => $options['image'],
             'multipart' => true,
             'multiple' => false,
             'removable' => $removable,
@@ -105,11 +106,13 @@ final class WebFileType extends AbstractType
             'data_class' => function (Options $options) {
                 return false === $options['removable'] ? WebFile::class : null;
             },
+            'image' => false,
             'removable' => false,
             'remove_field_name' => 'remove',
             'translation_domain' => 'FSiFiles'
         ]);
 
+        $resolver->setAllowedTypes('image', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
         $resolver->setAllowedTypes('remove_field_name', ['string']);
     }

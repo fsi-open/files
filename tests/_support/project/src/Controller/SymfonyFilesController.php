@@ -65,13 +65,13 @@ final class SymfonyFilesController
         if (null === $entity) {
             $entity = new FileEntity();
             $entity->setId(1);
-            $this->entityManager->persist($entity);
         }
 
         $form = $this->formFactory->create(FormTestType::class, $entity);
         $form->handleRequest($request);
 
         if (true === $form->isSubmitted() && true === $form->isValid()) {
+            $this->entityManager->persist($entity);
             $this->entityManager->flush();
             return new RedirectResponse($this->urlGenerator->generate('symfony_files'));
         } elseif (true === $form->isSubmitted()) {

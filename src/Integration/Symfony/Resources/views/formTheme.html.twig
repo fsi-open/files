@@ -21,7 +21,11 @@
             {%- endif -%}
         </label>
         {% if url is not empty and basename is not empty %}
-            <a href="{{ url }}" target="_blank">{{ basename }}</a>
+            {% if image %}
+                <img src="{{ url }}" alt="{{ basename }}" width="200" />
+            {% else %}
+                <a href="{{ url }}" target="_blank">{{ basename }}</a>
+            {% endif %}
         {% endif %}
     </div>
 {% endblock %}

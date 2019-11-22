@@ -24,7 +24,7 @@ use function preg_match;
  *
  * @see \Symfony\Component\Validator\Constraints\File
  */
-final class UploadedWebFile extends Constraint
+class UploadedWebFile extends Constraint
 {
     public const NOT_FOUND_ERROR = 'd2a3fb6e-7ddc-4210-8fbf-2ab345ce1998';
     public const NOT_READABLE_ERROR = 'c20c92a4-5bfa-4202-9477-28e800e0f6ff';
@@ -38,7 +38,7 @@ final class UploadedWebFile extends Constraint
     public $binaryFormat;
 
     /**
-     * @var array
+     * @var array|string|null
      */
     public $mimeTypes = [];
 
