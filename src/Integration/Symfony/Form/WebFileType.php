@@ -31,6 +31,9 @@ use function array_replace;
 
 final class WebFileType extends AbstractType
 {
+    public const FILE_FIELD = 'file';
+    public const REMOVE_FIELD = 'remove';
+
     /**
      * @var FileUrlResolver
      */
@@ -69,8 +72,8 @@ final class WebFileType extends AbstractType
                 'removable' => false
             ]);
 
-            $builder->add($builder->getName(), WebFileType::class, $fileFieldOptions);
-            $builder->add($options['remove_field_name'], CheckboxType::class, [
+            $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
+            $builder->add(self::REMOVE_FIELD, CheckboxType::class, [
                 'label' => $options['remove_field_label'],
                 'mapped' => false,
                 'required' => false
@@ -95,8 +98,6 @@ final class WebFileType extends AbstractType
             'multipart' => true,
             'multiple' => false,
             'removable' => $removable,
-            'remove_field_name' => $options['remove_field_name'],
-            'remove_field_label' => $options['remove_field_label'],
             'url' => false === $removable ? $this->createFileUrl($data) : null,
             'value' => ''
         ]);
@@ -117,13 +118,12 @@ final class WebFileType extends AbstractType
             'empty_data' => null,
             'image' => false,
             'removable' => false,
-            'remove_field_name' => 'remove',
-            'remove_field_label' => 'web_file.remove'
+            'remove_field_label' => 'web_file.remove',
+            'translation_domain' => 'FSiFiles'
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
-        $resolver->setAllowedTypes('remove_field_name', ['string']);
         $resolver->setAllowedTypes('remove_field_label', ['string']);
     }
 

@@ -1,17 +1,15 @@
-{% trans_default_domain 'FSiFiles' %}
-
 {% block web_file_label -%}
     {% if not removable %}{{ block('form_label') }}{% endif %}
-{%- endblock %}
+{%- endblock web_file_label %}
 
 {% block web_file_widget -%}
     {% if removable %}
-        {{- form_row(form[name]) -}}
-        {{- form_row(form[remove_field_name]) -}}
+        {{- form_row(form.file) -}}
+        {{- form_row(form.remove) -}}
     {% else %}
         {{ block('web_file_file_widget') }}
     {% endif %}
-{%- endblock %}
+{%- endblock web_file_widget %}
 
 {% block web_file_file_widget %}
     {%- set type = 'file' -%}
@@ -30,4 +28,4 @@
             {% endif %}
         {% endif %}
     </div>
-{% endblock %}
+{% endblock web_file_file_widget %}
