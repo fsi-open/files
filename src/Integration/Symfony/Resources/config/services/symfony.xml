@@ -23,10 +23,12 @@
         <!-- Form type -->
         <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
             <argument type="service" id="FSi\Component\Files\FileUrlResolver" />
+            <argument type="service" id="FSi\Component\Files\FileManager" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
             <tag name="form.type" />
         </service>
 
+        <!-- Url resolver -->
         <service id="FSi\Component\Files\FileUrlResolver">
             <argument key="$adapters" type="collection" />
         </service>

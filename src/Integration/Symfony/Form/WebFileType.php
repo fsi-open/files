@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
+use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FileUrlResolver;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableFileTransformer;
@@ -36,11 +37,16 @@ final class WebFileType extends AbstractType
     private $urlResolver;
 
     /**
+     * @var FileManager
+     */
+    private $fileManager;
+
+    /**
      * @var FormFileTransformer[]
      */
     private $fileTransformers;
 
-    public function __construct(FileUrlResolver $urlResolver, iterable $fileTransformers)
+    public function __construct(FileUrlResolver $urlResolver, FileManager $fileManager, iterable $fileTransformers)
     {
         if (false === is_array($fileTransformers)) {
             $fileTransformers = iterator_to_array($fileTransformers);
@@ -48,6 +54,7 @@ final class WebFileType extends AbstractType
 
         Assertion::allIsInstanceOf($fileTransformers, FormFileTransformer::class);
         $this->urlResolver = $urlResolver;
+        $this->fileManager = $fileManager;
         $this->fileTransformers = $fileTransformers;
     }
 
@@ -64,7 +71,7 @@ final class WebFileType extends AbstractType
 
             $builder->add($builder->getName(), WebFileType::class, $fileFieldOptions);
             $builder->add($options['remove_field_name'], CheckboxType::class, [
-                'label' => 'web_file.remove',
+                'label' => $options['remove_field_label'],
                 'mapped' => false,
                 'required' => false
             ]);
@@ -89,6 +96,7 @@ final class WebFileType extends AbstractType
             'multiple' => false,
             'removable' => $removable,
             'remove_field_name' => $options['remove_field_name'],
+            'remove_field_label' => $options['remove_field_label'],
             'url' => false === $removable ? $this->createFileUrl($data) : null,
             'value' => ''
         ]);
@@ -103,18 +111,19 @@ final class WebFileType extends AbstractType
             'compound' => function (Options $options): bool {
                 return true === $options['removable'];
             },
-            'data_class' => function (Options $options) {
+            'data_class' => function (Options $options): ?string {
                 return false === $options['removable'] ? WebFile::class : null;
             },
             'image' => false,
             'removable' => false,
             'remove_field_name' => 'remove',
-            'translation_domain' => 'FSiFiles'
+            'remove_field_label' => 'web_file.remove'
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
         $resolver->setAllowedTypes('remove_field_name', ['string']);
+        $resolver->setAllowedTypes('remove_field_label', ['string']);
     }
 
     private function createFileUrl(?WebFile $file): ?string
@@ -132,6 +141,6 @@ final class WebFileType extends AbstractType
             return null;
         }
 
-        return basename($file->getPath());
+        return $this->fileManager->filename($file);;
     }
 }

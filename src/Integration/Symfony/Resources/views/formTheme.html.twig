@@ -1,3 +1,5 @@
+{% trans_default_domain 'FSiFiles' %}
+
 {% block web_file_label -%}
     {% if not removable %}{{ block('form_label') }}{% endif %}
 {%- endblock %}
