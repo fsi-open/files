@@ -114,6 +114,7 @@ final class WebFileType extends AbstractType
             'data_class' => function (Options $options): ?string {
                 return false === $options['removable'] ? WebFile::class : null;
             },
+            'empty_data' => null,
             'image' => false,
             'removable' => false,
             'remove_field_name' => 'remove',
@@ -141,6 +142,6 @@ final class WebFileType extends AbstractType
             return null;
         }
 
-        return $this->fileManager->filename($file);;
+        return $this->fileManager->filename($file);
     }
 }
