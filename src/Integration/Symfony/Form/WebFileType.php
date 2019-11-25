@@ -14,9 +14,9 @@ namespace FSi\Component\Files\Integration\Symfony\Form;
 use Assert\Assertion;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FileUrlResolver;
+use FSi\Component\Files\Integration\Symfony\Form\Listener\RemovableWebFileListener;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableFileTransformer;
-use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableWebFileListener;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Symfony\Component\Form\AbstractType;
@@ -80,7 +80,7 @@ final class WebFileType extends AbstractType
             ]);
 
             $builder->addEventListener(FormEvents::PRE_SUBMIT, new RemovableWebFileListener());
-            $builder->addModelTransformer(new RemovableFileTransformer($builder->getName()));
+            $builder->addModelTransformer(new RemovableFileTransformer(self::FILE_FIELD));
         } else {
             foreach ($this->fileTransformers as $transformer) {
                 $builder->addEventListener(FormEvents::PRE_SUBMIT, $transformer);

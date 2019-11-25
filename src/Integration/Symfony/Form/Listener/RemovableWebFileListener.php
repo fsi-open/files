@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
+namespace FSi\Component\Files\Integration\Symfony\Form\Listener;
 
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use Symfony\Component\Form\FormEvent;
