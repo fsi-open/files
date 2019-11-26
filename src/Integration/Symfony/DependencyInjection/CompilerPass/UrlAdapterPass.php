@@ -39,7 +39,6 @@ final class UrlAdapterPass implements CompilerPassInterface
                     $definition = $container->getDefinition($configuration['service']);
                     $this->validateAdapterServiceDefinition(
                         $definition,
-                        $accumulator,
                         $configuration['service'],
                         $filesystem
                     );
@@ -54,7 +53,6 @@ final class UrlAdapterPass implements CompilerPassInterface
 
     private function validateAdapterServiceDefinition(
         Definition $definition,
-        array $usedAdapters,
         string $id,
         string $filesystem
     ): void {
@@ -68,12 +66,6 @@ final class UrlAdapterPass implements CompilerPassInterface
                 $filesystem,
                 UrlAdapter::class
             )
-        );
-
-        Assertion::notInArray(
-            $definition,
-            $usedAdapters,
-            "Service \"{$id}\" is used more than one time."
         );
     }
 }
