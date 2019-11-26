@@ -47,6 +47,10 @@ final class FilesBundle extends Bundle
         if (true === $container->hasExtension('doctrine')) {
             $loader->load('doctrine.xml');
         }
+
+        if (true === $container->hasExtension('twig')) {
+            $loader->load('twig.xml');
+        }
     }
 
     public function getContainerExtension(): ?ExtensionInterface

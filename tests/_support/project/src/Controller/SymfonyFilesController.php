@@ -83,7 +83,7 @@ final class SymfonyFilesController
         return new Response(
             $this->twig->render(
                 'symfonyForm.html.twig',
-                ['form' => $form->createView(), 'message' => $message]
+                ['form' => $form->createView(), 'message' => $message, 'file' => $entity->getFile()]
             )
         );
     }

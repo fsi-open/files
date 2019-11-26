@@ -9,8 +9,9 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
+namespace FSi\Component\Files\Integration\Symfony\Form\Listener;
 
+use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use Symfony\Component\Form\FormEvent;
 use function array_key_exists;
 use function is_array;
@@ -20,19 +21,16 @@ final class RemovableWebFileListener
     public function __invoke(FormEvent $event): void
     {
         $data = $event->getData();
-        $removableField = $event->getForm()->getConfig()->getOption('remove_field_name');
-        if (false === is_array($data) || false === array_key_exists($removableField, $data)) {
+        if (false === is_array($data) || false === array_key_exists(WebFileType::REMOVE_FIELD, $data)) {
             return;
         }
 
-        if ('1' !== $data[$removableField]) {
+        if ('1' !== $data[WebFileType::REMOVE_FIELD]) {
             return;
         }
 
-        $fileFieldName = $event->getForm()->getName();
-        $event->getForm()->get($fileFieldName)->setData(null);
-
-        unset($data[$fileFieldName]);
+        $event->getForm()->get(WebFileType::FILE_FIELD)->setData(null);
+        unset($data[WebFileType::FILE_FIELD]);
         $event->setData($data);
     }
 }

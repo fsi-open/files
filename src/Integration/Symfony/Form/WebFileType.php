@@ -12,10 +12,11 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
+use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FileUrlResolver;
+use FSi\Component\Files\Integration\Symfony\Form\Listener\RemovableWebFileListener;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableFileTransformer;
-use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableWebFileListener;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Symfony\Component\Form\AbstractType;
@@ -30,17 +31,25 @@ use function array_replace;
 
 final class WebFileType extends AbstractType
 {
+    public const FILE_FIELD = 'file';
+    public const REMOVE_FIELD = 'remove';
+
     /**
      * @var FileUrlResolver
      */
     private $urlResolver;
 
     /**
+     * @var FileManager
+     */
+    private $fileManager;
+
+    /**
      * @var FormFileTransformer[]
      */
     private $fileTransformers;
 
-    public function __construct(FileUrlResolver $urlResolver, iterable $fileTransformers)
+    public function __construct(FileUrlResolver $urlResolver, FileManager $fileManager, iterable $fileTransformers)
     {
         if (false === is_array($fileTransformers)) {
             $fileTransformers = iterator_to_array($fileTransformers);
@@ -48,6 +57,7 @@ final class WebFileType extends AbstractType
 
         Assertion::allIsInstanceOf($fileTransformers, FormFileTransformer::class);
         $this->urlResolver = $urlResolver;
+        $this->fileManager = $fileManager;
         $this->fileTransformers = $fileTransformers;
     }
 
@@ -57,20 +67,23 @@ final class WebFileType extends AbstractType
             /** @var array $fileFieldOptions */
             $fileFieldOptions = array_replace($options, [
                 'allow_file_upload' => true,
+                'block_prefix' => 'web_file_file',
                 'compound' => false,
                 'error_bubbling' => false,
                 'removable' => false
             ]);
 
-            $builder->add($builder->getName(), WebFileType::class, $fileFieldOptions);
-            $builder->add($options['remove_field_name'], CheckboxType::class, [
-                'label' => 'web_file.remove',
+            $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
+            $builder->add(self::REMOVE_FIELD, CheckboxType::class, [
+                'label' => $options['remove_field_label'],
+                'block_prefix' => 'web_file_remove',
                 'mapped' => false,
-                'required' => false
+                'required' => false,
+                'translation_domain' => 'FSiFiles'
             ]);
 
             $builder->addEventListener(FormEvents::PRE_SUBMIT, new RemovableWebFileListener());
-            $builder->addModelTransformer(new RemovableFileTransformer($builder->getName()));
+            $builder->addModelTransformer(new RemovableFileTransformer(self::FILE_FIELD));
         } else {
             foreach ($this->fileTransformers as $transformer) {
                 $builder->addEventListener(FormEvents::PRE_SUBMIT, $transformer);
@@ -85,10 +98,11 @@ final class WebFileType extends AbstractType
         $view->vars = array_replace($view->vars, [
             'basename' => false === $removable ? $this->createFileBasename($data) : null,
             'image' => $options['image'],
+            'label' => false === $removable ? $view->vars['label'] : false,
             'multipart' => true,
             'multiple' => false,
             'removable' => $removable,
-            'remove_field_name' => $options['remove_field_name'],
+            'type' => 'file',
             'url' => false === $removable ? $this->createFileUrl($data) : null,
             'value' => ''
         ]);
@@ -103,18 +117,18 @@ final class WebFileType extends AbstractType
             'compound' => function (Options $options): bool {
                 return true === $options['removable'];
             },
-            'data_class' => function (Options $options) {
+            'data_class' => function (Options $options): ?string {
                 return false === $options['removable'] ? WebFile::class : null;
             },
+            'empty_data' => null,
             'image' => false,
             'removable' => false,
-            'remove_field_name' => 'remove',
-            'translation_domain' => 'FSiFiles'
+            'remove_field_label' => 'web_file.remove'
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
-        $resolver->setAllowedTypes('remove_field_name', ['string']);
+        $resolver->setAllowedTypes('remove_field_label', ['string']);
     }
 
     private function createFileUrl(?WebFile $file): ?string
@@ -132,6 +146,6 @@ final class WebFileType extends AbstractType
             return null;
         }
 
-        return basename($file->getPath());
+        return $this->fileManager->filename($file);
     }
 }
