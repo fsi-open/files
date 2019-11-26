@@ -13,7 +13,9 @@ namespace FSi\Component\Files\Integration\Symfony\DependencyInjection\CompilerPa
 
 use Assert\Assertion;
 use FSi\Component\Files\FileUrlResolver;
+use FSi\Component\Files\Integration\Symfony\DependencyInjection\Configuration;
 use FSi\Component\Files\UrlAdapter;
+use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -24,10 +26,16 @@ final class UrlAdapterPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container)
     {
+        $processor = new Processor();
+        $configuration = $processor->processConfiguration(
+            new Configuration(),
+            $container->getExtensionConfig('fsi_files')
+        );
+
         $container->getDefinition(FileUrlResolver::class)->replaceArgument(
             '$adapters',
             array_reduce(
-                $container->getExtensionConfig('fsi_files')[0]['adapters'],
+                $configuration['adapters'],
                 function (array $accumulator, array $configuration) use ($container): array {
                     $filesystem = $configuration['filesystem'];
                     Assertion::keyNotExists(
