@@ -67,6 +67,7 @@ final class WebFileType extends AbstractType
             /** @var array $fileFieldOptions */
             $fileFieldOptions = array_replace($options, [
                 'allow_file_upload' => true,
+                'block_prefix' => 'web_file_file',
                 'compound' => false,
                 'error_bubbling' => false,
                 'removable' => false
@@ -75,6 +76,7 @@ final class WebFileType extends AbstractType
             $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
             $builder->add(self::REMOVE_FIELD, CheckboxType::class, [
                 'label' => $options['remove_field_label'],
+                'block_prefix' => 'web_file_remove',
                 'mapped' => false,
                 'required' => false
             ]);
@@ -95,9 +97,11 @@ final class WebFileType extends AbstractType
         $view->vars = array_replace($view->vars, [
             'basename' => false === $removable ? $this->createFileBasename($data) : null,
             'image' => $options['image'],
+            'label' => false === $removable ? $view->vars['label'] : false,
             'multipart' => true,
             'multiple' => false,
             'removable' => $removable,
+            'type' => 'file',
             'url' => false === $removable ? $this->createFileUrl($data) : null,
             'value' => ''
         ]);

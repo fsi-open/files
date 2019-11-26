@@ -1,31 +1,15 @@
-{% block web_file_label -%}
-    {% if not removable %}{{ block('form_label') }}{% endif %}
-{%- endblock web_file_label %}
-
-{% block web_file_widget -%}
-    {% if removable %}
-        {{- form_row(form.file) -}}
-        {{- form_row(form.remove) -}}
-    {% else %}
-        {{ block('web_file_file_widget') }}
-    {% endif %}
-{%- endblock web_file_widget %}
-
-{% block web_file_file_widget %}
-    {%- set type = 'file' -%}
-    <div>
-        {{- block('form_widget_simple') -}}
-        <label for="{{ form.vars.id }}" {% with { attr: label_attr } only %}{{ block('attributes') }}{% endwith %}>
-            {%- if attr.placeholder is defined -%}
-                {{- translation_domain is same as(false) ? attr.placeholder : attr.placeholder|trans({}, translation_domain) -}}
-            {%- endif -%}
-        </label>
-        {% if url is not empty and basename is not empty %}
-            {% if image %}
-                <img src="{{ url }}" alt="{{ basename }}" width="200" />
-            {% else %}
-                <a href="{{ url }}" target="_blank">{{ basename }}</a>
-            {% endif %}
+{% block web_file_label %}
+    <label for="{{ form.vars.id }}" {% with { attr: label_attr } only %}{{ block('attributes') }}{% endwith %}>
+        {%- if label is defined -%}
+            {{- translation_domain is same as(false) ? label : label|trans({}, translation_domain) -}}
+        {%- endif -%}
+    </label>
+    {% if url is not empty and basename is not empty %}
+        <br />
+        {% if image %}
+            <img src="{{ url }}" alt="{{ basename }}" width="200" />
+        {% else %}
+            <a href="{{ url }}" target="_blank">{{ basename }}</a>
         {% endif %}
-    </div>
-{% endblock web_file_file_widget %}
+    {% endif %}
+{% endblock %}
