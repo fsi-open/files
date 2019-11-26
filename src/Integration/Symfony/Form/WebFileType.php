@@ -78,7 +78,8 @@ final class WebFileType extends AbstractType
                 'label' => $options['remove_field_label'],
                 'block_prefix' => 'web_file_remove',
                 'mapped' => false,
-                'required' => false
+                'required' => false,
+                'translation_domain' => 'FSiFiles'
             ]);
 
             $builder->addEventListener(FormEvents::PRE_SUBMIT, new RemovableWebFileListener());
@@ -122,8 +123,7 @@ final class WebFileType extends AbstractType
             'empty_data' => null,
             'image' => false,
             'removable' => false,
-            'remove_field_label' => 'web_file.remove',
-            'translation_domain' => 'FSiFiles'
+            'remove_field_label' => 'web_file.remove'
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
