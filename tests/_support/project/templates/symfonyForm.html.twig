@@ -4,6 +4,9 @@
 {% if message is not null %}
     <p>{{ message|nl2br|raw }}</p>
 {% endif %}
+{% if file is not null %}
+    <a href="{{ file|file_url }}">{{ file|file_name }}</a>
+{% endif %}
 {% form_theme form '@Files/formTheme.html.twig' %}
 {{ form_start(form) }}
     {{ form_rest(form) }}
