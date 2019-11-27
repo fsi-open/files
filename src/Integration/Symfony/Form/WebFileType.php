@@ -64,23 +64,23 @@ final class WebFileType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         if (true === $options['removable']) {
+            /** @var array $removeFieldOptions */
+            $removeFieldOptions = array_replace($options['remove_field_options'], [
+                'mapped' => false,
+                'required' => false
+            ]);
+            unset($options['remove_field_options']);
+
             /** @var array $fileFieldOptions */
             $fileFieldOptions = array_replace($options, [
                 'allow_file_upload' => true,
                 'block_prefix' => 'web_file_file',
                 'compound' => false,
-                'error_bubbling' => false,
                 'removable' => false
             ]);
 
             $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
-            $builder->add(self::REMOVE_FIELD, CheckboxType::class, [
-                'label' => $options['remove_field_label'],
-                'block_prefix' => 'web_file_remove',
-                'mapped' => false,
-                'required' => false,
-                'translation_domain' => 'FSiFiles'
-            ]);
+            $builder->add(self::REMOVE_FIELD, CheckboxType::class, $removeFieldOptions);
 
             $builder->addEventListener(FormEvents::PRE_SUBMIT, new RemovableWebFileListener());
             $builder->addModelTransformer(new RemovableFileTransformer(self::FILE_FIELD));
@@ -123,12 +123,16 @@ final class WebFileType extends AbstractType
             'empty_data' => null,
             'image' => false,
             'removable' => false,
-            'remove_field_label' => 'web_file.remove'
+            'remove_field_options' => [
+                'block_prefix' => 'web_file_remove',
+                'label' => 'web_file.remove',
+                'translation_domain' => 'FSiFiles'
+            ]
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
-        $resolver->setAllowedTypes('remove_field_label', ['string']);
+        $resolver->setAllowedTypes('remove_field_options', ['array']);
     }
 
     private function createFileUrl(?WebFile $file): ?string
