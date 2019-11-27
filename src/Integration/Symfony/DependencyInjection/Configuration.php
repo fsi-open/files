@@ -34,8 +34,11 @@ final class Configuration implements ConfigurationInterface
         $adaptersNode->end();
 
         /** @var NodeBuilder $entitiesChildren */
-        $entitiesChildren = $rootChildren->arrayNode('entities')->arrayPrototype()->children();
-        $entitiesChildren->scalarNode('class')->cannotBeEmpty()->end();
+        $entitiesChildren = $rootChildren->arrayNode('entities')
+            ->useAttributeAsKey('class')
+            ->arrayPrototype()
+            ->children()
+        ;
         $entitiesChildren->scalarNode('prefix')->cannotBeEmpty()->end();
         $entitiesChildren->scalarNode('filesystem')->cannotBeEmpty()->end();
 

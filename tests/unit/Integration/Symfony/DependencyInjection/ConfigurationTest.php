@@ -32,8 +32,7 @@ final class ConfigurationTest extends Unit
                         'temporary' => 'adapter_service_id'
                     ],
                     'entities' => [
-                        [
-                            'class' => 'stdClass',
+                        'stdClass' => [
                             'prefix' => 'std_class',
                             'filesystem' => 'temporary',
                             'fields' => [
@@ -57,8 +56,7 @@ final class ConfigurationTest extends Unit
                     'temporary' => 'adapter_service_id'
                 ],
                 'entities' => [
-                    [
-                        'class' => 'stdClass',
+                    'stdClass' => [
                         'prefix' => 'std_class',
                         'filesystem' => 'temporary',
                         'fields' => [

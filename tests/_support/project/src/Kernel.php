@@ -126,8 +126,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'other_public' => 'fsi_files.url_adapter.other_public'
             ],
             'entities' => [
-                [
-                    'class' => FileEntity::class,
+                FileEntity::class => [
                     'prefix' => 'file_entity',
                     'filesystem' => 'public',
                     'fields' => [
