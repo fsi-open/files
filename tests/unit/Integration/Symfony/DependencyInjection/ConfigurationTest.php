@@ -29,11 +29,10 @@ final class ConfigurationTest extends Unit
             [
                 [
                     'adapters' => [
-                        ['filesystem' => 'temporary', 'service' => 'adapter_service_id']
+                        'temporary' => 'adapter_service_id'
                     ],
                     'entities' => [
-                        [
-                            'class' => 'stdClass',
+                        'stdClass' => [
                             'prefix' => 'std_class',
                             'filesystem' => 'temporary',
                             'fields' => [
@@ -43,7 +42,7 @@ final class ConfigurationTest extends Unit
                                     'pathField' => 'fileKey',
                                     'prefix' => 'someprefix'
                                 ],
-                                ['name' => 'file']
+                                'anotherFile'
                             ]
                         ]
                     ]
@@ -54,11 +53,10 @@ final class ConfigurationTest extends Unit
         $this->assertSame(
             [
                 'adapters' => [
-                    ['filesystem' => 'temporary', 'service' => 'adapter_service_id']
+                    'temporary' => 'adapter_service_id'
                 ],
                 'entities' => [
-                    [
-                        'class' => 'stdClass',
+                    'stdClass' => [
                         'prefix' => 'std_class',
                         'filesystem' => 'temporary',
                         'fields' => [
@@ -69,7 +67,7 @@ final class ConfigurationTest extends Unit
                                 'prefix' => 'someprefix'
                             ],
                             [
-                                'name' => 'file',
+                                'name' => 'anotherFile',
                                 'filesystem' => null,
                                 'pathField' => null,
                                 'prefix' => null

@@ -19,7 +19,6 @@ use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use function array_reduce;
 use function sprintf;
 
 final class UrlAdapterPass implements CompilerPassInterface
@@ -34,29 +33,27 @@ final class UrlAdapterPass implements CompilerPassInterface
 
         $container->getDefinition(FileUrlResolver::class)->replaceArgument(
             '$adapters',
-            array_reduce(
-                $configuration['adapters'],
-                function (array $accumulator, array $configuration) use ($container): array {
-                    $filesystem = $configuration['filesystem'];
-                    Assertion::keyNotExists(
-                        $accumulator,
-                        $filesystem,
-                        "Duplicate entry for filesystem \"{$filesystem}\"."
-                    );
-
-                    $definition = $container->getDefinition($configuration['service']);
-                    $this->validateAdapterServiceDefinition(
-                        $definition,
-                        $configuration['service'],
-                        $filesystem
-                    );
-
-                    $accumulator[$filesystem] = $definition;
-                    return $accumulator;
-                },
-                []
-            )
+            $this->adaptersConfigurationToServices($container, $configuration['adapters'])
         );
+    }
+
+    private function adaptersConfigurationToServices(ContainerBuilder $container, array $configuration): array
+    {
+        $services = [];
+        foreach ($configuration as $filesystem => $serviceId) {
+            Assertion::keyNotExists(
+                $services,
+                $filesystem,
+                "Duplicate entry for filesystem \"{$filesystem}\"."
+            );
+
+            $definition = $container->getDefinition($serviceId);
+            $this->validateAdapterServiceDefinition($definition, $serviceId, $filesystem);
+
+            $services[$filesystem] = $definition;
+        }
+
+        return $services;
     }
 
     private function validateAdapterServiceDefinition(

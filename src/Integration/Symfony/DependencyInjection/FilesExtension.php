@@ -48,37 +48,35 @@ final class FilesExtension extends Extension
 
     private function createEntitiesFieldsConfigurations($configuration): array
     {
-        return array_reduce(
-            $configuration['entities'],
-            function (array $accumulator, array $entityConfiguration): array {
-                $class = $entityConfiguration['class'];
-                $filesystem = $entityConfiguration['filesystem'];
-                $filesystemPrefix = $entityConfiguration['prefix'];
-                Assertion::false(
-                    $this->startsOrEndsWithSlashes($filesystemPrefix),
-                    "Prefix for filesystem \"{$filesystem}\" cannot start or end with a slash"
-                );
+        $fieldsConfiguration = [];
+        foreach ($configuration['entities'] as $class => $entityConfiguration) {
+            $filesystem = $entityConfiguration['filesystem'];
+            $filesystemPrefix = $entityConfiguration['prefix'];
+            Assertion::false(
+                $this->startsOrEndsWithSlashes($filesystemPrefix),
+                "Prefix for filesystem \"{$filesystem}\" cannot start or end with a slash"
+            );
 
-                $entityFieldsConfiguration = array_map(
-                    function (array $fieldConfiguration) use (
+            $entityFieldsConfiguration = array_map(
+                function (array $fieldConfiguration) use (
+                    $class,
+                    $filesystem,
+                    $filesystemPrefix
+                ): Definition {
+                    return $this->createFilePropertyConfigurationDefinition(
                         $class,
                         $filesystem,
-                        $filesystemPrefix
-                    ): Definition {
-                        return $this->createFilePropertyConfigurationDefinition(
-                            $class,
-                            $filesystem,
-                            $filesystemPrefix,
-                            $fieldConfiguration
-                        );
-                    },
-                    $entityConfiguration['fields']
-                );
+                        $filesystemPrefix,
+                        $fieldConfiguration
+                    );
+                },
+                $entityConfiguration['fields']
+            );
 
-                return array_merge($accumulator, $entityFieldsConfiguration);
-            },
-            []
-        );
+            $fieldsConfiguration = array_merge($fieldsConfiguration, $entityFieldsConfiguration);
+        }
+
+        return $fieldsConfiguration;
     }
 
     private function createFilePropertyConfigurationDefinition(

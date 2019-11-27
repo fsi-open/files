@@ -61,7 +61,11 @@
         "cept": "vendor/bin/codecept --ansi",
         "func": "vendor/bin/codecept --ansi run functional",
         "unit": "vendor/bin/codecept --ansi run unit",
-        "cl": "tests/_support/project/bin/console --ansi"
+        "cl": "tests/_support/project/bin/console --ansi",
+        "db": [
+            "tests/_support/project/bin/console --ansi doctrine:database:create",
+            "tests/_support/project/bin/console --ansi doctrine:schema:create"
+        ]
     },
     "config": {
         "bin-dir": "vendor/bin",
