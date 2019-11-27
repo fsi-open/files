@@ -42,14 +42,28 @@ final class Configuration implements ConfigurationInterface
         $entitiesChildren->scalarNode('prefix')->cannotBeEmpty()->end();
         $entitiesChildren->scalarNode('filesystem')->cannotBeEmpty()->end();
 
+        /** @var ArrayNodeDefinition $fieldsChildrenNode */
+        $fieldsChildrenNode = $entitiesChildren->arrayNode('fields')->beforeNormalization()->castToArray()->end();
+        /** @var ArrayNodeDefinition $fieldsChildrenPrototype */
+        $fieldsChildrenPrototype = $fieldsChildrenNode->arrayPrototype()
+            ->beforeNormalization()
+                ->ifTrue(function ($argument): bool {
+                    return is_string($argument);
+                })
+                ->then(function (string $argument): array {
+                    return ['name' => $argument, 'filesystem' => null, 'pathField' => null, 'prefix'=> null];
+                })
+                ->end()
+        ;
+
         /** @var NodeBuilder $fieldsChildren */
-        $fieldsChildren = $entitiesChildren->arrayNode('fields')->arrayPrototype()->children();
-        $fieldsChildren->scalarNode('name')->cannotBeEmpty()->end();
+        $fieldsChildren = $fieldsChildrenPrototype->children();
+        $fieldsChildren->scalarNode('name')->defaultNull()->end();
         $fieldsChildren->scalarNode('filesystem')->defaultNull()->end();
         $fieldsChildren->scalarNode('pathField')->defaultNull()->end();
         $fieldsChildren->scalarNode('prefix')->defaultNull()->end();
-        $fieldsChildren->end();
 
+        $fieldsChildren->end();
         $entitiesChildren->end();
         $rootChildren->end();
         $root->end();

@@ -130,7 +130,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                     'prefix' => 'file_entity',
                     'filesystem' => 'public',
                     'fields' => [
-                        ['name' => 'file'],
+                        'file',
                         [
                             'name' => 'anotherFile',
                             'filesystem' => 'other_public',

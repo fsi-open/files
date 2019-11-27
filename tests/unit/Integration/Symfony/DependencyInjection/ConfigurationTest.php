@@ -42,7 +42,7 @@ final class ConfigurationTest extends Unit
                                     'pathField' => 'fileKey',
                                     'prefix' => 'someprefix'
                                 ],
-                                ['name' => 'file']
+                                'anotherFile'
                             ]
                         ]
                     ]
@@ -67,7 +67,7 @@ final class ConfigurationTest extends Unit
                                 'prefix' => 'someprefix'
                             ],
                             [
-                                'name' => 'file',
+                                'name' => 'anotherFile',
                                 'filesystem' => null,
                                 'pathField' => null,
                                 'prefix' => null
