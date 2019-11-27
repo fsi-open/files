@@ -29,7 +29,7 @@ final class ConfigurationTest extends Unit
             [
                 [
                     'adapters' => [
-                        ['filesystem' => 'temporary', 'service' => 'adapter_service_id']
+                        'temporary' => 'adapter_service_id'
                     ],
                     'entities' => [
                         [
@@ -54,7 +54,7 @@ final class ConfigurationTest extends Unit
         $this->assertSame(
             [
                 'adapters' => [
-                    ['filesystem' => 'temporary', 'service' => 'adapter_service_id']
+                    'temporary' => 'adapter_service_id'
                 ],
                 'entities' => [
                     [
