@@ -121,7 +121,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         ]);
 
         $container->loadFromExtension('fsi_files', [
-            'adapters' => [
+            'url_adapters' => [
                 'public' => 'fsi_files.url_adapter.public',
                 'other_public' => 'fsi_files.url_adapter.other_public'
             ],

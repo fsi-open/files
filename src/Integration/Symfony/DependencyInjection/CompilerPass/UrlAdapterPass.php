@@ -33,7 +33,7 @@ final class UrlAdapterPass implements CompilerPassInterface
 
         $container->getDefinition(FileUrlResolver::class)->replaceArgument(
             '$adapters',
-            $this->adaptersConfigurationToServices($container, $configuration['adapters'])
+            $this->adaptersConfigurationToServices($container, $configuration['url_adapters'])
         );
     }
 

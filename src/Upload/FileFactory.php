@@ -23,4 +23,6 @@ interface FileFactory
         int $size,
         ?int $error
     ): UploadedWebFile;
+
+    public function createFromPath(string $path, ?string $targetName = null): UploadedWebFile;
 }

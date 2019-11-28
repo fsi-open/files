@@ -28,7 +28,7 @@ final class ConfigurationTest extends Unit
             new Configuration(),
             [
                 [
-                    'adapters' => [
+                    'url_adapters' => [
                         'temporary' => 'adapter_service_id'
                     ],
                     'entities' => [
@@ -52,7 +52,7 @@ final class ConfigurationTest extends Unit
 
         $this->assertSame(
             [
-                'adapters' => [
+                'url_adapters' => [
                     'temporary' => 'adapter_service_id'
                 ],
                 'entities' => [
