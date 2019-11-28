@@ -29,7 +29,7 @@ final class Configuration implements ConfigurationInterface
         $rootChildren = $root->children();
 
         /** @var ArrayNodeDefinition $adaptersNode */
-        $adaptersNode = $rootChildren->arrayNode('adapters')->beforeNormalization()->castToArray()->end();
+        $adaptersNode = $rootChildren->arrayNode('url_adapters')->beforeNormalization()->castToArray()->end();
         $adaptersNode->useAttributeAsKey('filesystem')->prototype('scalar')->end();
         $adaptersNode->end();
 
