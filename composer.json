@@ -1,5 +1,5 @@
 {
-    "name": "fsi-open/files",
+    "name": "fsi/files",
     "license": "proprietary",
     "type": "library",
     "description": "A library for handling file upload and storage",
