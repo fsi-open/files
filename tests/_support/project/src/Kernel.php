@@ -18,7 +18,9 @@ use FSi\Component\Files\UrlAdapter\BaseUrlAdapter;
 use FSi\Tests\App\Controller\IndexController;
 use FSi\Tests\App\Controller\NativeFilesController;
 use FSi\Tests\App\Controller\SymfonyFilesController;
+use FSi\Tests\App\Entity\EmbeddedFile;
 use FSi\Tests\App\Entity\FileEntity;
+use FSi\Tests\App\Entity\TwiceEmbeddedFile;
 use FSi\Tests\App\Http\UriFactory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -138,6 +140,16 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                             'prefix' => 'anotherFile'
                         ]
                     ]
+                ],
+                EmbeddedFile::class => [
+                    'prefix' => 'embeddable',
+                    'filesystem' => 'public',
+                    'fields' => ['file']
+                ],
+                TwiceEmbeddedFile::class => [
+                    'prefix' => 'embeddable',
+                    'filesystem' => 'public',
+                    'fields' => ['file']
                 ]
             ]
         ]);

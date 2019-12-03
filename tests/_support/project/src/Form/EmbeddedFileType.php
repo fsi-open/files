@@ -13,38 +13,30 @@ namespace FSi\Tests\App\Form;
 
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImage;
-use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
-use FSi\Tests\App\Entity\FileEntity;
+use FSi\Tests\App\Entity\EmbeddedFile;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-final class FormTestType extends AbstractType
+final class EmbeddedFileType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('file', WebFileType::class, [
-            'label' => 'Standard file',
-            'constraints' => [new UploadedWebFile()],
+            'label' => 'Removable embedded image',
+            'constraints' => [new NotBlank(), new UploadedImage()],
+            'image' => true,
             'removable' => true,
             'required' => false
         ]);
 
-        $builder->add('anotherFile', WebFileType::class, [
-            'label' => 'Image file',
-            'constraints' => [new NotBlank(), new UploadedImage()],
-            'image' => true,
-            'required' => false
-        ]);
-
-        $builder->add('embeddedFile', EmbeddedFileType::class);
+        $builder->add('embeddedFile', TwiceEmbeddedFileType::class);
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefault('data_class', FileEntity::class);
-        $resolver->setDefault('method', Request::METHOD_POST);
+        $resolver->setDefault('data_class', EmbeddedFile::class);
+        $resolver->setDefault('label', false);
     }
 }

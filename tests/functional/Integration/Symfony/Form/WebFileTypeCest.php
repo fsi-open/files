@@ -28,8 +28,12 @@ final class WebFileTypeCest
 
         $I->see('Standard file', 'label');
         $I->see('Image file', 'label');
+        $I->see('Removable embedded image', 'label');
+        $I->see('Removable twice embedded image', 'label');
         $I->attachFile('Standard file', 'test_pdf.pdf');
         $I->attachFile('Image file', 'test.jpg');
+        $I->attachFile('Removable embedded image', 'test.jpg');
+        $I->attachFile('Removable twice embedded image', 'test.jpg');
 
         $I->submitForm('form', [], 'Submit');
 
@@ -46,8 +50,20 @@ final class WebFileTypeCest
         $I->assertInstanceOf(WebFile::class, $entity->getAnotherFile());
         $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getAnotherFile());
 
+        $embeddedFile = $entity->getEmbeddedFile();
+        Assertion::notNull($embeddedFile);
+        $I->assertInstanceOf(WebFile::class, $embeddedFile->file);
+        $I->assertNotInstanceOf(UploadedWebFile::class, $embeddedFile->file);
+
+        $twiceEmbeddedFile = $embeddedFile->embeddedFile;
+        Assertion::notNull($twiceEmbeddedFile);
+        $I->assertInstanceOf(WebFile::class, $twiceEmbeddedFile->file);
+        $I->assertNotInstanceOf(UploadedWebFile::class, $twiceEmbeddedFile->file);
+
         $I->amOnPage('/symfony');
-        $I->checkOption('Remove file');
+        $I->checkOption('#form_test_file_remove');
+        $I->checkOption('#form_test_embeddedFile_file_remove');
+        $I->checkOption('#form_test_embeddedFile_embeddedFile_file_remove');
         $I->submitForm('form', [], 'Submit');
 
         /** @var FileEntity|null $entity */
@@ -57,5 +73,13 @@ final class WebFileTypeCest
 
         $I->assertInstanceOf(WebFile::class, $entity->getAnotherFile());
         $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getAnotherFile());
+
+        $embeddedFile = $entity->getEmbeddedFile();
+        Assertion::notNull($embeddedFile);
+        $I->assertNull($embeddedFile->file);
+
+        $twiceEmbeddedFile = $embeddedFile->embeddedFile;
+        Assertion::notNull($twiceEmbeddedFile);
+        $I->assertNull($twiceEmbeddedFile->file);
     }
 }
