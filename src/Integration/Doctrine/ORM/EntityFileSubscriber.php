@@ -12,10 +12,12 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use Doctrine\Common\EventSubscriber;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
+use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Entity\FileUpdater;
@@ -55,26 +57,44 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function postLoad(LifecycleEventArgs $event): void
     {
-        $this->fileLoader->loadEntityFiles($event->getEntity());
+        $this->callIterativelyForObjectAndItsEmbbedables(
+            [$this->fileLoader, 'loadEntityFiles'],
+            $event->getEntityManager(),
+            $event->getEntity()
+        );
     }
 
     public function prePersist(LifecycleEventArgs $event): void
     {
-        $this->fileUpdater->updateFiles($event->getEntity());
+        $this->callIterativelyForObjectAndItsEmbbedables(
+            [$this->fileUpdater, 'updateFiles'],
+            $event->getEntityManager(),
+            $event->getEntity()
+        );
     }
 
     public function preRemove(LifecycleEventArgs $event): void
     {
-        $this->fileRemover->clearEntityFiles($event->getEntity());
+        $this->callIterativelyForObjectAndItsEmbbedables(
+            [$this->fileRemover, 'clearEntityFiles'],
+            $event->getEntityManager(),
+            $event->getEntity()
+        );
     }
 
     public function preFlush(PreFlushEventArgs $eventArgs): void
     {
-        $identityMap = $eventArgs->getEntityManager()->getUnitOfWork()->getIdentityMap();
+        /** @var EntityManagerInterface $manager */
+        $manager = $eventArgs->getEntityManager();
+        $identityMap = $manager->getUnitOfWork()->getIdentityMap();
 
-        array_walk($identityMap, function (array $entities): void {
-            array_walk($entities, function (object $entity): void {
-                $this->fileUpdater->updateFiles($entity);
+        array_walk($identityMap, function (array $entities) use ($manager): void {
+            array_walk($entities, function (object $entity) use ($manager): void {
+                $this->callIterativelyForObjectAndItsEmbbedables(
+                    [$this->fileUpdater, 'updateFiles'],
+                    $manager,
+                    $entity
+                );
             });
         });
     }
@@ -82,5 +102,40 @@ final class EntityFileSubscriber implements EventSubscriber
     public function postFlush(PostFlushEventArgs $event): void
     {
         $this->fileRemover->flush();
+    }
+
+    private function callIterativelyForObjectAndItsEmbbedables(
+        callable $callable,
+        EntityManagerInterface $manager,
+        object $object
+    ): void {
+        $callable($object);
+
+        /** @var ClassMetadataInfo $metadata */
+        $metadata = $manager->getClassMetadata(get_class($object));
+        array_walk(
+            $metadata->embeddedClasses,
+            function (
+                array $configuration,
+                string $property,
+                callable $callable
+            ) use (
+                $object,
+                $manager,
+                $metadata
+            ): void {
+                if (null !== $configuration['declaredField'] || null !== $configuration['originalField']) {
+                    return;
+                }
+
+                $embeddable = $metadata->getFieldValue($object, $property);
+                if (null === $embeddable) {
+                    return;
+                }
+
+                $this->callIterativelyForObjectAndItsEmbbedables($callable, $manager, $embeddable);
+            },
+            $callable
+        );
     }
 }

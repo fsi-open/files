@@ -63,6 +63,7 @@
         "unit": "vendor/bin/codecept --ansi run unit",
         "cl": "tests/_support/project/bin/console --ansi",
         "db": [
+            "tests/_support/project/bin/console --ansi doctrine:schema:drop --force",
             "tests/_support/project/bin/console --ansi doctrine:database:create",
             "tests/_support/project/bin/console --ansi doctrine:schema:create"
         ]

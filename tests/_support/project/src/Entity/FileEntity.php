@@ -40,6 +40,11 @@ final class FileEntity
      */
     private $anotherFileKey;
 
+    /**
+     * @var EmbeddedFile|null
+     */
+    private $embeddedFile;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -88,5 +93,15 @@ final class FileEntity
     public function setAnotherFileKey(?string $anotherFileKey): void
     {
         $this->anotherFileKey = $anotherFileKey;
+    }
+
+    public function getEmbeddedFile(): ?EmbeddedFile
+    {
+        return $this->embeddedFile;
+    }
+
+    public function setEmbeddedFile(?EmbeddedFile $embeddedFile): void
+    {
+        $this->embeddedFile = $embeddedFile;
     }
 }

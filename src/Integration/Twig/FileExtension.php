@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Integration\Twig;
 
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FileUrlResolver;
+use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -39,9 +40,17 @@ final class FileExtension extends AbstractExtension
     {
         return [
             new TwigFilter('file_url', function (WebFile $file): string {
+                if (true === $file instanceof UploadedWebFile) {
+                    return '';
+                }
+
                 return (string) $this->fileUrlResolver->resolve($file);
             }),
             new TwigFilter('file_name', function (WebFile $file): string {
+                if (true === $file instanceof UploadedWebFile) {
+                    return '';
+                }
+
                 return $this->fileManager->filename($file);
             })
         ];
