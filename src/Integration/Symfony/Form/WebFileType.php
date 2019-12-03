@@ -77,7 +77,8 @@ final class WebFileType extends AbstractType
                 'block_prefix' => 'web_file_file',
                 'compound' => false,
                 'removable' => false,
-                'error_bubbling' => false
+                'error_bubbling' => false,
+                'error_mapping' => []
             ]);
 
             $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
@@ -125,6 +126,9 @@ final class WebFileType extends AbstractType
                 return false === $options['removable'] ? WebFile::class : null;
             },
             'empty_data' => null,
+            'error_mapping' => function (Options $options): array {
+                return true === $options['removable'] ? ['.' => self::FILE_FIELD] : [];
+            },
             'image' => false,
             'removable' => false,
             'remove_field_options' => [
