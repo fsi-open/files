@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use Doctrine\Common\EventSubscriber;
+use Doctrine\Common\Persistence\Proxy;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -90,6 +91,10 @@ final class EntityFileSubscriber implements EventSubscriber
 
         array_walk($identityMap, function (array $entities) use ($manager): void {
             array_walk($entities, function (object $entity) use ($manager): void {
+                if (true === $entity instanceof Proxy) {
+                    $entity->__load();
+                }
+
                 $this->callIterativelyForObjectAndItsEmbbedables(
                     [$this->fileUpdater, 'updateFiles'],
                     $manager,
