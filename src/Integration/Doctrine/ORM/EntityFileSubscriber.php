@@ -110,7 +110,7 @@ final class EntityFileSubscriber implements EventSubscriber
         EntityManagerInterface $manager,
         object $object
     ): void {
-        if (true === $object instanceof Proxy) {
+        if (true === $object instanceof Proxy && false === $object->__isInitialized()) {
             $object->__load();
         }
 
