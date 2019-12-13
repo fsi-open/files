@@ -91,10 +91,6 @@ final class EntityFileSubscriber implements EventSubscriber
 
         array_walk($identityMap, function (array $entities) use ($manager): void {
             array_walk($entities, function (object $entity) use ($manager): void {
-                if (true === $entity instanceof Proxy) {
-                    $entity->__load();
-                }
-
                 $this->callIterativelyForObjectAndItsEmbbedables(
                     [$this->fileUpdater, 'updateFiles'],
                     $manager,
@@ -114,6 +110,10 @@ final class EntityFileSubscriber implements EventSubscriber
         EntityManagerInterface $manager,
         object $object
     ): void {
+        if (true === $object instanceof Proxy) {
+            $object->__load();
+        }
+
         $callable($object);
 
         /** @var ClassMetadataInfo $metadata */
