@@ -11,6 +11,7 @@
 
         <field name="filePath" nullable="true" />
         <field name="anotherFileKey" nullable="true" />
+        <field name="privateFileKey" nullable="true" />
         <embedded name="embeddedFile" class="FSi\Tests\App\Entity\EmbeddedFile" />
 
     </entity>

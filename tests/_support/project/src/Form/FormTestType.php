@@ -39,6 +39,14 @@ final class FormTestType extends AbstractType
             'required' => false
         ]);
 
+        $builder->add('privateFile', WebFileType::class, [
+            'label' => 'Private file',
+            'constraints' => [new NotBlank()],
+            'image' => true,
+            'required' => false,
+            'resolve_url' => false
+        ]);
+
         $builder->add('embeddedFile', EmbeddedFileType::class);
     }
 
