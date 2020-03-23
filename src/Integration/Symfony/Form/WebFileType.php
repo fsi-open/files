@@ -78,7 +78,8 @@ final class WebFileType extends AbstractType
                 'compound' => false,
                 'removable' => false,
                 'error_bubbling' => false,
-                'error_mapping' => []
+                'error_mapping' => [],
+                'resolve_url' => false
             ]);
 
             $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
@@ -97,6 +98,7 @@ final class WebFileType extends AbstractType
     {
         $data = $form->getData();
         $removable = $options['removable'];
+        $resolveUrl = $options['resolve_url'];
         $view->vars = array_replace($view->vars, [
             'basename' => false === $removable ? $this->createFileBasename($data) : null,
             'image' => $options['image'],
@@ -105,7 +107,7 @@ final class WebFileType extends AbstractType
             'multiple' => false,
             'removable' => $removable,
             'type' => 'file',
-            'url' => false === $removable ? $this->createFileUrl($data) : null,
+            'url' => (false === $removable && true === $resolveUrl) ? $this->createFileUrl($data) : null,
             'value' => ''
         ]);
     }
@@ -135,12 +137,14 @@ final class WebFileType extends AbstractType
                 'block_prefix' => 'web_file_remove',
                 'label' => 'web_file.remove',
                 'translation_domain' => 'FSiFiles'
-            ]
+            ],
+            'resolve_url' => true,
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
         $resolver->setAllowedTypes('remove_field_options', ['array']);
+        $resolver->setAllowedTypes('resolve_url', ['bool']);
     }
 
     private function createFileUrl(?WebFile $file): ?string

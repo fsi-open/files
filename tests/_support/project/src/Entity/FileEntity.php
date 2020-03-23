@@ -41,6 +41,16 @@ final class FileEntity
     private $anotherFileKey;
 
     /**
+     * @var WebFile|null
+     */
+    private $privateFile;
+
+    /**
+     * @var string|null
+     */
+    private $privateFileKey;
+
+    /**
      * @var EmbeddedFile|null
      */
     private $embeddedFile;
@@ -93,6 +103,26 @@ final class FileEntity
     public function setAnotherFileKey(?string $anotherFileKey): void
     {
         $this->anotherFileKey = $anotherFileKey;
+    }
+
+    public function getPrivateFile(): ?WebFile
+    {
+        return $this->privateFile;
+    }
+
+    public function setPrivateFile(?WebFile $privateFile): void
+    {
+        $this->privateFile = $privateFile;
+    }
+
+    public function getPrivateFileKey(): ?string
+    {
+        return $this->privateFileKey;
+    }
+
+    public function setPrivateFileKey(?string $privateFileKey): void
+    {
+        $this->privateFileKey = $privateFileKey;
     }
 
     public function getEmbeddedFile(): ?EmbeddedFile

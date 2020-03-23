@@ -28,16 +28,19 @@ final class WebFileTypeCest
 
         $I->see('Standard file', 'label');
         $I->see('Image file', 'label');
+        $I->see('Private file', 'label');
         $I->see('Removable embedded image', 'label');
         $I->see('Removable twice embedded image', 'label');
         $I->attachFile('Standard file', 'test_pdf.pdf');
         $I->attachFile('Image file', 'test.jpg');
+        $I->attachFile('Private file', 'another_test_pdf.pdf');
         $I->attachFile('Removable embedded image', 'test.jpg');
         $I->attachFile('Removable twice embedded image', 'test.jpg');
 
         $I->submitForm('form', [], 'Submit');
 
         $I->see('test_pdf.pdf', 'a');
+        $I->dontSee('another_test_pdf.pdf', 'a');
         $I->seeElement('img[alt="test.jpg"]');
 
         /** @var FileEntity|null $entity */
@@ -49,6 +52,9 @@ final class WebFileTypeCest
 
         $I->assertInstanceOf(WebFile::class, $entity->getAnotherFile());
         $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getAnotherFile());
+
+        $I->assertInstanceOf(WebFile::class, $entity->getPrivateFile());
+        $I->assertNotInstanceOf(UploadedWebFile::class, $entity->getPrivateFileKey());
 
         $embeddedFile = $entity->getEmbeddedFile();
         Assertion::notNull($embeddedFile);

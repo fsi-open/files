@@ -108,6 +108,11 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                     'local' => [
                         'directory' => sprintf('%s/../public/other_files', __DIR__)
                     ]
+                ],
+                'private_adapter' => [
+                    'local' => [
+                        'directory' => sprintf('%s/../var/private_files', __DIR__)
+                    ]
                 ]
             ],
             'filesystems' => [
@@ -118,6 +123,10 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'other_public' => [
                     'adapter' => 'other_local_adapter',
                     'mount' => 'other_public'
+                ],
+                'private' => [
+                    'adapter' => 'private_adapter',
+                    'mount' => 'private'
                 ]
             ]
         ]);
@@ -138,6 +147,12 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                             'filesystem' => 'other_public',
                             'pathField' => 'anotherFileKey',
                             'prefix' => 'anotherFile'
+                        ],
+                        [
+                            'name' => 'privateFile',
+                            'filesystem' => 'private',
+                            'pathField' => 'privateFileKey',
+                            'prefix' => 'private-file'
                         ]
                     ]
                 ],
