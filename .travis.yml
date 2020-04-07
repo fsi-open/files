@@ -9,7 +9,7 @@ cache:
 
 dist: xenial
 
-php: 7.3
+php: 7.4
 
 install:
     - phpenv config-rm xdebug.ini
@@ -19,6 +19,6 @@ install:
 
 script:
     - composer sniffer
-    - composer cept -- build
+    - composer cept build
     - composer stan
-    - composer cept -- run
+    - composer cept run
