@@ -78,8 +78,7 @@ final class WebFileType extends AbstractType
                 'compound' => false,
                 'removable' => false,
                 'error_bubbling' => false,
-                'error_mapping' => [],
-                'resolve_url' => false
+                'error_mapping' => []
             ]);
 
             $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
