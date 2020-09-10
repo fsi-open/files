@@ -137,6 +137,8 @@ final class FileUpdater
             $file = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
         } elseif (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
             $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
+        } elseif ($configuration->getPathPropertyReflection()->getValue($entity) !== $file->getPath()) {
+            $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
         }
 
         $configuration->getPathPropertyReflection()->setValue($entity, $file->getPath());
