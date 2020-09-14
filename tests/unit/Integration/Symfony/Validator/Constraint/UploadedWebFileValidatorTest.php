@@ -30,7 +30,6 @@ use Symfony\Component\Validator\Context\ExecutionContext;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
-use Symfony\Component\Validator\Validator\ContextualValidatorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use function codecept_data_dir;
@@ -237,7 +236,7 @@ final class UploadedWebFileValidatorTest extends Unit
         ;
     }
 
-    public function testDisallowEmpty()
+    public function testDisallowEmpty(): void
     {
         $constraint = new UploadedWebFile([
             'disallowEmptyMessage' => 'myMessage',
@@ -259,10 +258,19 @@ final class UploadedWebFileValidatorTest extends Unit
     }
 
     /**
+     * @param int $error
+     * @param string $message
+     * @param array<string, mixed> $params
+     * @param string|null $maxSize
+     *
      * @dataProvider provideUploadedFileError
      */
-    public function testUploadedFileError($error, $message, array $params = [], $maxSize = null)
-    {
+    public function testUploadedFileError(
+        int $error,
+        string $message,
+        array $params = [],
+        ?string $maxSize = null
+    ): void {
         $constraint = new UploadedWebFile([
             $message => 'myMessage',
             'maxSize' => $maxSize,
@@ -276,18 +284,21 @@ final class UploadedWebFileValidatorTest extends Unit
 
         $this->buildViolation('myMessage')
             ->setParameters($params)
-            ->setCode($error)
+            ->setCode((string) $error)
             ->assertRaised()
         ;
     }
 
+    /**
+     * @return array<array{int, string, array<string, mixed>, ?string}>
+     */
     public function provideUploadedFileError(): array
     {
         // access FileValidator::factorizeSizes() private method to format max file size
         $reflection = new ReflectionClass(UploadedWebFileValidator::class);
         $method = $reflection->getMethod('factorizeSizes');
         $method->setAccessible(true);
-        list(, $limit, $suffix) = $method->invokeArgs(
+        [, $limit, $suffix] = $method->invokeArgs(
             new UploadedWebFileValidator(),
             [0, UploadedFile::getMaxFilesize(), false]
         );
@@ -303,7 +314,7 @@ final class UploadedWebFileValidatorTest extends Unit
             [UPLOAD_ERR_INI_SIZE, 'uploadIniSizeErrorMessage', [
                 '{{ limit }}' => UploadedFile::getMaxFilesize() / 1048576,
                 '{{ suffix }}' => 'MiB',
-            ]],
+            ], null],
             // it should use the smaller limitation (maxSize option in this case)
             [UPLOAD_ERR_INI_SIZE, 'uploadIniSizeErrorMessage', [
                 '{{ limit }}' => 1,
@@ -352,11 +363,10 @@ final class UploadedWebFileValidatorTest extends Unit
         // successfully build a violation.
         $this->constraint = new NotNull();
 
-        $context = new ExecutionContext(
-            $this->createMock(ValidatorInterface::class),
-            'root',
-            $this->createMock(TranslatorInterface::class)
-        );
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturn('');
+
+        $context = new ExecutionContext($this->createMock(ValidatorInterface::class), 'root', $translator);
         $context->setGroup('MyGroup');
         $context->setNode('InvalidValue', null, null, 'property.path');
         $context->setConstraint($this->constraint);

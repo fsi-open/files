@@ -38,7 +38,7 @@ class UploadedWebFile extends Constraint
     public $binaryFormat;
 
     /**
-     * @var array|string|null
+     * @var array<string>|string|null
      */
     public $mimeTypes = [];
 
@@ -123,7 +123,11 @@ class UploadedWebFile extends Constraint
         }
     }
 
-    public function __set($option, $value)
+    /**
+     * @param string $option
+     * @param mixed $value
+     */
+    public function __set($option, $value): void
     {
         if ('maxSize' === $option) {
             $this->normalizeBinaryFormat($value);
@@ -143,7 +147,11 @@ class UploadedWebFile extends Constraint
         return parent::__get($option);
     }
 
-    public function __isset($option)
+    /**
+     * @param string $option
+     * @return bool
+     */
+    public function __isset($option): bool
     {
         if ('maxSize' === $option) {
             return true;
@@ -152,7 +160,10 @@ class UploadedWebFile extends Constraint
         return parent::__isset($option);
     }
 
-    private function normalizeBinaryFormat($maxSize)
+    /**
+     * @param mixed $maxSize
+     */
+    private function normalizeBinaryFormat($maxSize): void
     {
         $factors = [
             'k' => 1000,

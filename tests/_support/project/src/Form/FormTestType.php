@@ -23,7 +23,11 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 final class FormTestType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    /**
+     * @param FormBuilderInterface<FormBuilderInterface> $builder
+     * @param array<string, mixed> $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('file', WebFileType::class, [
             'label' => 'Standard file',
@@ -50,7 +54,7 @@ final class FormTestType extends AbstractType
         $builder->add('embeddedFile', EmbeddedFileType::class);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', FileEntity::class);
         $resolver->setDefault('method', Request::METHOD_POST);

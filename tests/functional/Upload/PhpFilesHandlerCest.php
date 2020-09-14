@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Tests\Component\Files\Upload;
 
+use Assert\Assertion;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Tests\FunctionalTester;
 use const UPLOAD_ERR_OK;
@@ -46,7 +47,9 @@ final class PhpFilesHandlerCest
         $uploadedFiles = $I->grabUploadedPhpFiles();
         $I->assertCount(2, $uploadedFiles);
         $I->assertInstanceOf(UploadedWebFile::class, $uploadedFiles['single_file']);
-        $I->assertInstanceOf(UploadedWebFile::class, $uploadedFiles['multiple_files'][0]);
+        $multipleFiles = $uploadedFiles['multiple_files'];
+        Assertion::isArray($multipleFiles);
+        $I->assertInstanceOf(UploadedWebFile::class, $multipleFiles[0]);
     }
 
     public function testCorruptedUpload(FunctionalTester $I): void
@@ -66,7 +69,7 @@ final class PhpFilesHandlerCest
                     'name' => 'test_pdf.pdf',
                     'type' => 'application/pdf',
                     'error' => UPLOAD_ERR_PARTIAL,
-                    'size' => intval(filesize($testPdfPath) / 2),
+                    'size' => (int) (filesize($testPdfPath) / 2),
                     'tmp_name' => $testPdfPath
                 ]
             ]
@@ -75,7 +78,9 @@ final class PhpFilesHandlerCest
         $uploadedFiles = $I->grabUploadedPhpFiles();
         $I->assertCount(1, $uploadedFiles);
 
-        $partialFile = $uploadedFiles['multiple_files'][0];
+        $multipleFiles = $uploadedFiles['multiple_files'];
+        Assertion::isArray($multipleFiles);
+        $partialFile = $multipleFiles[0];
         $I->assertInstanceOf(UploadedWebFile::class, $partialFile);
         $I->assertEquals(UPLOAD_ERR_PARTIAL, $partialFile->getError());
     }

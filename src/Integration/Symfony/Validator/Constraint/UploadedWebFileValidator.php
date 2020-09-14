@@ -35,6 +35,9 @@ class UploadedWebFileValidator extends ConstraintValidator
     private const KIB_BYTES = 1024;
     private const MIB_BYTES = 1048576;
 
+    /**
+     * @var array<int, string>
+     */
     private static $suffices = [
         1 => 'bytes',
         self::KB_BYTES => 'kB',
@@ -43,7 +46,7 @@ class UploadedWebFileValidator extends ConstraintValidator
         self::MIB_BYTES => 'MiB',
     ];
 
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (null === $value || '' === $value) {
             return;
@@ -77,7 +80,7 @@ class UploadedWebFileValidator extends ConstraintValidator
                         $binaryFormat = null !== $constraint->binaryFormat ? $constraint->binaryFormat : true;
                     }
 
-                    list(, $limitAsString, $suffix) = $this->factorizeSizes(0, $limitInBytes, $binaryFormat);
+                    [, $limitAsString, $suffix] = $this->factorizeSizes(0, $limitInBytes, $binaryFormat);
                     $this->context->buildViolation($constraint->uploadIniSizeErrorMessage)
                         ->setParameter('{{ limit }}', $limitAsString)
                         ->setParameter('{{ suffix }}', $suffix)
@@ -146,7 +149,7 @@ class UploadedWebFileValidator extends ConstraintValidator
             $limitInBytes = $constraint->maxSize;
 
             if ($sizeInBytes > $limitInBytes) {
-                list($sizeAsString, $limitAsString, $suffix) = $this->factorizeSizes(
+                [$sizeAsString, $limitAsString, $suffix] = $this->factorizeSizes(
                     $sizeInBytes,
                     $limitInBytes,
                     $constraint->binaryFormat
@@ -175,6 +178,12 @@ class UploadedWebFileValidator extends ConstraintValidator
         $this->validateMimeTypes($constraintMimeTypes, $value->getMimeType(), $constraint->mimeTypesMessage, $basename);
     }
 
+    /**
+     * @param array<string>|string $mimeTypes
+     * @param string $mime
+     * @param string $message
+     * @param string $basename
+     */
     private function validateMimeTypes($mimeTypes, string $mime, string $message, string $basename): void
     {
         if (true === is_string($mimeTypes)) {
@@ -205,14 +214,19 @@ class UploadedWebFileValidator extends ConstraintValidator
         ;
     }
 
-    private static function moreDecimalsThan($double, $numberOfDecimals)
+    private static function moreDecimalsThan(string $double, int $numberOfDecimals): bool
     {
-        return strlen((string) $double) > strlen((string) round($double, $numberOfDecimals));
+        return strlen($double) > strlen((string) round((float) $double, $numberOfDecimals));
     }
 
     /**
      * Convert the limit to the smallest possible number
      * (i.e. try "MB", then "kB", then "bytes").
+     *
+     * @param int $size
+     * @param int $limit
+     * @param bool|null $binaryFormat
+     * @return array{string, string, string}
      */
     private function factorizeSizes(int $size, int $limit, ?bool $binaryFormat): array
     {

@@ -36,10 +36,6 @@ final class SymfonyFileToWebFileTransformer implements FormFileTransformer
             return;
         }
 
-        if (null === $file->getClientOriginalName()) {
-            throw new RuntimeException('No filename!');
-        }
-
         $filename = $file->getClientOriginalName();
         if (false === is_string($file->getMimeType())) {
             throw new RuntimeException("No mime type for file \"{$filename}\"!");

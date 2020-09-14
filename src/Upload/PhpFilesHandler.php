@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Upload;
 
+use FSi\Component\Files\UploadedWebFile;
 use GuzzleHttp\Psr7\Stream;
 use RuntimeException;
 use const UPLOAD_ERR_NO_FILE;
@@ -35,11 +36,12 @@ final class PhpFilesHandler
         $this->fileFactory = $fileFactory;
     }
 
+    /**
+     * @return array<UploadedWebFile|array<UploadedWebFile>>
+     */
     public function readFiles(): array
     {
-        $phpFiles = array_map(function (array $data): array {
-            return $this->fixPhpFilesArray($data);
-        }, $_FILES);
+        $phpFiles = array_map([$this, 'fixPhpFilesArray'], $_FILES);
 
         if (0 === count($phpFiles)) {
             return [];
@@ -52,6 +54,10 @@ final class PhpFilesHandler
         return array_filter($webFiles);
     }
 
+    /**
+     * @param array<mixed>|array{error: string, name: string, type: string, tmp_name: string, size: string} $file
+     * @return null|UploadedWebFile|array<string, UploadedWebFile|mixed>
+     */
     private function transformToWebFile(array $file)
     {
         if (0 === count($file)) {
@@ -64,9 +70,7 @@ final class PhpFilesHandler
                 return null;
             }
 
-            return array_map(function (array $file) {
-                return $this->transformToWebFile($file);
-            }, $nestedFiles);
+            return array_map([$this, 'transformToWebFile'], $nestedFiles);
         }
 
         if (UPLOAD_ERR_NO_FILE === $file['error']) {
@@ -100,8 +104,14 @@ final class PhpFilesHandler
      * just returns the original array unmodified.
      *
      * @see \Symfony\Component\HttpFoundation\FileBag
-     * @param array $data
-     * @return array
+     * @param array{
+     *   error: string|array<string>,
+     *   name?: string|array<string|null>,
+     *   type: string|array<string>,
+     *   tmp_name: string|array<string>,
+     *   size: string|array<string>
+     * } $data
+     * @return array<mixed>|array<array{error: string, name: string, type: string, tmp_name: string, size: string}>
      */
     protected function fixPhpFilesArray(array $data): array
     {
@@ -130,6 +140,10 @@ final class PhpFilesHandler
         return $files;
     }
 
+    /**
+     * @param array<string, array<string, string|array<string>>> $files
+     * @return array<string, array<string, string|array<string>>>
+     */
     private function findNestedFiles(array $files): array
     {
         return array_filter($files, function (array $file): bool {
@@ -137,6 +151,10 @@ final class PhpFilesHandler
         });
     }
 
+    /**
+     * @param array<string, array<int, string|null>|string> $file
+     * @return bool
+     */
     private function hasMatchingArrayKeys(array $file): bool
     {
         $keys = array_keys($file);

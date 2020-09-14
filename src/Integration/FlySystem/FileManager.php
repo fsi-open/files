@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\FlySystem;
 
+use Assert\Assertion;
 use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
 use League\Flysystem\Exception;
@@ -49,7 +50,9 @@ final class FileManager implements Files\FileManager
         string $targetFileSystemName,
         string $targetPath
     ): Files\WebFile {
-        $this->writeStream($targetFileSystemName, $targetPath, $stream->detach());
+        $detachedStream = $stream->detach();
+        Assertion::notNull($detachedStream);
+        $this->writeStream($targetFileSystemName, $targetPath, $detachedStream);
         return $this->load($targetFileSystemName, $targetPath);
     }
 
@@ -113,6 +116,10 @@ final class FileManager implements Files\FileManager
         return '' === $path || '.' === $path || '/' === $path;
     }
 
+    /**
+     * @param Files\WebFile $file
+     * @return resource
+     */
     private function readStream(Files\WebFile $file)
     {
         $stream = $this->fileSystemForFile($file)->readStream($file->getPath());
@@ -127,6 +134,11 @@ final class FileManager implements Files\FileManager
         return $stream;
     }
 
+    /**
+     * @param string $fileSystemPrefix
+     * @param string $path
+     * @param resource $stream
+     */
     private function writeStream(string $fileSystemPrefix, string $path, $stream): void
     {
         $this->mountManager->getFilesystem($fileSystemPrefix)->putStream($path, $stream);

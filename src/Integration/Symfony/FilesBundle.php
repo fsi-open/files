@@ -22,7 +22,7 @@ use function sprintf;
 
 final class FilesBundle extends Bundle
 {
-    public function build(ContainerBuilder $container)
+    public function build(ContainerBuilder $container): void
     {
         parent::build($container);
         $container->addCompilerPass(new UrlAdapterPass());

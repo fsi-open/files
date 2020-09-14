@@ -49,10 +49,27 @@ final class FileUpdaterTest extends Unit
         $file = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($file);
 
+        $this->fileManager->expects($this->once())
+            ->method('copy')
+            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-path.dat#i"))
+            ->willReturnCallback(
+                function (WebFile $sourceFile, string $fileSystemName, string $path): WebFile {
+                    $file = $this->createMock(WebFile::class);
+                    $file->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->method('getPath')->willReturn($path);
+
+                    return new FlySystem\WebFile($fileSystemName, $path);
+                }
+            );
+
         $this->fileUpdater->updateFiles($entity);
 
-        $this->assertSame($file, $entity->getFile());
-        $this->assertEquals($file->getPath(), $entity->getFilePath());
+        $this->assertNotSame($file, $entity->getFile());
+        $this->assertEquals('fs', $file->getFileSystemName());
+        $newFilePath = $entity->getFilePath();
+        $this->assertIsString($newFilePath);
+        $this->assertEquals(basename($file->getPath()), basename($newFilePath));
+        $this->assertNotEquals($newFilePath, $file->getPath());
     }
 
     public function testNewFileFromTempFileSystem(): void
@@ -112,6 +129,38 @@ final class FileUpdaterTest extends Unit
         $this->fileRemover->flush();
     }
 
+    public function testCloningFileFromAnotherEntity(): void
+    {
+        $file = new FlySystem\WebFile('fs', 'other/some-path.dat');
+        $oldEntity = new TestEntity($file);
+
+        $this->fileManager->expects($this->once())
+            ->method('copy')
+            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-path.dat#i"))
+            ->willReturnCallback(
+                function (WebFile $sourceFile, string $fileSystemName, string $path): MockObject {
+                    $file = $this->createMock(WebFile::class);
+                    $file->expects($this->once())->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->expects($this->once())->method('getPath')->willReturn($path);
+
+                    return $file;
+                }
+            );
+
+        $newEntity = new TestEntity($file);
+
+        $this->fileManager->expects($this->never())->method('remove');
+        $this->fileUpdater->updateFiles($newEntity);
+
+        $this->assertInstanceOf(WebFile::class, $newEntity->getFile());
+        $this->assertNotSame($file, $newEntity->getFile());
+        $this->assertEquals('fs', $newEntity->getFile()->getFileSystemName());
+        $this->assertNotNull($newEntity->getFilePath());
+        $this->assertRegExp("#prefix/$this->filePathRegex/some-path.dat#i", $newEntity->getFilePath());
+
+        $this->fileRemover->flush();
+    }
+
     public function testReplacingExistingFile(): void
     {
         $oldFile = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
@@ -125,7 +174,7 @@ final class FileUpdaterTest extends Unit
         $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
-        $this->assertSame($newFile, $entity->getFile());
+        $this->assertNotSame($newFile, $entity->getFile());
 
         $this->fileRemover->flush();
     }

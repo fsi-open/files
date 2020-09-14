@@ -21,7 +21,11 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 final class EmbeddedFileType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    /**
+     * @param FormBuilderInterface<FormBuilderInterface> $builder
+     * @param array<string, mixed> $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('file', WebFileType::class, [
             'label' => 'Removable embedded image',
@@ -34,7 +38,7 @@ final class EmbeddedFileType extends AbstractType
         $builder->add('embeddedFile', TwiceEmbeddedFileType::class);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', EmbeddedFile::class);
         $resolver->setDefault('label', false);

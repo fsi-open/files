@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use Assert\Assertion;
+use Closure;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use Symfony\Component\Config\FileLocator;
@@ -26,7 +27,22 @@ use function trim;
 
 final class FilesExtension extends Extension
 {
-    public function load(array $configs, ContainerBuilder $container)
+    /**
+     * @param array{
+     *   entities: array<string, array{
+     *     filesystem: string,
+     *     prefix: string,
+     *     fields: array<string, array{
+     *         name: string,
+     *         prefix: string,
+     *         filesystem?: string,
+     *         pathField?: string
+     *     }>
+     *   }>
+     * } $configs
+     * @param ContainerBuilder $container
+     */
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader(
             $container,
@@ -34,6 +50,20 @@ final class FilesExtension extends Extension
         );
         $loader->load('services.xml');
 
+        /**
+         * @var array{
+         *   entities: array<string, array{
+         *     filesystem: string,
+         *     prefix: string,
+         *     fields: array<string, array{
+         *         name: string,
+         *         prefix: string,
+         *         filesystem?: string,
+         *         pathField?: string
+         *     }>
+         *   }>
+         * } $configuration
+         */
         $configuration = $this->processConfiguration(new Configuration(), $configs);
         $entityConfigurations = $this->createEntitiesFieldsConfigurations($configuration);
 
@@ -46,6 +76,21 @@ final class FilesExtension extends Extension
         return 'fsi_files';
     }
 
+    /**
+     * @param array{
+     *   entities: array<string, array{
+     *     filesystem: string,
+     *     prefix: string,
+     *     fields: array<string, array{
+     *         name: string,
+     *         prefix: string,
+     *         filesystem?: string,
+     *         pathField?: string
+     *     }>
+     *   }>
+     * } $configuration
+     * @return array<Definition>
+     */
     private function createEntitiesFieldsConfigurations($configuration): array
     {
         $fieldsConfiguration = [];
@@ -57,28 +102,26 @@ final class FilesExtension extends Extension
                 "Prefix for filesystem \"{$filesystem}\" cannot start or end with a slash"
             );
 
-            $entityFieldsConfiguration = array_map(
-                function (array $fieldConfiguration) use (
+            foreach ($entityConfiguration['fields'] as $fieldConfiguration) {
+                $fieldsConfiguration[] = $this->createFilePropertyConfigurationDefinition(
                     $class,
                     $filesystem,
-                    $filesystemPrefix
-                ): Definition {
-                    return $this->createFilePropertyConfigurationDefinition(
-                        $class,
-                        $filesystem,
-                        $filesystemPrefix,
-                        $fieldConfiguration
-                    );
-                },
-                $entityConfiguration['fields']
-            );
-
-            $fieldsConfiguration = array_merge($fieldsConfiguration, $entityFieldsConfiguration);
+                    $filesystemPrefix,
+                    $fieldConfiguration
+                );
+            }
         }
 
         return $fieldsConfiguration;
     }
 
+    /**
+     * @param string $class
+     * @param string $filesystem
+     * @param string $filesystemPrefix
+     * @param array{name: string, prefix: string, filesystem?: string, pathField?: string} $fieldConfiguration
+     * @return Definition
+     */
     private function createFilePropertyConfigurationDefinition(
         string $class,
         string $filesystem,
@@ -102,7 +145,7 @@ final class FilesExtension extends Extension
             $name,
             $fieldConfiguration['filesystem'] ?? $filesystem,
             $fieldConfiguration['pathField'] ?? "{$name}Path",
-            $filePrefix ?? $filesystemPrefix
+            $filePrefix ?? $filesystemPrefix,
         ]);
 
         return $definition;

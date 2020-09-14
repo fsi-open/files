@@ -93,7 +93,7 @@ final class SymfonyFilesController
         $message = '';
         /** @var FormError $error */
         foreach ($errors as $error) {
-            /** @var FormInterface $origin */
+            /** @var FormInterface<FormInterface> $origin */
             $origin = $error->getOrigin();
             $message .= "[{$origin->getName()}]: {$error->getMessage()}\r\n";
         }

@@ -59,6 +59,9 @@ final class FileManagerTest extends TestCase
         );
     }
 
+    /**
+     * @return array<array<string>>
+     */
     public function provideEmptyOrRootDirectoryPaths(): array
     {
         return [[''], ['/'], ['.']];

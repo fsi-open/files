@@ -49,6 +49,11 @@ final class WebFileType extends AbstractType
      */
     private $fileTransformers;
 
+    /**
+     * @param FileUrlResolver $urlResolver
+     * @param FileManager $fileManager
+     * @param iterable<FormFileTransformer> $fileTransformers
+     */
     public function __construct(FileUrlResolver $urlResolver, FileManager $fileManager, iterable $fileTransformers)
     {
         if (false === is_array($fileTransformers)) {
@@ -61,17 +66,21 @@ final class WebFileType extends AbstractType
         $this->fileTransformers = $fileTransformers;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    /**
+     * @param FormBuilderInterface<FormBuilderInterface> $builder
+     * @param array{removable: bool, remove_field_options: array} $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         if (true === $options['removable']) {
-            /** @var array $removeFieldOptions */
+            /** @var array<string, mixed> $removeFieldOptions */
             $removeFieldOptions = array_replace($options['remove_field_options'], [
                 'mapped' => false,
                 'required' => false
             ]);
             unset($options['remove_field_options']);
 
-            /** @var array $fileFieldOptions */
+            /** @var array<string, mixed> $fileFieldOptions */
             $fileFieldOptions = array_replace($options, [
                 'allow_file_upload' => true,
                 'block_prefix' => 'web_file_file',
@@ -93,7 +102,12 @@ final class WebFileType extends AbstractType
         }
     }
 
-    public function finishView(FormView $view, FormInterface $form, array $options)
+    /**
+     * @param FormView $view
+     * @param FormInterface<FormInterface> $form
+     * @param array{image: bool, removable: bool, resolve_url: bool} $options
+     */
+    public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         $data = $form->getData();
         $removable = $options['removable'];
@@ -111,7 +125,7 @@ final class WebFileType extends AbstractType
         ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'allow_file_upload' => function (Options $options): bool {

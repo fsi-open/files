@@ -24,6 +24,9 @@ final class FileUrlResolver
      */
     private $adapters;
 
+    /**
+     * @param array<string, UrlAdapter> $adapters
+     */
     public function __construct(array $adapters)
     {
         Assertion::allIsInstanceOf($adapters, UrlAdapter::class);

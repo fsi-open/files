@@ -24,9 +24,10 @@ use function unlink;
 final class DbModule extends Module
 {
     /**
+     * @param array<string, mixed> $settings
      * @phpcs:disable
      */
-    public function _beforeSuite($settings = array())
+    public function _beforeSuite($settings = []): void
     {
         $this->removeDatabaseFile();
         $this->clearUploadedTestFiles();
@@ -43,7 +44,7 @@ final class DbModule extends Module
     /**
      * @phpcs:disable
      */
-    public function _afterSuite()
+    public function _afterSuite(): void
     {
         $this->removeDatabaseFile();
         $this->clearUploadedTestFiles();
