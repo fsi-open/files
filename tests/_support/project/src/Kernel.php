@@ -31,6 +31,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Routing\RouteCollectionBuilder;
 use function sprintf;
 
@@ -38,7 +39,10 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
 {
     use MicroKernelTrait;
 
-    public function registerBundles()
+    /**
+     * @return array<Bundle>
+     */
+    public function registerBundles(): array
     {
         return [
             new FrameworkBundle(),
@@ -49,22 +53,22 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         ];
     }
 
-    public function getCacheDir()
+    public function getCacheDir(): string
     {
         return sprintf('%s/../var/cache/%s', __DIR__, $this->getEnvironment());
     }
 
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return sprintf('%s/../var/log', __DIR__);
     }
 
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $container->getDefinition(PhpFilesHandler::class)->setPublic(true);
     }
 
-    protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader)
+    protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         $container->loadFromExtension('framework', [
             'secret' => 'fsi_component_files_secret'
@@ -182,7 +186,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         );
     }
 
-    protected function configureRoutes(RouteCollectionBuilder $routes)
+    protected function configureRoutes(RouteCollectionBuilder $routes): void
     {
         $routes->add('/', IndexController::class, 'index');
         $routes->add('/native', NativeFilesController::class, 'native_files');

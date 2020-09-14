@@ -411,11 +411,10 @@ final class UploadedImageValidatorTest extends Unit
         // successfully build a violation.
         $this->constraint = new NotNull();
 
-        $context = new ExecutionContext(
-            $this->createMock(ValidatorInterface::class),
-            'root',
-            $this->createMock(TranslatorInterface::class)
-        );
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturn('');
+
+        $context = new ExecutionContext($this->createMock(ValidatorInterface::class), 'root', $translator);
         $context->setGroup('MyGroup');
         $context->setNode('InvalidValue', null, null, 'property.path');
         $context->setConstraint($this->constraint);

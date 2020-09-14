@@ -29,6 +29,9 @@ final class UploadedImage extends UploadedWebFile
 
     // Include the mapping from the base class
 
+    /**
+     * @var array<string, string>
+     */
     protected static $errorNames = [
         self::NOT_FOUND_ERROR => 'NOT_FOUND_ERROR',
         self::NOT_READABLE_ERROR => 'NOT_READABLE_ERROR',
@@ -51,7 +54,7 @@ final class UploadedImage extends UploadedWebFile
     ];
 
     /**
-     * @var array|string|null
+     * @var array<string>|string|null
      */
     public $mimeTypes = 'image/*';
 

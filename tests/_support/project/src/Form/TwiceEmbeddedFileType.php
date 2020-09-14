@@ -21,7 +21,11 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 final class TwiceEmbeddedFileType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    /**
+     * @param FormBuilderInterface<FormBuilderInterface> $builder
+     * @param array<string, mixed> $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('file', WebFileType::class, [
             'label' => 'Removable twice embedded image',
@@ -32,7 +36,7 @@ final class TwiceEmbeddedFileType extends AbstractType
         ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefault('data_class', TwiceEmbeddedFile::class);
         $resolver->setDefault('label', false);

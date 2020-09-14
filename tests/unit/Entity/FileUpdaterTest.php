@@ -21,7 +21,6 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
-use function dump;
 
 final class FileUpdaterTest extends Unit
 {
@@ -67,9 +66,10 @@ final class FileUpdaterTest extends Unit
 
         $this->assertNotSame($file, $entity->getFile());
         $this->assertEquals('fs', $file->getFileSystemName());
-        $originalPath = $file->getPath();
-        $this->assertNotNull($originalPath);
-        $this->assertEquals(basename($originalPath), basename($entity->getFilePath()));
+        $newFilePath = $entity->getFilePath();
+        $this->assertIsString($newFilePath);
+        $this->assertEquals(basename($file->getPath()), basename($newFilePath));
+        $this->assertNotEquals($newFilePath, $file->getPath());
     }
 
     public function testNewFileFromTempFileSystem(): void

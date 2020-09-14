@@ -137,7 +137,7 @@ final class FileUpdater
             $file = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
         } elseif (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
             $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
-        } elseif ($configuration->getPathPropertyReflection()->getValue($entity) !== $file->getPath()) {
+        } elseif (false === $this->isFilePathEqualToStoredInEntity($configuration, $entity, $file)) {
             $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
         }
 
@@ -172,6 +172,20 @@ final class FileUpdater
         return $file->getFileSystemName() === $configuration->getFileSystemName()
             && 0 === mb_strpos($file->getPath(), $configuration->getPathPrefix())
         ;
+    }
+
+    /**
+     * @param FilePropertyConfiguration $configuration
+     * @param object $entity
+     * @param WebFile $file
+     * @return bool
+     */
+    private function isFilePathEqualToStoredInEntity(
+        FilePropertyConfiguration $configuration,
+        object $entity,
+        WebFile $file
+    ): bool {
+        return $configuration->getPathPropertyReflection()->getValue($entity) === $file->getPath();
     }
 
     private function createFilesystemPath(FilePropertyConfiguration $configuration, string $filename): string

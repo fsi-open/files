@@ -3,7 +3,7 @@ includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-phpunit/extension.neon
 parameters:
-    autoload_files:
+    bootstrapFiles:
         - '%rootDir%/../../../vendor/codeception/codeception/autoload.php'
     inferPrivatePropertyTypeFromConstructor: true
     excludes_analyse:

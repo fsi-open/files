@@ -40,7 +40,7 @@ final class ConstraintViolationAssertion
     private $message;
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     private $parameters = [];
 
@@ -74,9 +74,15 @@ final class ConstraintViolationAssertion
      */
     private $cause;
 
+    /**
+     * @param ExecutionContextInterface $context
+     * @param string $message
+     * @param Constraint|null $constraint
+     * @param array<ConstraintViolationAssertion> $assertions
+     */
     public function __construct(
         ExecutionContextInterface $context,
-        $message,
+        string $message,
         Constraint $constraint = null,
         array $assertions = []
     ) {
@@ -86,56 +92,65 @@ final class ConstraintViolationAssertion
         $this->assertions = $assertions;
     }
 
-    public function atPath($path)
+    public function atPath(string $path): self
     {
         $this->propertyPath = $path;
 
         return $this;
     }
 
-    public function setParameter($key, $value)
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @return self
+     */
+    public function setParameter(string $key, $value): self
     {
         $this->parameters[$key] = $value;
 
         return $this;
     }
 
-    public function setParameters(array $parameters)
+    /**
+     * @param array<string, mixed> $parameters
+     * @return $this
+     */
+    public function setParameters(array $parameters): self
     {
         $this->parameters = $parameters;
 
         return $this;
     }
 
-    public function setInvalidValue($invalidValue)
+    public function setInvalidValue(string $invalidValue): self
     {
         $this->invalidValue = $invalidValue;
 
         return $this;
     }
 
-    public function setPlural($number)
+    public function setPlural(?int $number): self
     {
         $this->plural = $number;
 
         return $this;
     }
 
-    public function setCode($code)
+    public function setCode(string $code): self
     {
         $this->code = $code;
 
         return $this;
     }
 
-    public function setCause($cause)
+    public function setCause(string $cause): self
     {
         $this->cause = $cause;
 
         return $this;
     }
 
-    public function buildNextViolation($message)
+    public function buildNextViolation(string $message): self
     {
         $assertions = $this->assertions;
         $assertions[] = $this;
@@ -143,7 +158,7 @@ final class ConstraintViolationAssertion
         return new self($this->context, $message, $this->constraint, $assertions);
     }
 
-    public function assertRaised()
+    public function assertRaised(): void
     {
         $expected = [];
         foreach ($this->assertions as $assertion) {

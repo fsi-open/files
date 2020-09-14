@@ -26,13 +26,16 @@ final class UploadModule extends Module
     /**
      * @phpcs:disable
      */
-    public function _before(TestInterface $test)
+    public function _before(TestInterface $test): void
     {
         /** @var Symfony $symfony */
         $symfony = $this->getModule('Symfony');
         $this->symfony = $symfony;
     }
 
+    /**
+     * @return array<\FSi\Component\Files\UploadedWebFile|array<\FSi\Component\Files\UploadedWebFile>>
+     */
     public function grabUploadedPhpFiles(): array
     {
         /** @var PhpFilesHandler $phpFilesHandler */

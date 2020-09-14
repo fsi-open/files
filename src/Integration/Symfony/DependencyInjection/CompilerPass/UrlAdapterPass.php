@@ -23,7 +23,7 @@ use function sprintf;
 
 final class UrlAdapterPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $processor = new Processor();
         $configuration = $processor->processConfiguration(
@@ -37,6 +37,11 @@ final class UrlAdapterPass implements CompilerPassInterface
         );
     }
 
+    /**
+     * @param ContainerBuilder $container
+     * @param array<string, string> $configuration
+     * @return array<string, Definition>
+     */
     private function adaptersConfigurationToServices(ContainerBuilder $container, array $configuration): array
     {
         $services = [];
