@@ -118,8 +118,9 @@ final class FileUpdater
             return true;
         }
 
-        // If the paths are the same, we assume it is the same file
-        return $newFile->getPath() !== $currentFile->getPath();
+        // If filesystems and paths are the same, we assume it is the same file
+        return $newFile->getFileSystemName() !== $currentFile->getFileSystemName()
+            || $newFile->getPath() !== $currentFile->getPath();
     }
 
     private function clearCurrentFileIfExists(string $pathPrefix, ?WebFile $oldFile): void
@@ -135,9 +136,7 @@ final class FileUpdater
     {
         if (true === $file instanceof UploadedWebFile) {
             $file = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
-        } elseif (false === $this->isFileSameFilesystemAsInConfiguration($file, $configuration)) {
-            $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
-        } elseif (false === $this->isFilePathEqualToStoredInEntity($configuration, $entity, $file)) {
+        } else {
             $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
         }
 
@@ -163,29 +162,6 @@ final class FileUpdater
             $configuration->getFileSystemName(),
             $this->createFilesystemPath($configuration, $file->getOriginalName())
         );
-    }
-
-    private function isFileSameFilesystemAsInConfiguration(
-        WebFile $file,
-        FilePropertyConfiguration $configuration
-    ): bool {
-        return $file->getFileSystemName() === $configuration->getFileSystemName()
-            && 0 === mb_strpos($file->getPath(), $configuration->getPathPrefix())
-        ;
-    }
-
-    /**
-     * @param FilePropertyConfiguration $configuration
-     * @param object $entity
-     * @param WebFile $file
-     * @return bool
-     */
-    private function isFilePathEqualToStoredInEntity(
-        FilePropertyConfiguration $configuration,
-        object $entity,
-        WebFile $file
-    ): bool {
-        return $configuration->getPathPropertyReflection()->getValue($entity) === $file->getPath();
     }
 
     private function createFilesystemPath(FilePropertyConfiguration $configuration, string $filename): string
