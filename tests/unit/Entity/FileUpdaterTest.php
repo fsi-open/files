@@ -21,6 +21,7 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
+use function basename;
 
 final class FileUpdaterTest extends Unit
 {
@@ -43,6 +44,34 @@ final class FileUpdaterTest extends Unit
      * @var FileRemover
      */
     private $fileRemover;
+
+    public function testNotModyfingFile(): void
+    {
+        $file = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
+        $entity = new TestEntity($file);
+
+        $this->fileManager->expects($this->once())
+            ->method('copy')
+            ->with($file, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-path.dat#i"))
+            ->willReturnCallback(
+                function (WebFile $sourceFile, string $fileSystemName, string $path): WebFile {
+                    $file = $this->createMock(WebFile::class);
+                    $file->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->method('getPath')->willReturn($path);
+
+                    return new FlySystem\WebFile($fileSystemName, $path);
+                }
+            );
+
+        $this->fileUpdater->updateFiles($entity);
+
+        $file = $entity->getFile();
+        $this->fileManager->expects($this->never())->method('copy');
+
+        $this->fileUpdater->updateFiles($entity);
+
+        $this->assertSame($file, $entity->getFile());
+    }
 
     public function testNewFileOnTargetFileSystem(): void
     {
@@ -170,7 +199,6 @@ final class FileUpdaterTest extends Unit
         $newFile = new FlySystem\WebFile('fs', 'prefix/some-new-path.dat');
         $entity->setFile($newFile);
 
-        $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
         $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
@@ -188,7 +216,6 @@ final class FileUpdaterTest extends Unit
         $tempFile = new FlySystem\WebFile('temp', 'some-new-path.dat');
         $entity->setFile($tempFile);
 
-        $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
         $this->fileManager->expects($this->once())
             ->method('copy')
             ->with($tempFile, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-new-path.dat#i"))
@@ -222,7 +249,6 @@ final class FileUpdaterTest extends Unit
 
         $entity->setFile(null);
 
-        $this->fileManager->expects($this->once())->method('load')->willReturn($oldFile);
         $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
@@ -239,6 +265,18 @@ final class FileUpdaterTest extends Unit
         ]);
 
         $this->fileManager = $this->createMock(FileManager::class);
+        $this->fileManager->expects($this->any())
+            ->method('load')
+            ->willReturnCallback(
+                function (string $fileSystemName, string $path): WebFile {
+                    $file = $this->createMock(WebFile::class);
+                    $file->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->method('getPath')->willReturn($path);
+
+                    return new FlySystem\WebFile($fileSystemName, $path);
+                }
+            );
+
         $fileLoader = new FileLoader($this->fileManager, $configurationResolver);
         $this->fileRemover = new FileRemover($configurationResolver, $this->fileManager, $fileLoader);
 
