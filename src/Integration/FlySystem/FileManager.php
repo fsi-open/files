@@ -19,6 +19,7 @@ use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;
 use Psr\Http\Message\StreamInterface;
+
 use function basename;
 use function count;
 use function is_resource;
@@ -97,7 +98,8 @@ final class FileManager implements Files\FileManager
     public function removeDirectoryIfEmpty(string $fileSystemName, string $path): bool
     {
         $filesystem = $this->fileSystemForName($fileSystemName);
-        if (true === $this->isEmptyPathOrRootDirectory($path)
+        if (
+            true === $this->isEmptyPathOrRootDirectory($path)
             || false === $this->isEmptyDirectory($filesystem, $path)
         ) {
             return false;

@@ -15,6 +15,7 @@ use FSi\Component\Files;
 use RuntimeException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
+
 use function count;
 use function ctype_digit;
 use function get_class;
@@ -54,15 +55,14 @@ final class UploadedImageValidator extends UploadedWebFileValidator
             return;
         }
 
-        if ((null === $constraint->minWidth && null === $constraint->maxWidth)
+        if (
+            (null === $constraint->minWidth && null === $constraint->maxWidth)
             && (null === $constraint->minHeight && null === $constraint->maxHeight)
             && (null === $constraint->minPixels && null === $constraint->maxPixels)
             && (null === $constraint->minRatio && null === $constraint->maxRatio)
-            && (
-                    true === $constraint->allowSquare
-                    && true === $constraint->allowLandscape
-                    && true === $constraint->allowPortrait
-            )
+            && true === $constraint->allowSquare
+            && true === $constraint->allowLandscape
+            && true === $constraint->allowPortrait
             && false === $constraint->detectCorrupted
         ) {
             return;

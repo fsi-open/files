@@ -33,6 +33,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Routing\RouteCollectionBuilder;
+
 use function sprintf;
 
 final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface

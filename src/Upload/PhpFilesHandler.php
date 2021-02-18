@@ -14,13 +14,15 @@ namespace FSi\Component\Files\Upload;
 use FSi\Component\Files\UploadedWebFile;
 use GuzzleHttp\Psr7\Stream;
 use RuntimeException;
-use const UPLOAD_ERR_NO_FILE;
+
 use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function count;
 use function fopen;
 use function is_array;
+
+use const UPLOAD_ERR_NO_FILE;
 
 final class PhpFilesHandler
 {
@@ -47,6 +49,7 @@ final class PhpFilesHandler
             return [];
         }
 
+        /** @var array<UploadedWebFile|array<UploadedWebFile>> $webFiles */
         $webFiles = array_map(function (array $file) {
             return $this->transformToWebFile($file);
         }, $phpFiles);
@@ -115,7 +118,8 @@ final class PhpFilesHandler
      */
     protected function fixPhpFilesArray(array $data): array
     {
-        if (false === $this->hasMatchingArrayKeys($data)
+        if (
+            false === $this->hasMatchingArrayKeys($data)
             || false === array_key_exists('name', $data)
             || false === is_array($data['name'])
         ) {

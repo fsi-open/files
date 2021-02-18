@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
+
 use function count;
 use function round;
 use function strlen;
@@ -71,56 +72,56 @@ class UploadedWebFileValidator extends ConstraintValidator
         if (UPLOAD_ERR_OK !== $value->getError()) {
             switch ($value->getError()) {
                 case UPLOAD_ERR_INI_SIZE:
-                    $iniLimitSize = UploadedFile::getMaxFilesize();
+                    $iniLimitSize = (int) UploadedFile::getMaxFilesize();
                     if (null !== $constraint->maxSize && $constraint->maxSize < $iniLimitSize) {
                         $limitInBytes = $constraint->maxSize;
                         $binaryFormat = $constraint->binaryFormat;
                     } else {
                         $limitInBytes = $iniLimitSize;
-                        $binaryFormat = null !== $constraint->binaryFormat ? $constraint->binaryFormat : true;
+                        $binaryFormat = $constraint->binaryFormat ?? true;
                     }
 
                     [, $limitAsString, $suffix] = $this->factorizeSizes(0, $limitInBytes, $binaryFormat);
                     $this->context->buildViolation($constraint->uploadIniSizeErrorMessage)
                         ->setParameter('{{ limit }}', $limitAsString)
                         ->setParameter('{{ suffix }}', $suffix)
-                        ->setCode(strval(UPLOAD_ERR_INI_SIZE))
+                        ->setCode((string) UPLOAD_ERR_INI_SIZE)
                         ->addViolation()
                     ;
                     return;
                 case UPLOAD_ERR_FORM_SIZE:
                     $this->context->buildViolation($constraint->uploadFormSizeErrorMessage)
-                        ->setCode(strval(UPLOAD_ERR_FORM_SIZE))
+                        ->setCode((string) UPLOAD_ERR_FORM_SIZE)
                         ->addViolation()
                     ;
                     return;
                 case UPLOAD_ERR_PARTIAL:
                     $this->context->buildViolation($constraint->uploadPartialErrorMessage)
-                        ->setCode(strval(UPLOAD_ERR_PARTIAL))
+                        ->setCode((string) UPLOAD_ERR_PARTIAL)
                         ->addViolation()
                     ;
                     return;
                 case UPLOAD_ERR_NO_FILE:
                     $this->context->buildViolation($constraint->uploadNoFileErrorMessage)
-                        ->setCode(strval(UPLOAD_ERR_NO_FILE))
+                        ->setCode((string) UPLOAD_ERR_NO_FILE)
                         ->addViolation()
                     ;
                     return;
                 case UPLOAD_ERR_NO_TMP_DIR:
                     $this->context->buildViolation($constraint->uploadNoTmpDirErrorMessage)
-                        ->setCode(strval(UPLOAD_ERR_NO_TMP_DIR))
+                        ->setCode((string) UPLOAD_ERR_NO_TMP_DIR)
                         ->addViolation()
                     ;
                     return;
                 case UPLOAD_ERR_CANT_WRITE:
                     $this->context->buildViolation($constraint->uploadCantWriteErrorMessage)
-                        ->setCode(strval(UPLOAD_ERR_CANT_WRITE))
+                        ->setCode((string) UPLOAD_ERR_CANT_WRITE)
                         ->addViolation()
                     ;
                     return;
                 case UPLOAD_ERR_EXTENSION:
                     $this->context->buildViolation($constraint->uploadExtensionErrorMessage)
-                        ->setCode(strval(UPLOAD_ERR_EXTENSION))
+                        ->setCode((string) UPLOAD_ERR_EXTENSION)
                         ->addViolation()
                     ;
                     return;
@@ -168,7 +169,8 @@ class UploadedWebFileValidator extends ConstraintValidator
         }
 
         $constraintMimeTypes = $constraint->mimeTypes;
-        if (null === $constraintMimeTypes
+        if (
+            null === $constraintMimeTypes
             || '' === $constraintMimeTypes
             || (true === is_array($constraintMimeTypes) && 0 === count($constraintMimeTypes))
         ) {

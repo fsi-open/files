@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Integration\Symfony\Form\Listener;
 
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use Symfony\Component\Form\FormEvent;
+
 use function array_key_exists;
 use function is_array;
 

@@ -14,9 +14,11 @@ namespace FSi\Tests\Component\Files\Upload;
 use Assert\Assertion;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Tests\FunctionalTester;
-use const UPLOAD_ERR_OK;
+
 use function codecept_data_dir;
 use function filesize;
+
+use const UPLOAD_ERR_OK;
 
 final class PhpFilesHandlerCest
 {

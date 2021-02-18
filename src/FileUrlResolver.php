@@ -14,6 +14,7 @@ namespace FSi\Component\Files;
 use Assert\Assertion;
 use Psr\Http\Message\UriInterface;
 use RuntimeException;
+
 use function array_key_exists;
 use function sprintf;
 

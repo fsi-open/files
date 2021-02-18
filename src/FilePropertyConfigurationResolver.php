@@ -13,6 +13,7 @@ namespace FSi\Component\Files;
 
 use Assert\Assertion;
 use RuntimeException;
+
 use function array_key_exists;
 use function array_reduce;
 use function array_values;
@@ -56,7 +57,8 @@ final class FilePropertyConfigurationResolver
 
     public function resolveFileProperty(string $entityClass, string $filePropertyName): FilePropertyConfiguration
     {
-        if (false === array_key_exists($entityClass, $this->indexedConfigurations)
+        if (
+            false === array_key_exists($entityClass, $this->indexedConfigurations)
             || false === array_key_exists($filePropertyName, $this->indexedConfigurations[$entityClass])
         ) {
             throw new RuntimeException(sprintf(

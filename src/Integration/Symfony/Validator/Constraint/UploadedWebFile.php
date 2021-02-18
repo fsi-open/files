@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
+
 use function array_keys;
 use function ctype_digit;
 use function implode;
@@ -176,7 +177,7 @@ class UploadedWebFile extends Constraint
         if (ctype_digit((string) $maxSize)) {
             $this->maxSize = (int) $maxSize;
             $this->binaryFormat = null === $this->binaryFormat ? false : $this->binaryFormat;
-        } elseif (preg_match('/^(\d++)('. implode('|', array_keys($factors)).')$/i', $maxSize, $matches)) {
+        } elseif (preg_match('/^(\d++)(' . implode('|', array_keys($factors)) . ')$/i', $maxSize, $matches)) {
             $this->maxSize = $matches[1] * $factors[$unit = strtolower($matches[2])];
             $this->binaryFormat = null === $this->binaryFormat ? 2 === \strlen($unit) : $this->binaryFormat;
         } else {
