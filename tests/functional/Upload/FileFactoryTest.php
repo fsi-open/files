@@ -15,6 +15,7 @@ use Codeception\Test\Unit;
 use FSi\Component\Files\Integration\FlySystem\Upload\FileFactory;
 use FSi\Component\Files\UploadedWebFile;
 use GuzzleHttp\Psr7\Stream;
+
 use function codecept_data_dir;
 use function fopen;
 

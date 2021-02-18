@@ -16,6 +16,7 @@ use Codeception\Module\Symfony;
 use DirectoryIterator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+
 use function file_exists;
 use function rmdir;
 use function sprintf;

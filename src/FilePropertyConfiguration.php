@@ -16,7 +16,7 @@ use ReflectionProperty;
 final class FilePropertyConfiguration
 {
     /**
-     * @var string
+     * @var class-string
      */
     private $entityClass;
 
@@ -50,6 +50,13 @@ final class FilePropertyConfiguration
      */
     private $pathPrefix;
 
+    /**
+     * @param class-string $entityClass
+     * @param string $filePropertyName
+     * @param string $fileSystemName
+     * @param string $pathPropertyName
+     * @param string $pathPrefix
+     */
     public function __construct(
         string $entityClass,
         string $filePropertyName,
@@ -64,6 +71,9 @@ final class FilePropertyConfiguration
         $this->pathPrefix = $pathPrefix;
     }
 
+    /**
+     * @return class-string
+     */
     public function getEntityClass(): string
     {
         return $this->entityClass;

@@ -21,6 +21,7 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
+
 use function basename;
 
 final class FileUpdaterTest extends Unit

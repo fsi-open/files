@@ -5,6 +5,10 @@ includes:
 parameters:
     bootstrapFiles:
         - '%rootDir%/../../../vendor/codeception/codeception/autoload.php'
+    level: 8
+    paths:
+        - src
+        - tests
     inferPrivatePropertyTypeFromConstructor: true
     excludes_analyse:
         - '%rootDir%/../../../tests/_support/_generated'

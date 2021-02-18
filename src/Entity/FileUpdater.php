@@ -18,6 +18,7 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Ramsey\Uuid\Uuid;
+
 use function array_walk;
 use function basename;
 use function mb_strpos;

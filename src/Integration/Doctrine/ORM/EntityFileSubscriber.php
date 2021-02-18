@@ -12,16 +12,17 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use Doctrine\Common\EventSubscriber;
-use Doctrine\Common\Persistence\Proxy;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\Proxy;
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Entity\FileUpdater;
+
 use function array_walk;
 
 final class EntityFileSubscriber implements EventSubscriber

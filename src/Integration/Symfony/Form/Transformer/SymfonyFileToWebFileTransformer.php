@@ -49,7 +49,7 @@ final class SymfonyFileToWebFileTransformer implements FormFileTransformer
         $event->setData(
             $this->fileFactory->create(
                 new Stream($stream),
-                $file->getClientOriginalName(),
+                (string) $file->getClientOriginalName(),
                 $file->getMimeType(),
                 $file->getSize(),
                 $file->getError()

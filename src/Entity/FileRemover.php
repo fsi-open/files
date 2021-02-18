@@ -15,6 +15,7 @@ use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
+
 use function array_key_exists;
 use function array_walk;
 use function dirname;

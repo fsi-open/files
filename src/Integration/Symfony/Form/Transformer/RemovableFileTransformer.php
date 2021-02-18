@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
 
 use Symfony\Component\Form\DataTransformerInterface;
+
 use function array_key_exists;
 use function is_array;
 

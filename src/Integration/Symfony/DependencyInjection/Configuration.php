@@ -51,7 +51,7 @@ final class Configuration implements ConfigurationInterface
                     return is_string($argument);
                 })
                 ->then(function (string $argument): array {
-                    return ['name' => $argument, 'filesystem' => null, 'pathField' => null, 'prefix'=> null];
+                    return ['name' => $argument, 'filesystem' => null, 'pathField' => null, 'prefix' => null];
                 })
                 ->end()
         ;

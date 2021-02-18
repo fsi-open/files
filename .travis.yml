@@ -9,13 +9,18 @@ cache:
 
 dist: xenial
 
-php: 7.4
+matrix:
+    include:
+        - php: 7.4
+          env:
+              - COMPOSER_FLAGS='--prefer-lowest'
+        - php: 8.0
 
 install:
     - phpenv config-rm xdebug.ini
     - echo 'date.timezone = "Europe/Warsaw"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - echo 'intl.default_locale = "pl"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
-    - composer update -n
+    - composer update -n $COMPOSER_FLAGS
 
 script:
     - composer sniffer

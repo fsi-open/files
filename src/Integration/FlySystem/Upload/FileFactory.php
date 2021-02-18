@@ -16,11 +16,13 @@ use FSi\Component\Files\Integration\FlySystem;
 use GuzzleHttp\Psr7\Stream;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
-use const UPLOAD_ERR_OK;
+
 use function basename;
 use function file_exists;
 use function fopen;
 use function mime_content_type;
+
+use const UPLOAD_ERR_OK;
 
 final class FileFactory implements Files\Upload\FileFactory
 {
