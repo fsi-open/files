@@ -79,12 +79,14 @@ final class WebFileType extends AbstractType
                 'mapped' => false,
                 'required' => false
             ]);
+
             unset($options['remove_field_options']);
 
             /** @var array<string, mixed> $fileFieldOptions */
             $fileFieldOptions = array_replace($options, [
                 'allow_file_upload' => true,
                 'block_prefix' => 'web_file_file',
+                'constraints' => [],
                 'compound' => false,
                 'removable' => false,
                 'error_bubbling' => false,
