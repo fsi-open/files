@@ -2,13 +2,13 @@ actor: FunctionalTester
 modules:
     enabled:
         - Asserts
-        - FSi\Tests\Helper\Functional
-        - FSi\Tests\Module\DbModule
-        - FSi\Tests\Module\UploadModule
+        - Tests\FSi\Helper\Functional
+        - Tests\FSi\Module\DbModule
+        - Tests\FSi\Module\UploadModule
         - Symfony:
             app_path: tests/_support/project/src
             environment: test
-            kernel_class: FSi\Tests\App\Kernel
+            kernel_class: Tests\FSi\App\Kernel
         - Doctrine2:
             depends: Symfony
             cleanup: true

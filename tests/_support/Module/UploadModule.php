@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Module;
+namespace Tests\FSi\Module;
 
 use Codeception\Module;
 use Codeception\Module\Symfony;

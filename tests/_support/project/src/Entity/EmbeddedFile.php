@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\App\Entity;
+namespace Tests\FSi\App\Entity;
 
 use FSi\Component\Files\WebFile;
 

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Entity;
+namespace Tests\FSi\Component\Files\Entity;
 
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;

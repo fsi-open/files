@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Integration\Symfony\DependencyInjection;
+namespace Tests\FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use Codeception\Test\Unit;
 use FSi\Component\Files\Integration\Symfony\DependencyInjection\Configuration;

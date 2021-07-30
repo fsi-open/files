@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Upload;
+namespace Tests\FSi\Component\Files\Upload;
 
 use Codeception\Test\Unit;
 use FSi\Component\Files\Integration\FlySystem\Upload\FileFactory;

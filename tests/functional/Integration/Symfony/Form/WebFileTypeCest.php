@@ -9,13 +9,13 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Integration\Symfony\Form;
+namespace Tests\FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
-use FSi\Tests\App\Entity\FileEntity;
-use FSi\Tests\FunctionalTester;
+use Tests\FSi\App\Entity\FileEntity;
+use Tests\FSi\FunctionalTester;
 
 final class WebFileTypeCest
 {

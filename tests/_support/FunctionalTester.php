@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests;
+namespace Tests\FSi;
 
 /**
  * Inherited Methods
