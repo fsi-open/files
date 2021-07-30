@@ -9,12 +9,12 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\App\Form;
+namespace Tests\FSi\App\Form;
 
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImage;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
-use FSi\Tests\App\Entity\FileEntity;
+use Tests\FSi\App\Entity\FileEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;

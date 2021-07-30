@@ -9,14 +9,14 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Integration\Symfony\Validator\Constraint;
+namespace Tests\FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
 use Codeception\Test\Unit;
 use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFileValidator;
-use FSi\Tests\Helper\ConstraintViolationAssertion;
+use Tests\FSi\Helper\ConstraintViolationAssertion;
 use GuzzleHttp\Psr7\Stream;
 use Psr\Http\Message\StreamInterface;
 use ReflectionClass;

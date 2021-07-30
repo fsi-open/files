@@ -4,7 +4,7 @@
       xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <entity name="FSi\Tests\App\Entity\FileEntity">
+    <entity name="Tests\FSi\App\Entity\FileEntity">
         <id name="id" type="integer">
             <generator strategy="AUTO"/>
         </id>
@@ -12,7 +12,7 @@
         <field name="filePath" nullable="true" />
         <field name="anotherFileKey" nullable="true" />
         <field name="privateFileKey" nullable="true" />
-        <embedded name="embeddedFile" class="FSi\Tests\App\Entity\EmbeddedFile" />
+        <embedded name="embeddedFile" class="Tests\FSi\App\Entity\EmbeddedFile" />
 
     </entity>
 

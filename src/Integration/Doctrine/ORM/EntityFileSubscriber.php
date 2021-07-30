@@ -117,7 +117,7 @@ final class EntityFileSubscriber implements EventSubscriber
 
         $callable($object);
 
-        /** @var ClassMetadataInfo $metadata */
+        /** @var ClassMetadataInfo<object> $metadata */
         $metadata = $manager->getClassMetadata(get_class($object));
         array_walk(
             $metadata->embeddedClasses,

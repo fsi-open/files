@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\App\Controller;
+namespace Tests\FSi\App\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use FSi\Tests\App\Entity\FileEntity;
-use FSi\Tests\App\Form\FormTestType;
+use Tests\FSi\App\Entity\FileEntity;
+use Tests\FSi\App\Form\FormTestType;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormErrorIterator;
 use Symfony\Component\Form\FormFactoryInterface;

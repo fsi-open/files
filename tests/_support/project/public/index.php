@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../../../vendor/autoload.php';
 
-use FSi\Tests\App\Kernel;
+use Tests\FSi\App\Kernel;
 use Symfony\Component\HttpFoundation\Request;
 
 $kernel = new Kernel('test', true);

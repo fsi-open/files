@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Integration\Flysystem;
+namespace Tests\FSi\Component\Files\Integration\Flysystem;
 
 use FSi\Component\Files\Integration\FlySystem\FileManager;
 use League\Flysystem\FilesystemInterface;

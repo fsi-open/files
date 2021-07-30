@@ -9,19 +9,19 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\App;
+namespace Tests\FSi\App;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Component\Files\UrlAdapter\BaseUrlAdapter;
-use FSi\Tests\App\Controller\IndexController;
-use FSi\Tests\App\Controller\NativeFilesController;
-use FSi\Tests\App\Controller\SymfonyFilesController;
-use FSi\Tests\App\Entity\EmbeddedFile;
-use FSi\Tests\App\Entity\FileEntity;
-use FSi\Tests\App\Entity\TwiceEmbeddedFile;
-use FSi\Tests\App\Http\UriFactory;
+use Tests\FSi\App\Controller\IndexController;
+use Tests\FSi\App\Controller\NativeFilesController;
+use Tests\FSi\App\Controller\SymfonyFilesController;
+use Tests\FSi\App\Entity\EmbeddedFile;
+use Tests\FSi\App\Entity\FileEntity;
+use Tests\FSi\App\Entity\TwiceEmbeddedFile;
+use Tests\FSi\App\Http\UriFactory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -95,7 +95,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                         'type' => 'xml',
                         'dir' => sprintf('%s/Resources/config/doctrine', __DIR__),
                         'alias' => 'FSi',
-                        'prefix' => 'FSi\Tests\App\Entity',
+                        'prefix' => 'Tests\FSi\App\Entity',
                         'is_bundle' => false
                     ]
                 ]

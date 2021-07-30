@@ -2,5 +2,5 @@ actor: UnitTester
 modules:
     enabled:
         - Asserts
-        - \FSi\Tests\Helper\Unit
+        - \Tests\FSi\Helper\Unit
     step_decorators: ~

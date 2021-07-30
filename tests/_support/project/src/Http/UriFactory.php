@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\App\Http;
+namespace Tests\FSi\App\Http;
 
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\UriFactoryInterface;

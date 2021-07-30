@@ -1,5 +1,5 @@
 ---
-namespace: FSi\Tests
+namespace: Tests\FSi
 actor_suffix: Tester
 paths:
     tests: tests

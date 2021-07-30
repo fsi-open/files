@@ -139,6 +139,10 @@ class UploadedWebFile extends Constraint
         parent::__set($option, $value);
     }
 
+    /**
+     * @param string $option
+     * @return mixed
+     */
     public function __get($option)
     {
         if ('maxSize' === $option) {

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\App\Controller;
+namespace Tests\FSi\App\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;

@@ -9,11 +9,11 @@
 
 declare(strict_types=1);
 
-namespace FSi\Tests\Component\Files\Upload;
+namespace Tests\FSi\Component\Files\Upload;
 
 use Assert\Assertion;
 use FSi\Component\Files\UploadedWebFile;
-use FSi\Tests\FunctionalTester;
+use Tests\FSi\FunctionalTester;
 
 use function codecept_data_dir;
 use function filesize;

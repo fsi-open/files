@@ -4,10 +4,10 @@
       xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <embeddable name="FSi\Tests\App\Entity\EmbeddedFile">
+    <embeddable name="Tests\FSi\App\Entity\EmbeddedFile">
 
         <field name="filePath" nullable="true" />
-        <embedded name="embeddedFile" class="FSi\Tests\App\Entity\TwiceEmbeddedFile" />
+        <embedded name="embeddedFile" class="Tests\FSi\App\Entity\TwiceEmbeddedFile" />
 
     </embeddable>
 
