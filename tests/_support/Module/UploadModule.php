@@ -14,6 +14,7 @@ namespace Tests\FSi\Module;
 use Codeception\Module;
 use Codeception\Module\Symfony;
 use Codeception\TestInterface;
+use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 
 final class UploadModule extends Module
@@ -39,7 +40,14 @@ final class UploadModule extends Module
     public function grabUploadedPhpFiles(): array
     {
         /** @var PhpFilesHandler $phpFilesHandler */
-        $phpFilesHandler = $this->symfony->_getContainer()->get(PhpFilesHandler::class);
+        $phpFilesHandler = $this->symfony->grabService(PhpFilesHandler::class);
         return $phpFilesHandler->readFiles();
+    }
+
+    public function grabFileFactory(): FileFactory
+    {
+        /** @var FileFactory $fileFactory */
+        $fileFactory = $this->symfony->grabService('test.' . FileFactory::class);
+        return $fileFactory;
     }
 }

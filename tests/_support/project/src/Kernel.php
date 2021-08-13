@@ -12,17 +12,17 @@ declare(strict_types=1);
 namespace Tests\FSi\App;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
+use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Component\Files\UrlAdapter\BaseUrlAdapter;
-use Tests\FSi\App\Controller\IndexController;
-use Tests\FSi\App\Controller\NativeFilesController;
-use Tests\FSi\App\Controller\SymfonyFilesController;
-use Tests\FSi\App\Entity\EmbeddedFile;
-use Tests\FSi\App\Entity\FileEntity;
-use Tests\FSi\App\Entity\TwiceEmbeddedFile;
-use Tests\FSi\App\Http\UriFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -30,9 +30,16 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\HttpClient\Psr18Client;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Routing\RouteCollectionBuilder;
+use Tests\FSi\App\Controller\IndexController;
+use Tests\FSi\App\Controller\NativeFilesController;
+use Tests\FSi\App\Controller\SymfonyFilesController;
+use Tests\FSi\App\Entity\EmbeddedFile;
+use Tests\FSi\App\Entity\FileEntity;
+use Tests\FSi\App\Entity\TwiceEmbeddedFile;
 
 use function sprintf;
 
@@ -177,12 +184,29 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $this->registerPublicControllerService($container, IndexController::class);
         $this->registerPublicControllerService($container, NativeFilesController::class);
         $this->registerPublicControllerService($container, SymfonyFilesController::class);
-        $uriFactory = $container->register(UriFactory::class);
-        $this->registerBaseUrlAdapterService($container, 'fsi_files.url_adapter.public', $uriFactory, '/files/');
+
+        $container->register(Psr18Client::class);
+        $psr17Factory = $container->register(Psr17Factory::class);
+        $container->setAlias(UriFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(StreamFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(RequestFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(ClientInterface::class, Psr18Client::class);
+
+        $container->register('test.' . FileFactory::class, FlySystem\Upload\FileFactory::class)
+            ->setPublic(true)
+            ->setAutowired(true)
+        ;
+
+        $this->registerBaseUrlAdapterService(
+            $container,
+            'fsi_files.url_adapter.public',
+            $psr17Factory,
+            '/files/'
+        );
         $this->registerBaseUrlAdapterService(
             $container,
             'fsi_files.url_adapter.other_public',
-            $uriFactory,
+            $psr17Factory,
             '/other_files/'
         );
     }

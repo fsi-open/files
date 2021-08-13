@@ -14,7 +14,12 @@
         <service id="League\Flysystem\MountManager" alias="oneup_flysystem.mount_manager" />
 
         <!-- Upload -->
-        <service id="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory" />
+        <service id="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory">
+            <argument type="service" id="Psr\Http\Client\ClientInterface" />
+            <argument type="service" id="Psr\Http\Message\RequestFactoryInterface" />
+            <argument type="service" id="Psr\Http\Message\StreamFactoryInterface" />
+        </service>
+
         <service id="FSi\Component\Files\Upload\FileFactory" alias="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory" />
 
     </services>

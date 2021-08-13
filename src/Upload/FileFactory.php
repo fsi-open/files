@@ -13,9 +13,12 @@ namespace FSi\Component\Files\Upload;
 
 use FSi\Component\Files\UploadedWebFile;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
 
 interface FileFactory
 {
+    public function createFromPath(string $path, ?string $targetName = null): UploadedWebFile;
+    public function createFromUri(UriInterface $uri, ?string $targetName = null): UploadedWebFile;
     public function create(
         StreamInterface $stream,
         string $originalName,
@@ -23,6 +26,4 @@ interface FileFactory
         int $size,
         ?int $error
     ): UploadedWebFile;
-
-    public function createFromPath(string $path, ?string $targetName = null): UploadedWebFile;
 }
