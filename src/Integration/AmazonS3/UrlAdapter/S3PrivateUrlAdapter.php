@@ -18,15 +18,8 @@ use Psr\Http\Message\UriInterface;
 
 final class S3PrivateUrlAdapter implements UrlAdapter
 {
-    /**
-     * @var S3ClientInterface
-     */
-    private $s3Client;
-
-    /**
-     * @var string
-     */
-    private $s3Bucket;
+    private S3ClientInterface $s3Client;
+    private string $s3Bucket;
 
     public function __construct(S3ClientInterface $s3Client, string $s3Bucket)
     {

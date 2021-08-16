@@ -20,15 +20,8 @@ use Twig\TwigFilter;
 
 final class FileExtension extends AbstractExtension
 {
-    /**
-     * @var FileUrlResolver
-     */
-    private $fileUrlResolver;
-
-    /**
-     * @var FileManager
-     */
-    private $fileManager;
+    private FileUrlResolver $fileUrlResolver;
+    private FileManager $fileManager;
 
     public function __construct(FileUrlResolver $fileUrlResolver, FileManager $fileManager)
     {

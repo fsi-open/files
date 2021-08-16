@@ -27,10 +27,7 @@ use function sprintf;
 
 final class FileManager implements Files\FileManager
 {
-    /**
-     * @var MountManager
-     */
-    private $mountManager;
+    private MountManager $mountManager;
 
     public function __construct(MountManager $mountManager)
     {

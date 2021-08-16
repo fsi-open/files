@@ -25,25 +25,13 @@ use function dirname;
  */
 final class FileRemover
 {
-    /**
-     * @var FilePropertyConfigurationResolver
-     */
-    private $configurationResolver;
-
-    /**
-     * @var FileManager
-     */
-    private $fileManager;
-
-    /**
-     * @var FileLoader
-     */
-    private $fileLoader;
-
+    private FilePropertyConfigurationResolver $configurationResolver;
+    private FileManager $fileManager;
+    private FileLoader $fileLoader;
     /**
      * @var array<string, array<WebFile>>
      */
-    private $filesToRemove;
+    private array $filesToRemove;
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,

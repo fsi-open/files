@@ -21,7 +21,8 @@ use Ramsey\Uuid\Uuid;
 
 use function array_walk;
 use function basename;
-use function mb_strpos;
+use function mb_substr;
+use function str_replace;
 use function sprintf;
 
 /**
@@ -29,25 +30,10 @@ use function sprintf;
  */
 final class FileUpdater
 {
-    /**
-     * @var FilePropertyConfigurationResolver
-     */
-    private $configurationResolver;
-
-    /**
-     * @var FileManager
-     */
-    private $fileManager;
-
-    /**
-     * @var FileLoader
-     */
-    private $fileLoader;
-
-    /**
-     * @var FileRemover
-     */
-    private $fileRemover;
+    private FilePropertyConfigurationResolver $configurationResolver;
+    private FileManager $fileManager;
+    private FileLoader $fileLoader;
+    private FileRemover $fileRemover;
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
@@ -121,7 +107,8 @@ final class FileUpdater
 
         // If filesystems and paths are the same, we assume it is the same file
         return $newFile->getFileSystemName() !== $currentFile->getFileSystemName()
-            || $newFile->getPath() !== $currentFile->getPath();
+            || $newFile->getPath() !== $currentFile->getPath()
+        ;
     }
 
     private function clearCurrentFileIfExists(string $pathPrefix, ?WebFile $oldFile): void

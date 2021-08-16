@@ -27,6 +27,9 @@ use function strstr;
  * This is a copy of Symfony FileValidator, adjusted for the slight differences
  * between implementation of file upload.
  *
+ * Typed properties are not used on purpose, until Symfony decides to use them
+ * as well;
+ *
  * @see \Symfony\Component\Validator\Constraints\FileValidator
  */
 class UploadedWebFileValidator extends ConstraintValidator
@@ -39,7 +42,7 @@ class UploadedWebFileValidator extends ConstraintValidator
     /**
      * @var array<int, string>
      */
-    private static $suffices = [
+    private static array $suffices = [
         1 => 'bytes',
         self::KB_BYTES => 'kB',
         self::MB_BYTES => 'MB',

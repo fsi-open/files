@@ -19,10 +19,7 @@ use FSi\Component\Files\Upload\PhpFilesHandler;
 
 final class UploadModule extends Module
 {
-    /**
-     * @var Symfony
-     */
-    private $symfony;
+    private Symfony $symfony;
 
     /**
      * @phpcs:disable

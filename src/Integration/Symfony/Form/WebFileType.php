@@ -35,20 +35,12 @@ final class WebFileType extends AbstractType
     public const FILE_FIELD = 'file';
     public const REMOVE_FIELD = 'remove';
 
+    private FileUrlResolver $urlResolver;
+    private FileManager $fileManager;
     /**
-     * @var FileUrlResolver
+     * @var array<FormFileTransformer>
      */
-    private $urlResolver;
-
-    /**
-     * @var FileManager
-     */
-    private $fileManager;
-
-    /**
-     * @var FormFileTransformer[]
-     */
-    private $fileTransformers;
+    private array $fileTransformers;
 
     /**
      * @param FileUrlResolver $urlResolver

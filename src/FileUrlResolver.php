@@ -23,7 +23,7 @@ final class FileUrlResolver
     /**
      * @var array<string, UrlAdapter>
      */
-    private $adapters;
+    private array $adapters;
 
     /**
      * @param array<string, UrlAdapter> $adapters

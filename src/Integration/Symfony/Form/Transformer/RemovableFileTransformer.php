@@ -18,10 +18,7 @@ use function is_array;
 
 final class RemovableFileTransformer implements DataTransformerInterface
 {
-    /**
-     * @var string
-     */
-    private $fileField;
+    private string $fileField;
 
     public function __construct(string $fileField)
     {

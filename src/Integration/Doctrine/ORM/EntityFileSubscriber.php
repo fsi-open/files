@@ -27,20 +27,9 @@ use function array_walk;
 
 final class EntityFileSubscriber implements EventSubscriber
 {
-    /**
-     * @var FileRemover
-     */
-    private $fileRemover;
-
-    /**
-     * @var FileUpdater
-     */
-    private $fileUpdater;
-
-    /**
-     * @var FileLoader
-     */
-    private $fileLoader;
+    private FileRemover $fileRemover;
+    private FileUpdater $fileUpdater;
+    private FileLoader $fileLoader;
 
     public function __construct(
         FileLoader $fileLoader,
