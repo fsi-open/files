@@ -8,12 +8,15 @@ services:
             dockerfile: Dockerfile
         container_name: files
         environment:
-            - XDEBUG_CONFIG=idekey=PHPSTORM
-            - PHP_IDE_CONFIG=serverName=localhost
-            - APP_ENV=test
-            - DOCROOT=/tests/_support/project/public
+            XDEBUG_CONFIG: 'idekey=PHPSTORM'
+            PHP_IDE_CONFIG: 'serverName=localhost'
+            DOCROOT: '/var/www/application/tests/_support/project/public'
+            HOST_UID: 1000
+            HOST_GID: 1000
+            APP_ENV: test
         ports:
             - 80:80
+            - 443:443
         volumes:
             - .:/var/www/application
             - ~/.composer:/var/www/.composer
