@@ -17,10 +17,7 @@ use Symfony\Component\Config\Definition\Processor;
 
 final class ConfigurationTest extends Unit
 {
-    /**
-     * @var Processor
-     */
-    private $processor;
+    private Processor $processor;
 
     public function testConfiguration(): void
     {

@@ -23,6 +23,9 @@ use function preg_match;
  * This is a copy of Symfony File constraint, adjusted for the slight differences
  * between implementation of file upload.
  *
+ * Typed properties are not used on purpose, until Symfony decides to use them
+ * as well;
+ *
  * @see \Symfony\Component\Validator\Constraints\File
  */
 class UploadedWebFile extends Constraint

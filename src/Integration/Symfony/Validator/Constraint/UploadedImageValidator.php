@@ -29,6 +29,9 @@ use function sprintf;
  * This is a copy of Symfony ImageValidator, adjusted for the slight differences
  * between implementation of file upload.
  *
+ * Typed properties are not used on purpose, until Symfony decides to use them
+ * as well;
+ *
  * @see \Symfony\Component\Validator\Constraints\ImageValidator
  */
 final class UploadedImageValidator extends UploadedWebFileValidator

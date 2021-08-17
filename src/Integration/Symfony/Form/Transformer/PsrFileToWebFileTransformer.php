@@ -18,10 +18,7 @@ use Symfony\Component\Form\FormEvent;
 
 final class PsrFileToWebFileTransformer implements FormFileTransformer
 {
-    /**
-     * @var FileFactory
-     */
-    private $fileFactory;
+    private FileFactory $fileFactory;
 
     public function __construct(FileFactory $fileFactory)
     {

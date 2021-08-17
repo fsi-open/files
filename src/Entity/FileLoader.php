@@ -24,15 +24,8 @@ use function array_walk;
  */
 final class FileLoader
 {
-    /**
-     * @var FileManager
-     */
-    private $fileManager;
-
-    /**
-     * @var FilePropertyConfigurationResolver
-     */
-    private $configurationResolver;
+    private FileManager $fileManager;
+    private FilePropertyConfigurationResolver $configurationResolver;
 
     public function __construct(FileManager $fileManager, FilePropertyConfigurationResolver $configurationResolver)
     {

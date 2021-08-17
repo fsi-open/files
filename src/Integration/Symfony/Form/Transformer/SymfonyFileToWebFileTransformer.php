@@ -19,10 +19,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class SymfonyFileToWebFileTransformer implements FormFileTransformer
 {
-    /**
-     * @var FileFactory
-     */
-    private $fileFactory;
+    private FileFactory $fileFactory;
 
     public function __construct(FileFactory $fileFactory)
     {

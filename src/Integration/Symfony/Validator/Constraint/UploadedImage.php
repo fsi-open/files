@@ -11,6 +11,15 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
+/**
+ * This is a copy of Symfony Image constraint, adjusted for the slight differences
+ * between implementation of file upload.
+ *
+ * Typed properties are not used on purpose, until Symfony decides to use them
+ * as well;
+ *
+ * @see \Symfony\Component\Validator\Constraints\Image
+ */
 final class UploadedImage extends UploadedWebFile
 {
     public const SIZE_NOT_DETECTED_ERROR = '6d55c3f4-e58e-4fe3-91ee-74b492199956';

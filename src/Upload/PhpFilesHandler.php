@@ -28,10 +28,7 @@ final class PhpFilesHandler
 {
     private const UPLOADED_FILE_KEYS = ['error', 'name', 'size', 'tmp_name', 'type'];
 
-    /**
-     * @var FileFactory
-     */
-    private $fileFactory;
+    private FileFactory $fileFactory;
 
     public function __construct(FileFactory $fileFactory)
     {

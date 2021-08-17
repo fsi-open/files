@@ -18,37 +18,13 @@ final class FilePropertyConfiguration
     /**
      * @var class-string
      */
-    private $entityClass;
-
-    /**
-     * @var string
-     */
-    private $filePropertyName;
-
-    /**
-     * @var ReflectionProperty
-     */
-    private $filePropertyReflection;
-
-    /**
-     * @var string
-     */
-    private $fileSystemName;
-
-    /**
-     * @var string
-     */
-    private $pathPropertyName;
-
-    /**
-     * @var ReflectionProperty
-     */
-    private $pathPropertyReflection;
-
-    /**
-     * @var string
-     */
-    private $pathPrefix;
+    private string $entityClass;
+    private string $filePropertyName;
+    private string $fileSystemName;
+    private string $pathPropertyName;
+    private string $pathPrefix;
+    private ?ReflectionProperty $filePropertyReflection;
+    private ?ReflectionProperty $pathPropertyReflection;
 
     /**
      * @param class-string $entityClass
@@ -69,6 +45,8 @@ final class FilePropertyConfiguration
         $this->fileSystemName = $fileSystemName;
         $this->pathPropertyName = $pathPropertyName;
         $this->pathPrefix = $pathPrefix;
+        $this->filePropertyReflection = null;
+        $this->pathPropertyReflection = null;
     }
 
     /**
@@ -87,8 +65,10 @@ final class FilePropertyConfiguration
     public function getFilePropertyReflection(): ReflectionProperty
     {
         if (null === $this->filePropertyReflection) {
-            $this->filePropertyReflection = new ReflectionProperty($this->entityClass, $this->filePropertyName);
-            $this->filePropertyReflection->setAccessible(true);
+            $this->filePropertyReflection = $this->createPropertyReflection(
+                $this->entityClass,
+                $this->filePropertyName
+            );
         }
 
         return $this->filePropertyReflection;
@@ -107,8 +87,10 @@ final class FilePropertyConfiguration
     public function getPathPropertyReflection(): ReflectionProperty
     {
         if (null === $this->pathPropertyReflection) {
-            $this->pathPropertyReflection = new ReflectionProperty($this->entityClass, $this->pathPropertyName);
-            $this->pathPropertyReflection->setAccessible(true);
+            $this->pathPropertyReflection = $this->createPropertyReflection(
+                $this->entityClass,
+                $this->pathPropertyName
+            );
         }
 
         return $this->pathPropertyReflection;
@@ -117,5 +99,18 @@ final class FilePropertyConfiguration
     public function getPathPrefix(): string
     {
         return $this->pathPrefix;
+    }
+
+    /**
+     * @param class-string $entityClass
+     * @param string $property
+     * @return ReflectionProperty
+     */
+    private function createPropertyReflection(string $entityClass, string $property): ReflectionProperty
+    {
+        $propertyReflection = new ReflectionProperty($entityClass, $property);
+        $propertyReflection->setAccessible(true);
+
+        return $propertyReflection;
     }
 }

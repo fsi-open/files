@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use Assert\Assertion;
-use Closure;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use Symfony\Component\Config\FileLocator;
@@ -21,7 +20,6 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
-use function array_map;
 use function mb_strlen;
 use function sprintf;
 use function trim;

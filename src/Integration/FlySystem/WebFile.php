@@ -15,15 +15,8 @@ use FSi\Component\Files;
 
 final class WebFile implements Files\WebFile
 {
-    /**
-     * @var string
-     */
-    private $fileSystemName;
-
-    /**
-     * @var string
-     */
-    private $path;
+    private string $fileSystemName;
+    private string $path;
 
     public function __construct(string $fileSystemName, string $path)
     {

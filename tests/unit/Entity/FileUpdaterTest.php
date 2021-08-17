@@ -26,25 +26,14 @@ use function basename;
 
 final class FileUpdaterTest extends Unit
 {
-    /**
-     * @var string string
-     */
-    private $filePathRegex = '[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{23}';
+    private string $filePathRegex = '[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{3}/[a-f0-9]{23}';
 
     /**
-     * @var FileManager|MockObject
+     * @var FileManager&MockObject
      */
-    private $fileManager;
-
-    /**
-     * @var FileUpdater
-     */
-    private $fileUpdater;
-
-    /**
-     * @var FileRemover
-     */
-    private $fileRemover;
+    private FileManager $fileManager;
+    private FileUpdater $fileUpdater;
+    private FileRemover $fileRemover;
 
     public function testNotModyfingFile(): void
     {

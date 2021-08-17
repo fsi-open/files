@@ -24,17 +24,17 @@ use function sprintf;
 final class FilePropertyConfigurationResolver
 {
     /**
-     * @var FilePropertyConfiguration[]
+     * @var array<FilePropertyConfiguration>
      */
-    private $configurations = [];
+    private array $configurations = [];
 
     /**
-     * @var FilePropertyConfiguration[][]
+     * @var array<class-string, array<FilePropertyConfiguration>>
      */
-    private $indexedConfigurations = [];
+    private array $indexedConfigurations = [];
 
     /**
-     * @param FilePropertyConfiguration[] $configurations
+     * @param iterable<FilePropertyConfiguration> $configurations
      */
     public function __construct(iterable $configurations)
     {
@@ -85,6 +85,11 @@ final class FilePropertyConfigurationResolver
         return array_values($this->indexedConfigurations[$entityClass]);
     }
 
+    /**
+     * @param object $entity
+     * @param class-string $entityClass
+     * @return void
+     */
     private function indexConfigurationForEntity(object $entity, string $entityClass): void
     {
         $this->indexedConfigurations[$entityClass] = array_reduce(

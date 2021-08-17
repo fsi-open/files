@@ -17,30 +17,11 @@ use Psr\Http\Message\StreamInterface;
 
 final class UploadedWebFile implements Files\UploadedWebFile
 {
-    /**
-     * @var StreamInterface
-     */
-    private $stream;
-
-    /**
-     * @var string
-     */
-    private $originalName;
-
-    /**
-     * @var string
-     */
-    private $mimeType;
-
-    /**
-     * @var int
-     */
-    private $size;
-
-    /**
-     * @var int|null
-     */
-    private $error;
+    private StreamInterface $stream;
+    private string $originalName;
+    private string $mimeType;
+    private int $size;
+    private ?int $error;
 
     public function __construct(
         StreamInterface $stream,

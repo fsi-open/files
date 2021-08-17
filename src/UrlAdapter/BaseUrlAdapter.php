@@ -20,10 +20,7 @@ use Psr\Http\Message\UriInterface;
 
 final class BaseUrlAdapter implements UrlAdapter
 {
-    /**
-     * @var UriInterface
-     */
-    private $baseUrl;
+    private UriInterface $baseUrl;
 
     public function __construct(UriFactoryInterface $uriFactory, string $baseUrl)
     {
