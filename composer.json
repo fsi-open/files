@@ -63,7 +63,7 @@
         "symfony/translation": "^4.4|^5.3",
         "symfony/twig-bundle": "^4.4|^5.3",
         "symfony/validator": "^4.4|^5.3",
-        "twig/twig": "^2.12"
+        "twig/twig": "^2.12|^3.3"
     },
     "scripts": {
         "sniffer": "vendor/bin/phpcs",

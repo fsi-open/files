@@ -11,7 +11,18 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files;
 
+use FSi\Component\Files\Exception\FieldWithoutDefaultNullValueException;
+use FSi\Component\Files\Exception\InvalidFieldTypeException;
+use FSi\Component\Files\Exception\InvalidUnionFieldTypeException;
+use ReflectionNamedType;
 use ReflectionProperty;
+use ReflectionType;
+use ReflectionUnionType;
+use RuntimeException;
+
+use function count;
+use function ltrim;
+use function method_exists;
 
 final class FilePropertyConfiguration
 {
@@ -47,6 +58,9 @@ final class FilePropertyConfiguration
         $this->pathPrefix = $pathPrefix;
         $this->filePropertyReflection = null;
         $this->pathPropertyReflection = null;
+
+        $this->assertPropertyType($this->getFilePropertyReflection(), WebFile::class);
+        $this->assertPropertyType($this->getPathPropertyReflection(), 'string');
     }
 
     /**
@@ -101,6 +115,66 @@ final class FilePropertyConfiguration
         return $this->pathPrefix;
     }
 
+    private function assertPropertyType(ReflectionProperty $propertyReflection, string $expectedType): void
+    {
+        if (false === $propertyReflection->hasType()) {
+            return;
+        }
+
+        $property = $propertyReflection->getName();
+
+        /** @var ReflectionNamedType|ReflectionUnionType|ReflectionType $propertyTypeReflection */
+        $propertyTypeReflection = $propertyReflection->getType();
+        if (true === $propertyTypeReflection instanceof ReflectionNamedType) {
+            $actualType = $this->sanitizePropertyType($propertyTypeReflection->getName());
+            if ($expectedType !== $actualType) {
+                throw new InvalidFieldTypeException($this->entityClass, $property, $expectedType, $actualType);
+            }
+        } elseif (true === $propertyTypeReflection instanceof ReflectionUnionType) {
+            /** @var array<ReflectionNamedType> $unionTypes */
+            $unionTypes = $propertyTypeReflection->getTypes();
+            $this->assertUnionTypeContainsType(
+                $unionTypes,
+                $expectedType,
+                $property
+            );
+        } else {
+            throw new RuntimeException("Unable to read property type from \"{$property}\"");
+        }
+
+        if (
+            true === method_exists(ReflectionProperty::class, 'hasDefaultValue')
+            && false === $propertyReflection->hasDefaultValue()
+        ) {
+            throw new FieldWithoutDefaultNullValueException($this->entityClass, $property);
+        }
+
+        if (
+            true === method_exists(ReflectionProperty::class, 'getDefaultValue')
+            && null !== $propertyReflection->getDefaultValue()
+        ) {
+            throw new FieldWithoutDefaultNullValueException($this->entityClass, $property);
+        }
+    }
+
+    /**
+     * @param array<ReflectionNamedType> $types
+     * @param string $expectedType
+     * @param string $property
+     */
+    private function assertUnionTypeContainsType(array $types, string $expectedType, string $property): void
+    {
+        $matches = array_filter(
+            $types,
+            fn(ReflectionNamedType $propertyTypeReflection): bool
+                => $this->sanitizePropertyType($propertyTypeReflection->getName()) === $expectedType
+        );
+
+        if (1 !== count($matches)) {
+            throw new InvalidUnionFieldTypeException($this->entityClass, $property, $expectedType);
+        }
+    }
+
     /**
      * @param class-string $entityClass
      * @param string $property
@@ -112,5 +186,10 @@ final class FilePropertyConfiguration
         $propertyReflection->setAccessible(true);
 
         return $propertyReflection;
+    }
+
+    private function sanitizePropertyType(string $propertyType): string
+    {
+        return ltrim($propertyType, '?');
     }
 }

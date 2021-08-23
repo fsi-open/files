@@ -15,6 +15,8 @@ matrix:
           env:
               - COMPOSER_FLAGS='--prefer-lowest'
         - php: 8.0
+          env:
+              - CODECEPT_ENV='-- --env php8'
 
 install:
     - phpenv config-rm xdebug.ini
@@ -26,4 +28,5 @@ script:
     - composer sniffer
     - composer cept build
     - composer stan
-    - composer cept run
+    - composer cept run unit $CODECEPT_ENV
+    - composer cept run functional
