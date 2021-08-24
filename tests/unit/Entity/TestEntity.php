@@ -17,6 +17,8 @@ class TestEntity
 {
     private ?WebFile $file = null;
     private ?string $filePath = null;
+    private ?WebFile $file1;
+    private ?string $filePath1;
 
     public function __construct(?WebFile $file)
     {
