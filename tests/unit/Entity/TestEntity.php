@@ -15,10 +15,8 @@ use FSi\Component\Files\WebFile;
 
 class TestEntity
 {
-    private ?WebFile $file = null;
-    private ?string $filePath = null;
-    private ?WebFile $file1;
-    private ?string $filePath1;
+    private ?WebFile $file;
+    private ?string $filePath;
 
     public function __construct(?WebFile $file)
     {

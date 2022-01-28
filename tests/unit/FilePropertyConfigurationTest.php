@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Tests\FSi\Component\Files;
 
 use Codeception\Test\Unit;
-use FSi\Component\Files\Exception\FieldWithoutDefaultNullValueException;
 use FSi\Component\Files\Exception\InvalidFieldTypeException;
 use FSi\Component\Files\FilePropertyConfiguration;
 use ReflectionException;
@@ -78,48 +77,6 @@ final class FilePropertyConfigurationTest extends Unit
             'file',
             'filesystem',
             'file',
-            'test'
-        );
-    }
-
-    /**
-     * @env php8
-     * @return void
-     */
-    public function testFilePropertyTypeNoDefaultValue(): void
-    {
-        self::expectException(FieldWithoutDefaultNullValueException::class);
-        self::expectExceptionMessage(
-            'Field "file1" of class "Tests\FSi\Component\Files\Entity\TestEntity"'
-            . ' does not have a default null value'
-        );
-
-        new FilePropertyConfiguration(
-            TestEntity::class,
-            'file1',
-            'filesystem',
-            'filePath',
-            'test'
-        );
-    }
-
-    /**
-     * @env php8
-     * @return void
-     */
-    public function testPathPropertyTypeNoDefaultValue(): void
-    {
-        self::expectException(FieldWithoutDefaultNullValueException::class);
-        self::expectExceptionMessage(
-            'Field "filePath1" of class "Tests\FSi\Component\Files\Entity\TestEntity"'
-            . ' does not have a default null value'
-        );
-
-        new FilePropertyConfiguration(
-            TestEntity::class,
-            'file',
-            'filesystem',
-            'filePath1',
             'test'
         );
     }

@@ -52,7 +52,12 @@ final class FileLoader
     {
         Assertion::isInstanceOf($entity, $configuration->getEntityClass());
 
-        $path = $configuration->getPathPropertyReflection()->getValue($entity);
+        $pathPropertyReflection = $configuration->getPathPropertyReflection();
+        if (false === $pathPropertyReflection->isInitialized($entity)) {
+            return null;
+        }
+
+        $path = $pathPropertyReflection->getValue($entity);
         if (null === $path) {
             return null;
         }

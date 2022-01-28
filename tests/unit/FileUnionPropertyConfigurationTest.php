@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Tests\FSi\Component\Files;
 
 use Codeception\Test\Unit;
-use FSi\Component\Files\Exception\FieldWithoutDefaultNullValueException;
 use FSi\Component\Files\Exception\InvalidUnionFieldTypeException;
 use FSi\Component\Files\FilePropertyConfiguration;
 use Tests\FSi\Component\Files\Entity\UnionTestEntity;
@@ -75,48 +74,6 @@ final class FileUnionPropertyConfigurationTest extends Unit
             'file',
             'filesystem',
             'fileUnionType',
-            'test'
-        );
-    }
-
-    /**
-     * @env php8
-     * @return void
-     */
-    public function testFilePropertyTypeNoDefaultValue(): void
-    {
-        self::expectException(FieldWithoutDefaultNullValueException::class);
-        self::expectExceptionMessage(
-            'Field "fileUnionType1" of class "Tests\FSi\Component\Files\Entity\UnionTestEntity"'
-            . ' does not have a default null value'
-        );
-
-        new FilePropertyConfiguration(
-            UnionTestEntity::class,
-            'fileUnionType1',
-            'filesystem',
-            'scalarUnionType',
-            'test'
-        );
-    }
-
-    /**
-     * @env php8
-     * @return void
-     */
-    public function testPathPropertyTypeNoDefaultValue(): void
-    {
-        self::expectException(FieldWithoutDefaultNullValueException::class);
-        self::expectExceptionMessage(
-            'Field "scalarUnionType1" of class "Tests\FSi\Component\Files\Entity\UnionTestEntity"'
-            . ' does not have a default null value'
-        );
-
-        new FilePropertyConfiguration(
-            UnionTestEntity::class,
-            'fileUnionType',
-            'filesystem',
-            'scalarUnionType1',
             'test'
         );
     }

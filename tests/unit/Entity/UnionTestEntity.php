@@ -16,10 +16,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class UnionTestEntity
 {
-    private ?WebFile $file = null;
-    private ?string $filePath = null;
-    private int|float|string|null $scalarUnionType = null;
-    private WebFile|UploadedFile|null $fileUnionType = null;
-    private int|float|string $scalarUnionType1;
-    private WebFile|UploadedFile $fileUnionType1;
+    private ?WebFile $file;
+    private ?string $filePath;
+    private int|float|string|null $scalarUnionType;
+    private WebFile|UploadedFile|null $fileUnionType;
 }

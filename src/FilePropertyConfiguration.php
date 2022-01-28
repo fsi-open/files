@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files;
 
-use FSi\Component\Files\Exception\FieldWithoutDefaultNullValueException;
 use FSi\Component\Files\Exception\InvalidFieldTypeException;
 use FSi\Component\Files\Exception\InvalidUnionFieldTypeException;
 use ReflectionNamedType;
@@ -22,7 +21,6 @@ use RuntimeException;
 
 use function count;
 use function ltrim;
-use function method_exists;
 
 final class FilePropertyConfiguration
 {
@@ -140,20 +138,6 @@ final class FilePropertyConfiguration
             );
         } else {
             throw new RuntimeException("Unable to read property type from \"{$property}\"");
-        }
-
-        if (
-            true === method_exists(ReflectionProperty::class, 'hasDefaultValue')
-            && false === $propertyReflection->hasDefaultValue()
-        ) {
-            throw new FieldWithoutDefaultNullValueException($this->entityClass, $property);
-        }
-
-        if (
-            true === method_exists(ReflectionProperty::class, 'getDefaultValue')
-            && null !== $propertyReflection->getDefaultValue()
-        ) {
-            throw new FieldWithoutDefaultNullValueException($this->entityClass, $property);
         }
     }
 

@@ -73,7 +73,11 @@ final class FileUpdater
 
     private function readNewFileFromEntity(FilePropertyConfiguration $configuration, object $entity): ?WebFile
     {
-        $file = $configuration->getFilePropertyReflection()->getValue($entity);
+        $filePropertyReflection = $configuration->getFilePropertyReflection();
+        $file = null;
+        if (true === $filePropertyReflection->isInitialized($entity)) {
+            $file = $filePropertyReflection->getValue($entity);
+        }
         Assertion::nullOrIsInstanceOf($file, WebFile::class, sprintf(
             'Expected an instance of "%s" or null, got "%s" instead',
             WebFile::class,
