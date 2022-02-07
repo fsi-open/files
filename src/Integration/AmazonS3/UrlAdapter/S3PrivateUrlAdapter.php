@@ -31,7 +31,7 @@ final class S3PrivateUrlAdapter implements UrlAdapter
      * @param string $s3Bucket
      * @param int|string|DateTime $expiresIn
      */
-    public function __construct(S3ClientInterface $s3Client, string $s3Bucket, $expiresIn)
+    public function __construct(S3ClientInterface $s3Client, string $s3Bucket, $expiresIn = '+1 hour')
     {
         $this->s3Client = $s3Client;
         $this->s3Bucket = $s3Bucket;
