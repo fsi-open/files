@@ -16,10 +16,7 @@ use Twig\Environment;
 
 final class NativeFilesController
 {
-    /**
-     * @var Environment
-     */
-    private $twig;
+    private Environment $twig;
 
     public function __construct(Environment $twig)
     {

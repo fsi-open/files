@@ -26,25 +26,10 @@ use Twig\Environment;
 
 final class SymfonyFilesController
 {
-    /**
-     * @var Environment
-     */
-    private $twig;
-
-    /**
-     * @var FormFactoryInterface
-     */
-    private $formFactory;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var UrlGeneratorInterface
-     */
-    private $urlGenerator;
+    private Environment $twig;
+    private FormFactoryInterface $formFactory;
+    private EntityManagerInterface $entityManager;
+    private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(
         Environment $twig,
