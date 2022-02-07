@@ -14,15 +14,25 @@ namespace Tests\FSi\App\Form;
 use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImage;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
-use Tests\FSi\App\Entity\FileEntity;
+use FSi\Component\Files\WebFile;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\UriInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Tests\FSi\App\Entity\FileEntity;
 
 final class FormTestType extends AbstractType
 {
+    private UriFactoryInterface $uriFactory;
+
+    public function __construct(UriFactoryInterface $uriFactory)
+    {
+        $this->uriFactory = $uriFactory;
+    }
+
     /**
      * @param FormBuilderInterface<FormBuilderInterface> $builder
      * @param array<string, mixed> $options
@@ -40,7 +50,9 @@ final class FormTestType extends AbstractType
             'label' => 'Image file',
             'constraints' => [new NotBlank(), new UploadedImage()],
             'image' => true,
-            'required' => false
+            'required' => false,
+            'url_resolver' => fn(WebFile $file): UriInterface
+                => $this->uriFactory->createUri($file->getPath())
         ]);
 
         $builder->add('privateFile', WebFileType::class, [

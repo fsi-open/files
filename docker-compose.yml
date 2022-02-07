@@ -9,6 +9,7 @@ services:
         container_name: files
         environment:
             XDEBUG_CONFIG: 'idekey=PHPSTORM'
+            XDEBUG_MODE: 'off'
             PHP_IDE_CONFIG: 'serverName=localhost'
             DOCROOT: '/var/www/application/tests/_support/project/public'
             HOST_UID: 1000

@@ -16,10 +16,7 @@ use Twig\Environment;
 
 final class IndexController
 {
-    /**
-     * @var Environment
-     */
-    private $twig;
+    private Environment $twig;
 
     public function __construct(Environment $twig)
     {

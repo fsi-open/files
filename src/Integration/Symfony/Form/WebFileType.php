@@ -19,6 +19,7 @@ use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableFileTransformer;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
+use Psr\Http\Message\UriInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,6 +30,9 @@ use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use function array_replace;
+use function is_array;
+use function iterator_to_array;
+use function sprintf;
 
 final class WebFileType extends AbstractType
 {
@@ -100,13 +104,15 @@ final class WebFileType extends AbstractType
     /**
      * @param FormView $view
      * @param FormInterface<FormInterface> $form
-     * @param array{image: bool, removable: bool, resolve_url: bool} $options
+     * @param array{image: bool, removable: bool, resolve_url: bool, url_resolver: callable|null} $options
      */
     public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         $data = $form->getData();
         $removable = $options['removable'];
         $resolveUrl = $options['resolve_url'];
+        /** @var callable|null $urlResolver */
+        $urlResolver = $options['url_resolver'];
         $view->vars = array_replace($view->vars, [
             'basename' => false === $removable ? $this->createFileBasename($data) : null,
             'image' => $options['image'],
@@ -115,7 +121,9 @@ final class WebFileType extends AbstractType
             'multiple' => false,
             'removable' => $removable,
             'type' => 'file',
-            'url' => (false === $removable && true === $resolveUrl) ? $this->createFileUrl($data) : null,
+            'url' => (false === $removable && true === $resolveUrl)
+                ? $this->createFileUrl($data, $urlResolver)
+                : null,
             'value' => ''
         ]);
     }
@@ -140,6 +148,7 @@ final class WebFileType extends AbstractType
                 return true === $options['removable'] ? ['.' => self::FILE_FIELD] : [];
             },
             'image' => false,
+            'url_resolver' => null,
             'removable' => false,
             'remove_field_options' => [
                 'block_prefix' => 'web_file_remove',
@@ -153,15 +162,27 @@ final class WebFileType extends AbstractType
         $resolver->setAllowedTypes('removable', ['bool']);
         $resolver->setAllowedTypes('remove_field_options', ['array']);
         $resolver->setAllowedTypes('resolve_url', ['bool']);
+        $resolver->setAllowedTypes('url_resolver', ['callable', 'null']);
     }
 
-    private function createFileUrl(?WebFile $file): ?string
+    private function createFileUrl(?WebFile $file, ?callable $fileResolver): ?string
     {
         if (null === $file || true === $file instanceof UploadedWebFile) {
             return null;
         }
 
-        return (string) $this->urlResolver->resolve($file);
+        if (null !== $fileResolver) {
+            $url = $fileResolver($file);
+            Assertion::isInstanceOf(
+                $url,
+                UriInterface::class,
+                sprintf('File url resolver must return an instance of  "%s"', UriInterface::class)
+            );
+        } else {
+            $url = $this->urlResolver->resolve($file);
+        }
+
+        return (string) $url;
     }
 
     private function createFileBasename(?WebFile $file): ?string

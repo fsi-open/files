@@ -40,6 +40,7 @@ use Tests\FSi\App\Controller\SymfonyFilesController;
 use Tests\FSi\App\Entity\EmbeddedFile;
 use Tests\FSi\App\Entity\FileEntity;
 use Tests\FSi\App\Entity\TwiceEmbeddedFile;
+use Tests\FSi\App\Form\FormTestType;
 
 use function sprintf;
 
@@ -191,6 +192,11 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $container->setAlias(StreamFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(RequestFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ClientInterface::class, Psr18Client::class);
+
+        $container->register(FormTestType::class)
+            ->setAutoconfigured(true)
+            ->setArgument('$uriFactory', $psr17Factory)
+        ;
 
         $container->register('test.' . FileFactory::class, FlySystem\Upload\FileFactory::class)
             ->setPublic(true)
