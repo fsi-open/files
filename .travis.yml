@@ -7,7 +7,7 @@ cache:
     directories:
         - vendor
 
-dist: xenial
+dist: focal
 
 matrix:
     include:
