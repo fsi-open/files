@@ -65,7 +65,7 @@ final class WebFileType extends AbstractType
 
     /**
      * @param FormBuilderInterface<FormBuilderInterface> $builder
-     * @param array{removable: bool, remove_field_options: array} $options
+     * @param array{removable: bool, remove_field_options: array<string, mixed>} $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

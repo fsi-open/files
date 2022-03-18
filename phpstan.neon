@@ -11,7 +11,7 @@ parameters:
         - src
         - tests
     inferPrivatePropertyTypeFromConstructor: true
-    excludes_analyse:
+    excludePaths:
         - '%rootDir%/../../../tests/_support/_generated'
         - '%rootDir%/../../../tests/_support/project/var'
         - '%rootDir%/../../../tests/_support/UnitTester.php'

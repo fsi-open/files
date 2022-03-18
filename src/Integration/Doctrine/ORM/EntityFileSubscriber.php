@@ -80,7 +80,11 @@ final class EntityFileSubscriber implements EventSubscriber
         $identityMap = $manager->getUnitOfWork()->getIdentityMap();
 
         array_walk($identityMap, function (array $entities) use ($manager): void {
-            array_walk($entities, function (object $entity) use ($manager): void {
+            array_walk($entities, function (?object $entity) use ($manager): void {
+                if (null === $entity) {
+                    return;
+                }
+
                 $this->callIterativelyForObjectAndItsEmbbedables(
                     [$this->fileUpdater, 'updateFiles'],
                     $manager,
