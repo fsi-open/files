@@ -118,7 +118,7 @@ final class FilesExtension extends Extension
      * @param string $class
      * @param string $filesystem
      * @param string $filesystemPrefix
-     * @param array{name: string, prefix: string, filesystem?: string, pathField?: string} $fieldConfiguration
+     * @param array{name: string, prefix: string|null, filesystem?: string, pathField?: string} $fieldConfiguration
      * @return Definition
      */
     private function createFilePropertyConfigurationDefinition(

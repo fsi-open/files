@@ -51,11 +51,6 @@ final class UploadedWebFileValidatorTest extends Unit
     private $stream;
 
     /**
-     * @var resource
-     */
-    private $fileHandler;
-
-    /**
      * @var UploadedWebFileValidator
      */
     private $validator;
@@ -345,7 +340,6 @@ final class UploadedWebFileValidatorTest extends Unit
             throw new RuntimeException('Cannot read test_pdf.pdf');
         }
 
-        $this->fileHandler = $fileHandler;
         $this->stream = new Stream($fileHandler);
         $this->validator = new UploadedWebFileValidator();
     }

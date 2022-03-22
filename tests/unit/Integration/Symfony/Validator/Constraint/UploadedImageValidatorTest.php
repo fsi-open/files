@@ -40,11 +40,6 @@ final class UploadedImageValidatorTest extends Unit
     private $stream;
 
     /**
-     * @var resource
-     */
-    private $fileHandler;
-
-    /**
      * @var UploadedWebFileValidator
      */
     private $validator;
@@ -350,7 +345,6 @@ final class UploadedImageValidatorTest extends Unit
             throw new RuntimeException('Cannot read test.jpg');
         }
 
-        $this->fileHandler = $fileHandler;
         $this->stream = new Stream($fileHandler);
         $this->validator = new UploadedImageValidator();
     }

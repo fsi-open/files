@@ -14,7 +14,11 @@ matrix:
         - php: 7.4
           env:
               - COMPOSER_FLAGS='--prefer-lowest'
+        - php: 7.4
         - php: 8.0
+          env:
+              - CODECEPT_ENV='-- --env php8'
+        - php: 8.1.0
           env:
               - CODECEPT_ENV='-- --env php8'
 
