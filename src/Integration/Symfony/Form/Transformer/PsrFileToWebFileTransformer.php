@@ -12,17 +12,25 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
 
 use FSi\Component\Files\Upload\FileFactory;
+use FSi\Component\Files\UploadedWebFile;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 use Symfony\Component\Form\FormEvent;
 
+use function is_string;
+
+use const UPLOAD_ERR_OK;
+
 final class PsrFileToWebFileTransformer implements FormFileTransformer
 {
     private FileFactory $fileFactory;
+    private StreamFactoryInterface $streamFactory;
 
-    public function __construct(FileFactory $fileFactory)
+    public function __construct(FileFactory $fileFactory, StreamFactoryInterface $streamFactory)
     {
         $this->fileFactory = $fileFactory;
+        $this->streamFactory = $streamFactory;
     }
 
     public function __invoke(FormEvent $event): void
@@ -32,11 +40,21 @@ final class PsrFileToWebFileTransformer implements FormFileTransformer
             return;
         }
 
-        if (null === $file->getClientFilename()) {
+        $result = UPLOAD_ERR_OK === $file->getError()
+            ? $this->transformFile($file)
+            : $this->createEmptyFileWithError($file->getError())
+        ;
+
+        $event->setData($result);
+    }
+
+    private function transformFile(UploadedFileInterface $file): UploadedWebFile
+    {
+        $filename = $file->getClientFilename();
+        if (null === $filename) {
             throw new RuntimeException('No filename!');
         }
 
-        $filename = $file->getClientFilename();
         if (false === is_string($file->getClientMediaType())) {
             throw new RuntimeException("No media type for file \"{$filename}\"!");
         }
@@ -45,14 +63,23 @@ final class PsrFileToWebFileTransformer implements FormFileTransformer
             throw new RuntimeException("No size for file \"{$filename}\"!");
         }
 
-        $event->setData(
-            $this->fileFactory->create(
-                $file->getStream(),
-                $filename,
-                $file->getClientMediaType(),
-                $file->getSize(),
-                $file->getError()
-            )
+        return $this->fileFactory->create(
+            $file->getStream(),
+            $filename,
+            $file->getClientMediaType(),
+            $file->getSize(),
+            $file->getError()
+        );
+    }
+
+    private function createEmptyFileWithError(int $error): UploadedWebFile
+    {
+        return $this->fileFactory->create(
+            $this->streamFactory->createStream(),
+            '',
+            '',
+            0,
+            $error
         );
     }
 }

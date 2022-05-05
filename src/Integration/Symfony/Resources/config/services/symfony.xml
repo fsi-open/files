@@ -8,11 +8,13 @@
         <!-- Form file transformers -->
         <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\PsrFileToWebFileTransformer">
             <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+            <argument type="service" id="Psr\Http\Message\StreamFactoryInterface" />
             <tag name="fsi_files.form_file_transformer" />
         </service>
 
         <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\SymfonyFileToWebFileTransformer">
             <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+            <argument type="service" id="Psr\Http\Message\StreamFactoryInterface" />
             <tag name="fsi_files.form_file_transformer" />
         </service>
 

@@ -5,18 +5,21 @@ includes:
 parameters:
     reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
-        - '%rootDir%/../../../vendor/codeception/codeception/autoload.php'
+        - '%currentWorkingDirectory%/vendor/codeception/codeception/autoload.php'
     level: 8
     paths:
         - src
         - tests
     inferPrivatePropertyTypeFromConstructor: true
     excludePaths:
-        - '%rootDir%/../../../tests/_support/_generated'
-        - '%rootDir%/../../../tests/_support/project/var'
-        - '%rootDir%/../../../tests/_support/UnitTester.php'
-        - '%rootDir%/../../../tests/unit/Entity/UnionTestEntity.php'
-        - '%rootDir%/../../../tests/unit/FileUnionPropertyConfigurationTest.php'
+        - '%currentWorkingDirectory%/tests/_support/_generated'
+        - '%currentWorkingDirectory%/tests/_support/project/var'
+        - '%currentWorkingDirectory%/tests/_support/UnitTester.php'
+        - '%currentWorkingDirectory%/tests/unit/Entity/UnionTestEntity.php'
+        - '%currentWorkingDirectory%/tests/unit/FileUnionPropertyConfigurationTest.php'
     ignoreErrors:
         - '#Call to an undefined method ReflectionProperty\:\:hasDefaultValue\(\)\.#'
         - '#Call to an undefined method ReflectionProperty\:\:getDefaultValue\(\)\.#'
+        -
+            message: '#Strict comparison using === between null and string will always evaluate to false\.#'
+            path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/SymfonyFileToWebFileTransformer.php'
