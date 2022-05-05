@@ -276,6 +276,13 @@ For constraints, you will need to use either of these:
 
 Default Symfony file constraints will not work, but the options are the same between them.
 
+You can also constrain the length of the filename using the constraint below:
+
+- `FSi\Component\Files\Integration\Symfony\Validator\Constraint\BasenameLength`
+
+This will check the length of the filename *only*, not the full path created during
+the file upload.
+
 ### Doctrine\ORM
 
 Integration with `Doctrine\ORM` is very easy:
