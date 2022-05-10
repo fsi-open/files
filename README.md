@@ -308,7 +308,7 @@ oneup_flysystem:
     adapters:
         local_adapter:
             local:
-                directory: 'the directory where the files are to be stored'
+                location: 'the directory where the files are to be stored'
     filesystems:
         local_filesystem:
             mount: local_filesystem

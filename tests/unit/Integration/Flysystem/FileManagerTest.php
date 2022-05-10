@@ -12,7 +12,7 @@ declare(strict_types=1);
 namespace Tests\FSi\Component\Files\Integration\Flysystem;
 
 use FSi\Component\Files\Integration\FlySystem\FileManager;
-use League\Flysystem\FilesystemInterface;
+use League\Flysystem\DirectoryListing;
 use League\Flysystem\MountManager;
 use PHPUnit\Framework\TestCase;
 
@@ -20,24 +20,28 @@ final class FileManagerTest extends TestCase
 {
     public function testNotRemovingNonEmptyDirectory(): void
     {
-        $fileSystem = $this->createMock(FilesystemInterface::class);
-        $fileSystem->expects($this->once())->method('listContents')->with('parent/child')->willReturn(['a file']);
-        $fileSystem->expects($this->never())->method('deleteDir');
-
         $mountManager = $this->createMock(MountManager::class);
-        $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
+        $mountManager->expects($this->never())->method('deleteDirectory');
+        $mountManager
+            ->expects($this->once())
+            ->method('listContents')
+            ->with('fs://parent/child')
+            ->willReturn(new DirectoryListing(['a file']))
+        ;
 
         (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
     }
 
     public function testRemovingEmptyDirectory(): void
     {
-        $fileSystem = $this->createMock(FilesystemInterface::class);
-        $fileSystem->expects($this->once())->method('listContents')->with('parent/child')->willReturn([]);
-        $fileSystem->expects($this->once())->method('deleteDir')->with('parent/child')->willReturn(true);
-
         $mountManager = $this->createMock(MountManager::class);
-        $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
+        $mountManager->expects($this->once())->method('deleteDirectory')->with('fs://parent/child');
+        $mountManager
+            ->expects($this->once())
+            ->method('listContents')
+            ->with('fs://parent/child')
+            ->willReturn(new DirectoryListing([]))
+        ;
 
         (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
     }
@@ -47,12 +51,9 @@ final class FileManagerTest extends TestCase
      */
     public function testNotRemovingEmptyOrRootDirectories(string $path): void
     {
-        $fileSystem = $this->createMock(FilesystemInterface::class);
-        $fileSystem->expects($this->never())->method('listContents');
-        $fileSystem->expects($this->never())->method('deleteDir');
-
         $mountManager = $this->createMock(MountManager::class);
-        $mountManager->expects($this->atLeastOnce())->method('getFilesystem')->with('fs')->willReturn($fileSystem);
+        $mountManager->expects($this->never())->method('listContents');
+        $mountManager->expects($this->never())->method('deleteDirectory');
 
         $this->assertFalse(
             (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', $path)

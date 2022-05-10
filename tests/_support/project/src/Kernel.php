@@ -114,17 +114,17 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
             'adapters' => [
                 'local_adapter' => [
                     'local' => [
-                        'directory' => sprintf('%s/../public/files', __DIR__)
+                        'location' => sprintf('%s/../public/files', __DIR__)
                     ]
                 ],
                 'other_local_adapter' => [
                     'local' => [
-                        'directory' => sprintf('%s/../public/other_files', __DIR__)
+                        'location' => sprintf('%s/../public/other_files', __DIR__)
                     ]
                 ],
                 'private_adapter' => [
                     'local' => [
-                        'directory' => sprintf('%s/../var/private_files', __DIR__)
+                        'location' => sprintf('%s/../var/private_files', __DIR__)
                     ]
                 ]
             ],

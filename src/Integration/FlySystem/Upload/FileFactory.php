@@ -116,7 +116,7 @@ final class FileFactory implements Files\Upload\FileFactory
         $size = $stream->getSize();
         if (null === $size) {
             throw new RuntimeException(
-                sprintf('Unable to file size of "%s".', (string) $uri)
+                sprintf('Unable to read file size of "%s".', (string) $uri)
             );
         }
 

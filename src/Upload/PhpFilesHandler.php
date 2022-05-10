@@ -147,9 +147,10 @@ final class PhpFilesHandler
      */
     private function findNestedFiles(array $files): array
     {
-        return array_filter($files, function (array $file): bool {
-            return $this->hasMatchingArrayKeys($file);
-        });
+        return array_filter(
+            $files,
+            fn(array $file): bool => $this->hasMatchingArrayKeys($file)
+        );
     }
 
     /**

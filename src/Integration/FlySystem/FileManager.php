@@ -14,19 +14,18 @@ namespace FSi\Component\Files\Integration\FlySystem;
 use Assert\Assertion;
 use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
-use League\Flysystem\Exception;
-use League\Flysystem\FileNotFoundException;
-use League\Flysystem\FilesystemInterface;
 use League\Flysystem\MountManager;
+use League\Flysystem\UnableToReadFile;
 use Psr\Http\Message\StreamInterface;
 
 use function basename;
 use function count;
-use function is_resource;
-use function sprintf;
+use function in_array;
 
 final class FileManager implements Files\FileManager
 {
+    private const EMPTY_OR_ROOT_PATHS = ['', '.', '/'];
+
     private MountManager $mountManager;
 
     public function __construct(MountManager $mountManager)
@@ -56,8 +55,9 @@ final class FileManager implements Files\FileManager
 
     public function load(string $fileSystemName, string $path): Files\WebFile
     {
-        if (false === $this->mountManager->getFilesystem($fileSystemName)->has($path)) {
-            throw new FileNotFoundException($path);
+        $prefixedPath = $this->prefixPathWithFileSystem($fileSystemName, $path);
+        if (false === $this->mountManager->fileExists($prefixedPath)) {
+            throw UnableToReadFile::fromLocation($prefixedPath, "File at \"{$path}\" does not exist");
         }
 
         return new FlySystem\WebFile($fileSystemName, $path);
@@ -65,7 +65,7 @@ final class FileManager implements Files\FileManager
 
     public function exists(Files\WebFile $file): bool
     {
-        return $this->fileSystemForFile($file)->has($file->getPath());
+        return $this->mountManager->fileExists($this->createPrefixedFilePath($file));
     }
 
     public function filename(Files\WebFile $file): string
@@ -75,44 +75,27 @@ final class FileManager implements Files\FileManager
 
     public function contents(Files\WebFile $file): string
     {
-        $contents = $this->fileSystemForFile($file)->read($file->getPath());
-        if (false === $contents) {
-            throw new Exception(sprintf(
-                'Unable to read contents of file "%s" from filesystem "%s"',
-                $file->getPath(),
-                $file->getFileSystemName()
-            ));
-        }
-
-        return $contents;
+        return $this->mountManager->read($this->createPrefixedFilePath($file));
     }
 
     public function remove(Files\WebFile $file): void
     {
-        $this->fileSystemForFile($file)->delete($file->getPath());
+        $this->mountManager->delete($this->createPrefixedFilePath($file));
     }
 
     public function removeDirectoryIfEmpty(string $fileSystemName, string $path): bool
     {
-        $filesystem = $this->fileSystemForName($fileSystemName);
-        if (
-            true === $this->isEmptyPathOrRootDirectory($path)
-            || false === $this->isEmptyDirectory($filesystem, $path)
-        ) {
+        if (true === $this->isEmptyPathOrRootDirectory($path)) {
             return false;
         }
 
-        return $filesystem->deleteDir($path);
-    }
+        $prefixedPath = $this->prefixPathWithFileSystem($fileSystemName, $path);
+        if (false === $this->isDirectoryEmpty($prefixedPath)) {
+            return false;
+        }
 
-    private function isEmptyDirectory(FilesystemInterface $filesystem, string $path): bool
-    {
-        return 0 === count($filesystem->listContents($path));
-    }
-
-    private function isEmptyPathOrRootDirectory(string $path): bool
-    {
-        return '' === $path || '.' === $path || '/' === $path;
+        $this->mountManager->deleteDirectory($prefixedPath);
+        return true;
     }
 
     /**
@@ -121,16 +104,7 @@ final class FileManager implements Files\FileManager
      */
     private function readStream(Files\WebFile $file)
     {
-        $stream = $this->fileSystemForFile($file)->readStream($file->getPath());
-        if (false === is_resource($stream)) {
-            throw new Exception(sprintf(
-                'Unable to read stream from file "%s" of filesystem "%s"',
-                $file->getPath(),
-                $file->getFileSystemName()
-            ));
-        }
-
-        return $stream;
+        return $this->mountManager->readStream($this->createPrefixedFilePath($file));
     }
 
     /**
@@ -140,16 +114,29 @@ final class FileManager implements Files\FileManager
      */
     private function writeStream(string $fileSystemPrefix, string $path, $stream): void
     {
-        $this->mountManager->getFilesystem($fileSystemPrefix)->putStream($path, $stream);
+        $this->mountManager->writeStream(
+            $this->prefixPathWithFileSystem($fileSystemPrefix, $path),
+            $stream
+        );
     }
 
-    private function fileSystemForFile(Files\WebFile $file): FilesystemInterface
+    private function createPrefixedFilePath(Files\WebFile $file): string
     {
-        return $this->fileSystemForName($file->getFileSystemName());
+        return $this->prefixPathWithFileSystem($file->getFileSystemName(), $file->getPath());
     }
 
-    private function fileSystemForName(string $name): FilesystemInterface
+    private function prefixPathWithFileSystem(string $fileSystem, string $path): string
     {
-        return $this->mountManager->getFilesystem($name);
+        return "{$fileSystem}://{$path}";
+    }
+
+    private function isDirectoryEmpty(string $path): bool
+    {
+        return 0 === count($this->mountManager->listContents($path)->toArray());
+    }
+
+    private function isEmptyPathOrRootDirectory(string $path): bool
+    {
+        return in_array($path, self::EMPTY_OR_ROOT_PATHS, true);
     }
 }
