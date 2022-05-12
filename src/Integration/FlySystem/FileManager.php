@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Integration\FlySystem;
 
 use Assert\Assertion;
 use FSi\Component\Files;
+use FSi\Component\Files\FileManagerConfigurator\FileExistanceChecksConfigurator;
 use FSi\Component\Files\Integration\FlySystem;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToReadFile;
@@ -22,15 +23,17 @@ use function basename;
 use function count;
 use function in_array;
 
-final class FileManager implements Files\FileManager
+final class FileManager implements Files\FileManager, FileExistanceChecksConfigurator
 {
     private const EMPTY_OR_ROOT_PATHS = ['', '.', '/'];
 
     private MountManager $mountManager;
+    private bool $fileExistanceChecksOnLoad;
 
     public function __construct(MountManager $mountManager)
     {
         $this->mountManager = $mountManager;
+        $this->fileExistanceChecksOnLoad = true;
     }
 
     public function copy(
@@ -56,7 +59,10 @@ final class FileManager implements Files\FileManager
     public function load(string $fileSystemName, string $path): Files\WebFile
     {
         $prefixedPath = $this->prefixPathWithFileSystem($fileSystemName, $path);
-        if (false === $this->mountManager->fileExists($prefixedPath)) {
+        if (
+            true === $this->fileExistanceChecksOnLoad
+            && false === $this->mountManager->fileExists($prefixedPath)
+        ) {
             throw UnableToReadFile::fromLocation($prefixedPath, "File at \"{$path}\" does not exist");
         }
 
@@ -96,6 +102,16 @@ final class FileManager implements Files\FileManager
 
         $this->mountManager->deleteDirectory($prefixedPath);
         return true;
+    }
+
+    public function disableFileExistanceChecksOnLoad(): void
+    {
+        $this->fileExistanceChecksOnLoad = false;
+    }
+
+    public function enableFileExistanceChecksOnLoad(): void
+    {
+        $this->fileExistanceChecksOnLoad = true;
     }
 
     /**

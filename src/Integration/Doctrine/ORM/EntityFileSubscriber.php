@@ -24,6 +24,7 @@ use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Entity\FileUpdater;
 
 use function array_walk;
+use function get_class;
 
 final class EntityFileSubscriber implements EventSubscriber
 {
