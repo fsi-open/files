@@ -36,15 +36,16 @@ final class FileUrlResolver
 
     public function resolve(WebFile $file): UriInterface
     {
-        if (false === array_key_exists($file->getFileSystemName(), $this->adapters)) {
+        $fileSystemName = $file->getFileSystemName();
+        if (false === array_key_exists($fileSystemName, $this->adapters)) {
             throw new RuntimeException(sprintf(
                 'Unable to resolve url for file "%s" of class "%s" from filesystem "%s"',
                 $file->getPath(),
                 get_class($file),
-                $file->getFileSystemName()
+                $fileSystemName
             ));
         }
 
-        return $this->adapters[$file->getFileSystemName()]->url($file);
+        return $this->adapters[$fileSystemName]->url($file);
     }
 }

@@ -26,12 +26,11 @@ final class FilePropertyConfigurationResolver
     /**
      * @var array<FilePropertyConfiguration>
      */
-    private array $configurations = [];
-
+    private array $configurations;
     /**
      * @var array<class-string, array<FilePropertyConfiguration>>
      */
-    private array $indexedConfigurations = [];
+    private array $indexedConfigurations;
 
     /**
      * @param iterable<FilePropertyConfiguration> $configurations
@@ -45,6 +44,7 @@ final class FilePropertyConfigurationResolver
         Assertion::allIsInstanceOf($configurations, FilePropertyConfiguration::class);
 
         $this->configurations = $configurations;
+        $this->indexedConfigurations = [];
         array_walk(
             $configurations,
             function (FilePropertyConfiguration $configuration): void {
@@ -73,7 +73,7 @@ final class FilePropertyConfigurationResolver
 
     /**
      * @param object $entity
-     * @return FilePropertyConfiguration[]
+     * @return array<FilePropertyConfiguration>
      */
     public function resolveEntity(object $entity): array
     {

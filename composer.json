@@ -41,11 +41,11 @@
         "doctrine/orm": "^2.9",
         "doctrine/persistence": "^2.0",
         "guzzlehttp/psr7": "^1.5",
-        "league/flysystem-aws-s3-v3": "^1.0",
-        "league/flysystem-memory": "^1.0",
-        "monolog/monolog": "^1.25",
-        "nyholm/psr7": "^1.4",
-        "oneup/flysystem-bundle": "^3.7",
+        "league/flysystem-aws-s3-v3": "^2.0|^3.0",
+        "league/flysystem-memory": "^2.0|^3.0",
+        "monolog/monolog": "^2.6",
+        "nyholm/psr7": "^1.5",
+        "oneup/flysystem-bundle": "^4.4",
         "phpstan/phpstan": "^1.0",
         "phpstan/phpstan-beberlei-assert": "^1.0",
         "phpstan/phpstan-doctrine": "^1.0",
@@ -77,6 +77,9 @@
             "tests/_support/project/bin/console --ansi doctrine:database:create",
             "tests/_support/project/bin/console --ansi doctrine:schema:create"
         ]
+    },
+    "conflict": {
+        "oneup/flysystem-bundle": "<4.0"
     },
     "config": {
         "bin-dir": "vendor/bin",
