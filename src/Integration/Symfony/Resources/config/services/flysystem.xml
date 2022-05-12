@@ -21,6 +21,7 @@
         </service>
 
         <service id="FSi\Component\Files\Upload\FileFactory" alias="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory" />
+        <service id="FSi\Component\Files\FileManagerConfigurator\FileExistanceChecksConfigurator" alias="FSi\Component\Files\Upload\FileFactory" />
 
     </services>
 

@@ -28,6 +28,7 @@ final class FilesExtension extends Extension
 {
     /**
      * @param array{
+     *   default_entity_filesystem: string|null,
      *   entities: array<string, array{
      *     filesystem: string,
      *     prefix: string,
@@ -51,14 +52,15 @@ final class FilesExtension extends Extension
 
         /**
          * @var array{
+         *   default_entity_filesystem: string|null,
          *   entities: array<string, array{
          *     filesystem: string,
          *     prefix: string,
          *     fields: array<string, array{
          *         name: string,
          *         prefix: string,
-         *         filesystem?: string,
-         *         pathField?: string
+         *         filesystem: string|null,
+         *         pathField: string|null
          *     }>
          *   }>
          * } $configuration
@@ -77,35 +79,44 @@ final class FilesExtension extends Extension
 
     /**
      * @param array{
+     *   default_entity_filesystem: string|null,
      *   entities: array<string, array{
-     *     filesystem: string,
+     *     filesystem: string|null,
      *     prefix: string,
      *     fields: array<string, array{
      *         name: string,
-     *         prefix: string,
-     *         filesystem?: string,
-     *         pathField?: string
+     *         prefix: string|null,
+     *         filesystem: string|null,
+     *         pathField: string|null
      *     }>
      *   }>
      * } $configuration
      * @return array<Definition>
      */
-    private function createEntitiesFieldsConfigurations($configuration): array
+    private function createEntitiesFieldsConfigurations(array $configuration): array
     {
+        $defaultEntityFileSystem = $configuration['default_entity_filesystem'];
         $fieldsConfiguration = [];
         foreach ($configuration['entities'] as $class => $entityConfiguration) {
-            $filesystem = $entityConfiguration['filesystem'];
-            $filesystemPrefix = $entityConfiguration['prefix'];
+            $fileSystem = $entityConfiguration['filesystem'];
             Assertion::false(
-                $this->startsOrEndsWithSlashes($filesystemPrefix),
-                "Prefix for filesystem \"{$filesystem}\" cannot start or end with a slash"
+                null === $fileSystem && null === $defaultEntityFileSystem,
+                "No filesystem set for entity \"{$class}\""
             );
+
+            $fileSystemPrefix = $entityConfiguration['prefix'];
+            if (null !== $fileSystemPrefix) {
+                Assertion::false(
+                    $this->startsOrEndsWithSlashes($fileSystemPrefix),
+                    "Prefix for class \"{$class}\" cannot start or end with a slash"
+                );
+            }
 
             foreach ($entityConfiguration['fields'] as $fieldConfiguration) {
                 $fieldsConfiguration[] = $this->createFilePropertyConfigurationDefinition(
                     $class,
-                    $filesystem,
-                    $filesystemPrefix,
+                    $fileSystem ?? $defaultEntityFileSystem,
+                    $fileSystemPrefix,
                     $fieldConfiguration
                 );
             }
@@ -116,15 +127,20 @@ final class FilesExtension extends Extension
 
     /**
      * @param string $class
-     * @param string $filesystem
-     * @param string $filesystemPrefix
-     * @param array{name: string, prefix: string|null, filesystem?: string, pathField?: string} $fieldConfiguration
+     * @param string $fileSystem
+     * @param string|null $fileSystemPrefix
+     * @param array{
+     *      name: string,
+     *      prefix: string|null,
+     *      filesystem: string|null,
+     *      pathField: string|null
+     * } $fieldConfiguration
      * @return Definition
      */
     private function createFilePropertyConfigurationDefinition(
         string $class,
-        string $filesystem,
-        string $filesystemPrefix,
+        string $fileSystem,
+        ?string $fileSystemPrefix,
         array $fieldConfiguration
     ): Definition {
         $name = $fieldConfiguration['name'];
@@ -132,19 +148,24 @@ final class FilesExtension extends Extension
         if (null !== $filePrefix) {
             Assertion::false(
                 $this->startsOrEndsWithSlashes($filePrefix),
-                "Prefix for filesystem \"{$filesystem}\" and field \"{$name}\""
+                "Prefix for class \"{$class}\" and field \"{$name}\""
                 . " cannot start or end with a slash"
             );
         }
+
+        Assertion::false(
+            null === $filePrefix && null === $fileSystemPrefix,
+            "Neither field nor entity prefix is set for field \"{$name}\" of entity \"{$class}\""
+        );
 
         $definition = new Definition(FilePropertyConfiguration::class);
         $definition->setPublic(false);
         $definition->setArguments([
             $class,
             $name,
-            $fieldConfiguration['filesystem'] ?? $filesystem,
+            $fieldConfiguration['filesystem'] ?? $fileSystem,
             $fieldConfiguration['pathField'] ?? "{$name}Path",
-            $filePrefix ?? $filesystemPrefix,
+            $filePrefix ?? $fileSystemPrefix,
         ]);
 
         return $definition;

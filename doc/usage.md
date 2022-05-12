@@ -41,6 +41,8 @@ Below is an example of entity / url adapter configuration:
 ```yaml
 # config/packages/fsi_files.yaml
 fsi_files:
+    default_entity_filesystem: null # this filesystem will be used if any entity does not define
+                                    # one for itself
     url_adapters:
         # Here you can assign a url adapter service to a filesystem. This will
         # add it to the `FileUrlResolver` and will be used for every file in the
@@ -49,8 +51,9 @@ fsi_files:
     entities:
 
         Tests\Entity\FileEntity:
-            filesystem: 'local_filesystem' # name of the filesystem defined in the OneUp/FlysystemBundle configuration
-            prefix: file_entity # will be used in fields' `prefix` option by default if not explicitly defined
+            filesystem: 'local_filesystem' # Name of the filesystem defined in the OneUp/FlysystemBundle configuration.
+            prefix: file_entity # Will be used in fields' `prefix` option by default if the field does not have it
+                                  explicitly defined. It can be omitted, but then each field needs to have it set.
             fields:
                 # Full configuration
                 - { name: file, prefix: file_entity_file, pathField: filePath }

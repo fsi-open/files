@@ -13,6 +13,6 @@ case the file checks not only slow down the process significantly, but can break
 it altogether if for any reason a file has gone missing.
 
 In order to disable these checks, you can use the `FSi\Component\Files\FileManagerConfigurator\FileExistanceChecksConfigurator`
-interface. Just check if the implementation of the `FileManager` that you are using
-is implementing it and you toggle the aforementioned behaviour. By default it should
-be turned on.
+interface. If you are using Symfony along with Flysystem, there is a service alias for that interface,
+so you can typehint the `FileExistanceChecksConfigurator` interface instead of `FileManager`
+where you need it.

@@ -23,3 +23,6 @@ parameters:
         -
             message: '#Strict comparison using === between null and string will always evaluate to false\.#'
             path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/SymfonyFileToWebFileTransformer.php'
+        -
+            message: '#Parameter \#2 \$fileSystem of method FSi\\Component\\Files\\Integration\\Symfony\\DependencyInjection\\FilesExtension\:\:createFilePropertyConfigurationDefinition\(\) expects string\, string\|null given\.#'
+            path: '%currentWorkingDirectory%/src/Integration/Symfony/DependencyInjection/FilesExtension.php'

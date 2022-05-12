@@ -17,14 +17,13 @@ use Symfony\Component\Config\Definition\Processor;
 
 final class ConfigurationTest extends Unit
 {
-    private Processor $processor;
-
     public function testConfiguration(): void
     {
-        $parsedConfiguration = $this->processor->processConfiguration(
+        $parsedConfiguration = (new Processor())->processConfiguration(
             new Configuration(),
             [
                 [
+                    'default_entity_filesystem' => 'ftp',
                     'url_adapters' => [
                         'temporary' => 'adapter_service_id'
                     ],
@@ -49,6 +48,7 @@ final class ConfigurationTest extends Unit
 
         $this->assertSame(
             [
+                'default_entity_filesystem' => 'ftp',
                 'url_adapters' => [
                     'temporary' => 'adapter_service_id'
                 ],
@@ -75,10 +75,5 @@ final class ConfigurationTest extends Unit
             ],
             $parsedConfiguration
         );
-    }
-
-    protected function setUp(): void
-    {
-        $this->processor = new Processor();
     }
 }
