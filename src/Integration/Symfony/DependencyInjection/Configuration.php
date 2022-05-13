@@ -27,6 +27,7 @@ final class Configuration implements ConfigurationInterface
 
         /** @var NodeBuilder $rootChildren */
         $rootChildren = $root->children();
+        $rootChildren->scalarNode('default_entity_filesystem')->defaultNull();
 
         /** @var ArrayNodeDefinition $adaptersNode */
         $adaptersNode = $rootChildren->arrayNode('url_adapters')->beforeNormalization()->castToArray()->end();
@@ -39,20 +40,26 @@ final class Configuration implements ConfigurationInterface
             ->arrayPrototype()
             ->children()
         ;
-        $entitiesChildren->scalarNode('prefix')->cannotBeEmpty()->end();
-        $entitiesChildren->scalarNode('filesystem')->cannotBeEmpty()->end();
+        $entitiesChildren->scalarNode('prefix')->defaultNull()->end();
+        $entitiesChildren->scalarNode('filesystem')->defaultNull()->end();
 
         /** @var ArrayNodeDefinition $fieldsChildrenNode */
         $fieldsChildrenNode = $entitiesChildren->arrayNode('fields')->beforeNormalization()->castToArray()->end();
         /** @var ArrayNodeDefinition $fieldsChildrenPrototype */
         $fieldsChildrenPrototype = $fieldsChildrenNode->arrayPrototype()
             ->beforeNormalization()
-                ->ifTrue(function ($argument): bool {
-                    return is_string($argument);
-                })
-                ->then(function (string $argument): array {
-                    return ['name' => $argument, 'filesystem' => null, 'pathField' => null, 'prefix' => null];
-                })
+                ->ifTrue(
+                    static fn($argument): bool => is_string($argument)
+                )
+                ->then(
+                    static fn(string $argument): array
+                        => [
+                            'name' => $argument,
+                            'filesystem' => null,
+                            'pathField' => null,
+                            'prefix' => null
+                        ]
+                )
                 ->end()
         ;
 
