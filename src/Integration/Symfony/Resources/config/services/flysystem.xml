@@ -11,6 +11,9 @@
             <argument type="service" id="League\Flysystem\MountManager" />
         </service>
 
+        <service id="FSi\Component\Files\FileManagerConfigurator\FileExistenceChecksConfigurator" alias="FSi\Component\Files\Integration\FlySystem\FileManager" />
+        <service id="FSi\Component\Files\FileManagerConfigurator\FileExistanceChecksConfigurator" alias="FSi\Component\Files\FileManagerConfigurator\FileExistenceChecksConfigurator" />
+
         <service id="League\Flysystem\MountManager" alias="oneup_flysystem.mount_manager" />
 
         <!-- Upload -->
@@ -21,8 +24,6 @@
         </service>
 
         <service id="FSi\Component\Files\Upload\FileFactory" alias="FSi\Component\Files\Integration\FlySystem\Upload\FileFactory" />
-        <service id="FSi\Component\Files\FileManagerConfigurator\FileExistenceChecksConfigurator" alias="FSi\Component\Files\Upload\FileFactory" />
-        <service id="FSi\Component\Files\FileManagerConfigurator\FileExistanceChecksConfigurator" alias="FSi\Component\Files\FileManagerConfigurator\FileExistenceChecksConfigurator" />
 
     </services>
 
