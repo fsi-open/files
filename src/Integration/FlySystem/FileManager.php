@@ -13,7 +13,7 @@ namespace FSi\Component\Files\Integration\FlySystem;
 
 use Assert\Assertion;
 use FSi\Component\Files;
-use FSi\Component\Files\FileManagerConfigurator\FileExistanceChecksConfigurator;
+use FSi\Component\Files\FileManagerConfigurator\FileExistenceChecksConfigurator;
 use FSi\Component\Files\Integration\FlySystem;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToReadFile;
@@ -23,17 +23,17 @@ use function basename;
 use function count;
 use function in_array;
 
-final class FileManager implements Files\FileManager, FileExistanceChecksConfigurator
+final class FileManager implements Files\FileManager, FileExistenceChecksConfigurator
 {
     private const EMPTY_OR_ROOT_PATHS = ['', '.', '/'];
 
     private MountManager $mountManager;
-    private bool $fileExistanceChecksOnLoad;
+    private bool $fileExistenceChecksOnLoad;
 
     public function __construct(MountManager $mountManager)
     {
         $this->mountManager = $mountManager;
-        $this->fileExistanceChecksOnLoad = true;
+        $this->fileExistenceChecksOnLoad = true;
     }
 
     public function copy(
@@ -60,7 +60,7 @@ final class FileManager implements Files\FileManager, FileExistanceChecksConfigu
     {
         $prefixedPath = $this->prefixPathWithFileSystem($fileSystemName, $path);
         if (
-            true === $this->fileExistanceChecksOnLoad
+            true === $this->fileExistenceChecksOnLoad
             && false === $this->mountManager->fileExists($prefixedPath)
         ) {
             throw UnableToReadFile::fromLocation($prefixedPath, "File at \"{$path}\" does not exist");
@@ -106,12 +106,22 @@ final class FileManager implements Files\FileManager, FileExistanceChecksConfigu
 
     public function disableFileExistanceChecksOnLoad(): void
     {
-        $this->fileExistanceChecksOnLoad = false;
+        $this->disableFileExistenceChecksOnLoad();
     }
 
     public function enableFileExistanceChecksOnLoad(): void
     {
-        $this->fileExistanceChecksOnLoad = true;
+        $this->enableFileExistenceChecksOnLoad();
+    }
+
+    public function disableFileExistenceChecksOnLoad(): void
+    {
+        $this->fileExistenceChecksOnLoad = false;
+    }
+
+    public function enableFileExistenceChecksOnLoad(): void
+    {
+        $this->fileExistenceChecksOnLoad = true;
     }
 
     /**
