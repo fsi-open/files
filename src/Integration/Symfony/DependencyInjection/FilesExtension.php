@@ -20,7 +20,9 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
+use function bin2hex;
 use function mb_strlen;
+use function random_bytes;
 use function sprintf;
 use function trim;
 
@@ -114,7 +116,7 @@ final class FilesExtension extends Extension
             }
 
             foreach ($entityConfiguration['fields'] as $fieldConfiguration) {
-                $fieldsConfiguration[] = $this->createFilePropertyConfigurationDefinition(
+                $fieldsConfiguration[bin2hex(random_bytes(16))] = $this->createFilePropertyConfigurationDefinition(
                     $class,
                     $fileSystem ?? $defaultEntityFileSystem,
                     $fileSystemPrefix,
