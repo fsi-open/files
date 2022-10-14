@@ -67,6 +67,7 @@ final class FilesExtension extends Extension
          */
         $configuration = $this->processConfiguration(new Configuration(), $configs);
         $entityConfigurations = $this->createEntitiesFieldsConfigurations($configuration);
+        $container->addDefinitions($entityConfigurations);
 
         $resolverDefinition = $container->getDefinition(FilePropertyConfigurationResolver::class);
         $resolverDefinition->replaceArgument('$configurations', $entityConfigurations);
@@ -160,6 +161,7 @@ final class FilesExtension extends Extension
 
         $definition = new Definition(FilePropertyConfiguration::class);
         $definition->setPublic(false);
+        $definition->addTag('fsi_files.file_property_configuration');
         $definition->setArguments([
             $class,
             $name,
