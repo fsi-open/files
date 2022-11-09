@@ -34,6 +34,7 @@ final class FilesExtension extends Extension
      *   entities: array<string, array{
      *     filesystem: string,
      *     prefix: string,
+     *     disableFileChecksOnLoad: bool,
      *     fields: array<string, array{
      *         name: string,
      *         prefix: string,
@@ -58,6 +59,7 @@ final class FilesExtension extends Extension
          *   entities: array<string, array{
          *     filesystem: string,
          *     prefix: string,
+         *     disableFileChecksOnLoad: bool,
          *     fields: array<string, array{
          *         name: string,
          *         prefix: string,
@@ -86,6 +88,7 @@ final class FilesExtension extends Extension
      *   entities: array<string, array{
      *     filesystem: string|null,
      *     prefix: string,
+     *     disableFileChecksOnLoad: bool,
      *     fields: array<string, array{
      *         name: string,
      *         prefix: string|null,
@@ -115,11 +118,13 @@ final class FilesExtension extends Extension
                 );
             }
 
+            $disableFileChecksOnLoad = $entityConfiguration['disableFileChecksOnLoad'];
             foreach ($entityConfiguration['fields'] as $fieldConfiguration) {
                 $fieldsConfiguration[bin2hex(random_bytes(16))] = $this->createFilePropertyConfigurationDefinition(
                     $class,
                     $fileSystem ?? $defaultEntityFileSystem,
                     $fileSystemPrefix,
+                    $disableFileChecksOnLoad,
                     $fieldConfiguration
                 );
             }
@@ -132,6 +137,7 @@ final class FilesExtension extends Extension
      * @param string $class
      * @param string $fileSystem
      * @param string|null $fileSystemPrefix
+     * @param bool $disableFileChecksOnLoad
      * @param array{
      *      name: string,
      *      prefix: string|null,
@@ -144,6 +150,7 @@ final class FilesExtension extends Extension
         string $class,
         string $fileSystem,
         ?string $fileSystemPrefix,
+        bool $disableFileChecksOnLoad,
         array $fieldConfiguration
     ): Definition {
         $name = $fieldConfiguration['name'];
@@ -170,6 +177,7 @@ final class FilesExtension extends Extension
             $fieldConfiguration['filesystem'] ?? $fileSystem,
             $fieldConfiguration['pathField'] ?? "{$name}Path",
             $filePrefix ?? $fileSystemPrefix,
+            $disableFileChecksOnLoad
         ]);
 
         return $definition;

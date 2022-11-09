@@ -42,6 +42,7 @@ final class Configuration implements ConfigurationInterface
         ;
         $entitiesChildren->scalarNode('prefix')->defaultNull()->end();
         $entitiesChildren->scalarNode('filesystem')->defaultNull()->end();
+        $entitiesChildren->booleanNode('disableFileChecksOnLoad')->defaultFalse()->end();
 
         /** @var ArrayNodeDefinition $fieldsChildrenNode */
         $fieldsChildrenNode = $entitiesChildren->arrayNode('fields')->beforeNormalization()->castToArray()->end();
