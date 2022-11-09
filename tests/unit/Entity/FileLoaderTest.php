@@ -108,4 +108,51 @@ final class FileLoaderTest extends Unit
         $fileLoader = new FileLoader($fileManager, $configurationResolver);
         $fileLoader->loadEntityFiles($testEntity);
     }
+
+    public function testSwitchingFileExistenceFlag(): void
+    {
+        $file = $this->makeEmpty(WebFile::class, [
+            'getFileSystemName' => 'fs',
+            'getPath' => 'filePath'
+        ]);
+
+        $fileManager = $this->createMock(FileManager::class);
+        $fileManager
+            ->expects(self::exactly(2))
+            ->method('load')
+            ->with('fs', 'filePath')
+            ->willReturn($file)
+        ;
+        $fileManager
+            ->expects(self::exactly(2))
+            ->method('exists')
+            ->with($file)
+            ->willReturnOnConsecutiveCalls(true, false)
+        ;
+
+        $configuration = new FilePropertyConfiguration(
+            TestEntity::class,
+            'file',
+            'fs',
+            'filePath',
+            'prefix',
+            true
+        );
+
+        $testEntity = new TestEntity(null);
+        $testEntity->setFilePath('filePath');
+
+        $configurationResolver = new FilePropertyConfigurationResolver([$configuration]);
+        $fileLoader = new FileLoader($fileManager, $configurationResolver);
+
+        // No exception
+        $fileLoader->loadEntityFiles($testEntity);
+
+        // Exception
+        $this->expectException(FileNotFoundException::class);
+        $this->expectExceptionMessage(
+            'File for filesystem "fs" not found at path "filePath".'
+        );
+        $fileLoader->loadEntityFiles($testEntity);
+    }
 }
