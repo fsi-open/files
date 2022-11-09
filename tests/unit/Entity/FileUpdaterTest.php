@@ -53,6 +53,8 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
+        $this->fileManager->expects(self::once())->method('exists')->willReturn(true);
+
         $this->fileUpdater->updateFiles($entity);
 
         $file = $entity->getFile();
@@ -189,6 +191,7 @@ final class FileUpdaterTest extends Unit
         $newFile = new FlySystem\WebFile('fs', 'prefix/some-new-path.dat');
         $entity->setFile($newFile);
 
+        $this->fileManager->expects(self::once())->method('exists')->willReturn(true);
         $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
@@ -219,6 +222,7 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
+        $this->fileManager->expects(self::once())->method('exists')->willReturn(true);
         $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
@@ -239,6 +243,7 @@ final class FileUpdaterTest extends Unit
 
         $entity->setFile(null);
 
+        $this->fileManager->expects(self::once())->method('exists')->willReturn(true);
         $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
