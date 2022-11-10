@@ -11,12 +11,11 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Exception;
 
-use Exception;
 use FSi\Component\Files\WebFile;
 
 use function sprintf;
 
-final class FileNotFoundException extends Exception
+final class FileNotFoundException extends FilesException
 {
     public static function forFile(WebFile $webFile): self
     {

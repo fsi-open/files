@@ -11,11 +11,9 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Exception;
 
-use Exception;
-
 use function sprintf;
 
-final class InvalidUnionFieldTypeException extends Exception
+final class InvalidUnionFieldTypeException extends FilesException
 {
     /**
      * @param class-string $class

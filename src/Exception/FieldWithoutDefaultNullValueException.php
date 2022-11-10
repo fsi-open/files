@@ -11,9 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Exception;
 
-use Exception;
-
-final class FieldWithoutDefaultNullValueException extends Exception
+final class FieldWithoutDefaultNullValueException extends FilesException
 {
     /**
      * @param class-string $class
