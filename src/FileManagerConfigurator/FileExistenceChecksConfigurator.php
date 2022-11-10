@@ -15,4 +15,6 @@ interface FileExistenceChecksConfigurator extends FileExistanceChecksConfigurato
 {
     public function disableFileExistenceChecksOnLoad(): void;
     public function enableFileExistenceChecksOnLoad(): void;
+    public function disableClassFileExistenceChecksOnLoad(string $className): void;
+    public function enableClassFileExistenceChecksOnLoad(string $className): void;
 }

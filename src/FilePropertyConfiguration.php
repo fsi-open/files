@@ -25,24 +25,24 @@ use function ltrim;
 final class FilePropertyConfiguration
 {
     /**
-     * @var class-string
+     * @var class-string<object>
      */
     private string $entityClass;
     private string $filePropertyName;
     private string $fileSystemName;
     private string $pathPropertyName;
     private string $pathPrefix;
-    private bool $disableFileChecks;
+    private bool $disableFileExistenceChecksOnLoad;
     private ?ReflectionProperty $filePropertyReflection;
     private ?ReflectionProperty $pathPropertyReflection;
 
     /**
-     * @param class-string $entityClass
+     * @param class-string<object> $entityClass
      * @param string $filePropertyName
      * @param string $fileSystemName
      * @param string $pathPropertyName
      * @param string $pathPrefix
-     * @param bool $disableFileChecks
+     * @param bool $disableFileExistenceChecksOnLoad
      */
     public function __construct(
         string $entityClass,
@@ -50,14 +50,14 @@ final class FilePropertyConfiguration
         string $fileSystemName,
         string $pathPropertyName,
         string $pathPrefix,
-        bool $disableFileChecks = false
+        bool $disableFileExistenceChecksOnLoad = false
     ) {
         $this->entityClass = $entityClass;
         $this->filePropertyName = $filePropertyName;
         $this->fileSystemName = $fileSystemName;
         $this->pathPropertyName = $pathPropertyName;
         $this->pathPrefix = $pathPrefix;
-        $this->disableFileChecks = $disableFileChecks;
+        $this->disableFileExistenceChecksOnLoad = $disableFileExistenceChecksOnLoad;
         $this->filePropertyReflection = null;
         $this->pathPropertyReflection = null;
 
@@ -66,7 +66,7 @@ final class FilePropertyConfiguration
     }
 
     /**
-     * @return class-string
+     * @return class-string<object>
      */
     public function getEntityClass(): string
     {
@@ -117,19 +117,9 @@ final class FilePropertyConfiguration
         return $this->pathPrefix;
     }
 
-    public function isDisableFileChecks(): bool
+    public function isFileExistenceChecksOnLoadDisabled(): bool
     {
-        return $this->disableFileChecks;
-    }
-
-    public function disableFileChecks(): void
-    {
-        $this->disableFileChecks = true;
-    }
-
-    public function enableFileChecks(): void
-    {
-        $this->disableFileChecks = false;
+        return $this->disableFileExistenceChecksOnLoad;
     }
 
     private function assertPropertyType(ReflectionProperty $propertyReflection, string $expectedType): void

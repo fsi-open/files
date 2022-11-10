@@ -19,6 +19,7 @@ use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
 
+use function array_key_exists;
 use function array_walk;
 
 /**
@@ -29,6 +30,10 @@ final class FileLoader implements FileExistenceChecksConfigurator
     private FileManager $fileManager;
     private FilePropertyConfigurationResolver $configurationResolver;
     private bool $fileExistenceChecksOnLoad;
+    /**
+     * @var array<class-string<object>, bool>
+     */
+    private array $classFileExistenceChecksOnLoad;
 
     public function __construct(
         FileManager $fileManager,
@@ -37,6 +42,7 @@ final class FileLoader implements FileExistenceChecksConfigurator
         $this->fileManager = $fileManager;
         $this->configurationResolver = $configurationResolver;
         $this->fileExistenceChecksOnLoad = true;
+        $this->classFileExistenceChecksOnLoad = [];
     }
 
     public function loadEntityFiles(object $entity): void
@@ -56,7 +62,14 @@ final class FileLoader implements FileExistenceChecksConfigurator
 
     public function fromEntity(FilePropertyConfiguration $configuration, object $entity): ?WebFile
     {
-        Assertion::isInstanceOf($entity, $configuration->getEntityClass());
+        $className = $configuration->getEntityClass();
+        Assertion::isInstanceOf($entity, $className);
+
+        $disabledFileExistenceChecksOnLoad = $configuration->isFileExistenceChecksOnLoadDisabled();
+        // Do not overwrite the option if it was manually set via disable/enableClassFileExistenceChecksOnLoad
+        if (false === array_key_exists($className, $this->classFileExistenceChecksOnLoad)) {
+            $this->classFileExistenceChecksOnLoad[$className] = $disabledFileExistenceChecksOnLoad;
+        }
 
         $pathPropertyReflection = $configuration->getPathPropertyReflection();
         if (false === $pathPropertyReflection->isInitialized($entity)) {
@@ -70,7 +83,10 @@ final class FileLoader implements FileExistenceChecksConfigurator
 
         $file = $this->fileManager->load($configuration->getFileSystemName(), $path);
         if (null !== $file) {
-            $this->checkFileExistenceIfEnabled($file, $configuration->isDisableFileChecks());
+            $this->checkFileExistenceIfEnabled(
+                $file,
+                $this->classFileExistenceChecksOnLoad[$className]
+            );
         }
 
         return $file;
@@ -94,6 +110,24 @@ final class FileLoader implements FileExistenceChecksConfigurator
     public function enableFileExistenceChecksOnLoad(): void
     {
         $this->fileExistenceChecksOnLoad = true;
+    }
+
+    /**
+     * @param class-string<object> $className
+     * @return void
+     */
+    public function disableClassFileExistenceChecksOnLoad(string $className): void
+    {
+        $this->classFileExistenceChecksOnLoad[$className] = false;
+    }
+
+    /**
+     * @param class-string<object> $className
+     * @return void
+     */
+    public function enableClassFileExistenceChecksOnLoad(string $className): void
+    {
+        $this->classFileExistenceChecksOnLoad[$className] = true;
     }
 
     private function checkFileExistenceIfEnabled(WebFile $file, bool $disabledByConfiguration): void
