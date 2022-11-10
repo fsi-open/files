@@ -34,7 +34,6 @@ final class FilesExtension extends Extension
      *   entities: array<string, array{
      *     filesystem: string,
      *     prefix: string,
-     *     disableFileChecksOnLoad: bool,
      *     fields: array<string, array{
      *         name: string,
      *         prefix: string,

@@ -14,9 +14,9 @@ namespace FSi\Component\Files\Entity;
 use Assert\Assertion;
 use FSi\Component\Files\Exception\FileNotFoundException;
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\FileManagerConfigurator\FileExistenceChecksConfigurator;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\RuntimeConfigurator\FileExistenceChecksConfigurator;
 use FSi\Component\Files\WebFile;
 
 use function array_key_exists;
@@ -81,16 +81,6 @@ final class FileLoader implements FileExistenceChecksConfigurator
         }
 
         return $file;
-    }
-
-    public function disableFileExistanceChecksOnLoad(): void
-    {
-        $this->disableFileExistenceChecksOnLoad();
-    }
-
-    public function enableFileExistanceChecksOnLoad(): void
-    {
-        $this->enableFileExistenceChecksOnLoad();
     }
 
     public function disableFileExistenceChecksOnLoad(): void
