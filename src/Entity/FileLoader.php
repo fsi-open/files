@@ -65,12 +65,6 @@ final class FileLoader implements FileExistenceChecksConfigurator
         $className = $configuration->getEntityClass();
         Assertion::isInstanceOf($entity, $className);
 
-        $disabledFileExistenceChecksOnLoad = $configuration->isFileExistenceChecksOnLoadDisabled();
-        // Do not overwrite the option if it was manually set via disable/enableClassFileExistenceChecksOnLoad
-        if (false === array_key_exists($className, $this->classFileExistenceChecksOnLoad)) {
-            $this->classFileExistenceChecksOnLoad[$className] = $disabledFileExistenceChecksOnLoad;
-        }
-
         $pathPropertyReflection = $configuration->getPathPropertyReflection();
         if (false === $pathPropertyReflection->isInitialized($entity)) {
             return null;
@@ -83,10 +77,7 @@ final class FileLoader implements FileExistenceChecksConfigurator
 
         $file = $this->fileManager->load($configuration->getFileSystemName(), $path);
         if (null !== $file) {
-            $this->checkFileExistenceIfEnabled(
-                $file,
-                $this->classFileExistenceChecksOnLoad[$className]
-            );
+            $this->checkFileExistenceIfEnabled($className, $file);
         }
 
         return $file;
@@ -130,9 +121,22 @@ final class FileLoader implements FileExistenceChecksConfigurator
         $this->classFileExistenceChecksOnLoad[$className] = true;
     }
 
-    private function checkFileExistenceIfEnabled(WebFile $file, bool $disabledByConfiguration): void
+    /**
+     * @param class-string<object> $className
+     * @param WebFile $file
+     * @return void
+     */
+    private function checkFileExistenceIfEnabled(string $className, WebFile $file): void
     {
-        if (false === $this->fileExistenceChecksOnLoad && false === $disabledByConfiguration) {
+        if (false === $this->fileExistenceChecksOnLoad) {
+            return;
+        }
+
+        if (false === array_key_exists($className, $this->classFileExistenceChecksOnLoad)) {
+            $this->classFileExistenceChecksOnLoad[$className] = true;
+        }
+
+        if (false === $this->classFileExistenceChecksOnLoad[$className]) {
             return;
         }
 

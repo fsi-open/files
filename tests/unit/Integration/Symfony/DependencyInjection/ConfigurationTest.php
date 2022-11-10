@@ -31,7 +31,6 @@ final class ConfigurationTest extends Unit
                         'stdClass' => [
                             'prefix' => 'std_class',
                             'filesystem' => 'temporary',
-                            'disableFileChecksOnLoad' => false,
                             'fields' => [
                                 [
                                     'name' => 'file',
@@ -57,7 +56,6 @@ final class ConfigurationTest extends Unit
                     'stdClass' => [
                         'prefix' => 'std_class',
                         'filesystem' => 'temporary',
-                        'disableFileChecksOnLoad' => false,
                         'fields' => [
                             [
                                 'name' => 'file',

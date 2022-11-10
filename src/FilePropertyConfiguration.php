@@ -32,7 +32,6 @@ final class FilePropertyConfiguration
     private string $fileSystemName;
     private string $pathPropertyName;
     private string $pathPrefix;
-    private bool $disableFileExistenceChecksOnLoad;
     private ?ReflectionProperty $filePropertyReflection;
     private ?ReflectionProperty $pathPropertyReflection;
 
@@ -42,22 +41,19 @@ final class FilePropertyConfiguration
      * @param string $fileSystemName
      * @param string $pathPropertyName
      * @param string $pathPrefix
-     * @param bool $disableFileExistenceChecksOnLoad
      */
     public function __construct(
         string $entityClass,
         string $filePropertyName,
         string $fileSystemName,
         string $pathPropertyName,
-        string $pathPrefix,
-        bool $disableFileExistenceChecksOnLoad = false
+        string $pathPrefix
     ) {
         $this->entityClass = $entityClass;
         $this->filePropertyName = $filePropertyName;
         $this->fileSystemName = $fileSystemName;
         $this->pathPropertyName = $pathPropertyName;
         $this->pathPrefix = $pathPrefix;
-        $this->disableFileExistenceChecksOnLoad = $disableFileExistenceChecksOnLoad;
         $this->filePropertyReflection = null;
         $this->pathPropertyReflection = null;
 
@@ -115,11 +111,6 @@ final class FilePropertyConfiguration
     public function getPathPrefix(): string
     {
         return $this->pathPrefix;
-    }
-
-    public function isFileExistenceChecksOnLoadDisabled(): bool
-    {
-        return $this->disableFileExistenceChecksOnLoad;
     }
 
     private function assertPropertyType(ReflectionProperty $propertyReflection, string $expectedType): void

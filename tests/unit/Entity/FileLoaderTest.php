@@ -56,8 +56,7 @@ final class FileLoaderTest extends Unit
             'file',
             'fs',
             'filePath',
-            'prefix',
-            false
+            'prefix'
         );
 
         $testEntity = new TestEntity(null);
@@ -84,12 +83,7 @@ final class FileLoaderTest extends Unit
                     return $file;
                 }
             ),
-            'exists' => Expected::once(
-                static function (WebFile $actualFile) use ($file): bool {
-                    self::assertEquals($file, $actualFile);
-                    return true;
-                }
-            )
+            'exists' => Expected::never()
         ]);
 
         $configuration = new FilePropertyConfiguration(
@@ -97,8 +91,7 @@ final class FileLoaderTest extends Unit
             'file',
             'fs',
             'filePath',
-            'prefix',
-            true
+            'prefix'
         );
 
         $testEntity = new TestEntity(null);
@@ -106,6 +99,7 @@ final class FileLoaderTest extends Unit
 
         $configurationResolver = new FilePropertyConfigurationResolver([$configuration]);
         $fileLoader = new FileLoader($fileManager, $configurationResolver);
+        $fileLoader->disableClassFileExistenceChecksOnLoad(TestEntity::class);
         $fileLoader->loadEntityFiles($testEntity);
     }
 
@@ -135,8 +129,7 @@ final class FileLoaderTest extends Unit
             'file',
             'fs',
             'filePath',
-            'prefix',
-            true
+            'prefix'
         );
 
         $testEntity = new TestEntity(null);
