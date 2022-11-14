@@ -11,11 +11,9 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Exception;
 
-use Exception;
-
 use function sprintf;
 
-final class InvalidFieldTypeException extends Exception
+final class InvalidFieldTypeException extends FilesException
 {
     /**
      * @param class-string $class
