@@ -19,6 +19,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 use function count;
+use function mb_strlen;
 use function round;
 use function strlen;
 use function strstr;
@@ -168,6 +169,20 @@ class UploadedWebFileValidator extends ConstraintValidator
                     ->addViolation()
                 ;
                 return;
+            }
+        }
+
+        if (null !== $constraint->maxFilenameLength) {
+            $limitInCharacters = $constraint->maxFilenameLength;
+            $lengthInCharacters = mb_strlen($basename);
+            if ($lengthInCharacters > $limitInCharacters) {
+                $this->context->buildViolation($constraint->tooLongFileNameErrorMessage)
+                    ->setParameter('{{ filename }}', $basename)
+                    ->setParameter('{{ length }}', (string) $lengthInCharacters)
+                    ->setParameter('{{ max_length }}', (string) $limitInCharacters)
+                    ->setCode(UploadedWebFile::TOO_LONG_FILENAME_ERROR)
+                    ->addViolation()
+                ;
             }
         }
 

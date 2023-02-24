@@ -47,6 +47,7 @@ final class UploadedImage extends UploadedWebFile
         self::EMPTY_ERROR => 'EMPTY_ERROR',
         self::TOO_LARGE_ERROR => 'TOO_LARGE_ERROR',
         self::INVALID_MIME_TYPE_ERROR => 'INVALID_MIME_TYPE_ERROR',
+        self::TOO_LONG_FILENAME_ERROR => 'TOO_LONG_FILENAME_ERROR',
         self::SIZE_NOT_DETECTED_ERROR => 'SIZE_NOT_DETECTED_ERROR',
         self::TOO_WIDE_ERROR => 'TOO_WIDE_ERROR',
         self::TOO_NARROW_ERROR => 'TOO_NARROW_ERROR',
@@ -88,12 +89,12 @@ final class UploadedImage extends UploadedWebFile
     public $minHeight;
 
     /**
-     * @var float|null
+     * @var string|float|null
      */
     public $maxRatio;
 
     /**
-     * @var float|null
+     * @var string|float|null
      */
     public $minRatio;
 

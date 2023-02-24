@@ -37,6 +37,7 @@ class UploadedWebFile extends Constraint
     public const EMPTY_ERROR = '5d743385-9775-4aa5-8ff5-495fb1e60137';
     public const TOO_LARGE_ERROR = 'df8637af-d466-48c6-a59d-e7126250a654';
     public const INVALID_MIME_TYPE_ERROR = '744f00bc-4389-4c74-92de-9a43cde55534';
+    public const TOO_LONG_FILENAME_ERROR = '34f223a7-a2cb-4ee2-adcb-4ed155e8c7df';
 
     /**
      * @var bool|null
@@ -69,6 +70,13 @@ class UploadedWebFile extends Constraint
      * @var string
      */
     public $mimeTypesMessage = 'The mime type of the file is invalid ({{ type }}). Allowed mime types are {{ types }}.';
+
+    /**
+     * @var string
+     */
+    public $tooLongFileNameErrorMessage = 'The filename "{{ filename }}" has {{ length }} characters'
+        . ' which exceeds maximum length of {{ max_length }} characters.'
+    ;
 
     /**
      * @var string
@@ -119,6 +127,11 @@ class UploadedWebFile extends Constraint
      * @var int|null
      */
     public $maxSize;
+
+    /**
+     * @var int|null
+     */
+    public $maxFilenameLength;
 
     public function __construct($options = null)
     {

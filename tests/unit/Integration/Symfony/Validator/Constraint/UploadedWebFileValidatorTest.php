@@ -151,6 +151,38 @@ final class UploadedWebFileValidatorTest extends Unit
         );
     }
 
+    public function testMaxFilenameLengthNotExceeded(): void
+    {
+        $constraint = new UploadedWebFile([
+            'maxFilenameLength' => 12,
+            'tooLongFileNameErrorMessage' => 'myMessage',
+        ]);
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+
+        $this->assertNoViolation();
+    }
+
+    public function testMaxFilenameLengthExceeded(): void
+    {
+        $constraint = new UploadedWebFile([
+            'maxFilenameLength' => 11,
+            'tooLongFileNameErrorMessage' => 'myMessage',
+        ]);
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ filename }}', 'test_pdf.pdf')
+            ->setParameter('{{ length }}', '12')
+            ->setParameter('{{ max_length }}', '11')
+            ->setCode(UploadedWebFile::TOO_LONG_FILENAME_ERROR)
+            ->assertRaised()
+        ;
+    }
+
     public function testBinaryFormat(): void
     {
         $constraint = new UploadedWebFile([
