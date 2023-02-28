@@ -88,12 +88,12 @@ final class UploadedImage extends UploadedWebFile
     public $minHeight;
 
     /**
-     * @var float|null
+     * @var string|float|null
      */
     public $maxRatio;
 
     /**
-     * @var float|null
+     * @var string|float|null
      */
     public $minRatio;
 

@@ -11,25 +11,39 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
-use FSi\Component\Files\UploadedWebFile;
+use FSi\Component\Files;
 use RuntimeException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
+use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
+use function get_class;
 use function is_int;
 use function mb_strlen;
+use function sprintf;
 
 final class BasenameLengthValidator extends ConstraintValidator
 {
-    /**
-     * @param UploadedWebFile|null $value
-     * @param BasenameLength $constraint
-     * @return void
-     */
     public function validate($value, Constraint $constraint): void
     {
         if (null === $value) {
             return;
+        }
+
+        if (false === $constraint instanceof BasenameLength) {
+            throw new RuntimeException(sprintf(
+                'Expected "%s", got "%s"',
+                BasenameLength::class,
+                get_class($constraint)
+            ));
+        }
+
+        if (true === $value instanceof Files\WebFile && false === $value instanceof Files\UploadedWebFile) {
+            return;
+        }
+
+        if (false === $value instanceof Files\UploadedWebFile) {
+            throw new UnexpectedValueException($value, Files\UploadedWebFile::class);
         }
 
         $min = $constraint->min;
