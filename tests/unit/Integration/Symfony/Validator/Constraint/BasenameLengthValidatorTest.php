@@ -13,6 +13,7 @@ namespace Tests\FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\BasenameLength;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\BasenameLengthValidator;
 use FSi\Component\Files\UploadedWebFile;
@@ -29,6 +30,17 @@ final class BasenameLengthValidatorTest extends Unit
     private BasenameLengthValidator $validator;
     private ExecutionContextInterface $context;
     private Constraint $constraint;
+
+    public function testStandardWebFileIsNotValidated(): void
+    {
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate(
+            new FlySystem\WebFile('temp', codecept_data_dir('test_pdf.pdf')),
+            new BasenameLength(['max' => 10])
+        );
+
+        $this->assertNoViolation();
+    }
 
     public function testMinimalLengthMet(): void
     {
