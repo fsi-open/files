@@ -155,7 +155,7 @@ If Twig bundle is registered, two additional filters and a function are made ava
   for the file.
 - `file_name` - return the filename of a `WebFile`. If a `null` is passed, will return
   an empty string. Uses `FSi\Component\Files\FileManager` to read the filename.
-- `is_web_file` - this function will determine whether a value is an instance of `WebFile.
+- `is_web_file` - this function will determine whether a value is an instance of `WebFile`.
 
 Do not use instances of `UploadedWebFile` here, since they are not yet saved to any
 filesystem and the underlying services will throw an exception.
