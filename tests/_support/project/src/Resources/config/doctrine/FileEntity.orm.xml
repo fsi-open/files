@@ -4,7 +4,13 @@
       xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
                    https://raw.github.com/doctrine/doctrine2/master/doctrine-mapping.xsd">
 
-    <entity name="Tests\FSi\App\Entity\FileEntity">
+    <entity name="Tests\FSi\App\Entity\FileEntity" inheritance-type="JOINED">
+        <discriminator-column name="discr" type="string" />
+        <discriminator-map>
+            <discriminator-mapping value="file" class="Tests\FSi\App\Entity\FileEntity" />
+            <discriminator-mapping value="child" class="Tests\FSi\App\Entity\ChildFileEntity" />
+        </discriminator-map>
+
         <id name="id" type="integer">
             <generator strategy="AUTO"/>
         </id>
