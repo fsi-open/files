@@ -148,13 +148,14 @@ to the `1up-lab/OneupFlysystemBundle` itself.
 
 ## Twig
 
-If Twig bundle is registered, two additional filters are made available:
+If Twig bundle is registered, two additional filters and a function are made available:
 
 - `file_url` - returns a url as string from a `WebFile`. If a `null` is passed, will return
   an empty string. Uses `FSi\Component\Files\FileUrlResolver` to resolve an ul adapter
   for the file.
 - `file_name` - return the filename of a `WebFile`. If a `null` is passed, will return
   an empty string. Uses `FSi\Component\Files\FileManager` to read the filename.
+- `is_web_file` - this function will determine whether a value is an instance of `WebFile`.
 
 Do not use instances of `UploadedWebFile` here, since they are not yet saved to any
 filesystem and the underlying services will throw an exception.
