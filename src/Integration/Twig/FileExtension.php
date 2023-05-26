@@ -17,6 +17,7 @@ use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
+use Twig\TwigFunction;
 
 final class FileExtension extends AbstractExtension
 {
@@ -46,6 +47,13 @@ final class FileExtension extends AbstractExtension
 
                 return $this->fileManager->filename($file);
             })
+        ];
+    }
+
+    public function getFunctions(): array
+    {
+        return [
+            new TwigFunction('is_web_file', static fn($value): bool => $value instanceof WebFile)
         ];
     }
 }
