@@ -13,6 +13,7 @@ namespace FSi\Component\Files;
 
 use FSi\Component\Files\Exception\InvalidFieldTypeException;
 use FSi\Component\Files\Exception\InvalidUnionFieldTypeException;
+use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionType;
@@ -20,6 +21,7 @@ use ReflectionUnionType;
 use RuntimeException;
 
 use function count;
+use function get_parent_class;
 use function ltrim;
 
 final class FilePropertyConfiguration
@@ -37,10 +39,6 @@ final class FilePropertyConfiguration
 
     /**
      * @param class-string $entityClass
-     * @param string $filePropertyName
-     * @param string $fileSystemName
-     * @param string $pathPropertyName
-     * @param string $pathPrefix
      */
     public function __construct(
         string $entityClass,
@@ -143,8 +141,6 @@ final class FilePropertyConfiguration
 
     /**
      * @param array<ReflectionNamedType> $types
-     * @param string $expectedType
-     * @param string $property
      */
     private function assertUnionTypeContainsType(array $types, string $expectedType, string $property): void
     {
@@ -161,15 +157,31 @@ final class FilePropertyConfiguration
 
     /**
      * @param class-string $entityClass
-     * @param string $property
-     * @return ReflectionProperty
      */
     private function createPropertyReflection(string $entityClass, string $property): ReflectionProperty
     {
-        $propertyReflection = new ReflectionProperty($entityClass, $property);
+        $checkedClass = $entityClass;
+        while (false === $this->classHasProperty($checkedClass, $property)) {
+            $parentClass = get_parent_class($checkedClass);
+            if (false === $parentClass) {
+                break;
+            }
+
+            $checkedClass = $parentClass;
+        }
+
+        $propertyReflection = new ReflectionProperty($checkedClass, $property);
         $propertyReflection->setAccessible(true);
 
         return $propertyReflection;
+    }
+
+    /**
+     * @param class-string $className
+     */
+    private function classHasProperty(string $className, string $propertyName): bool
+    {
+        return (new ReflectionClass($className))->hasProperty($propertyName);
     }
 
     private function sanitizePropertyType(string $propertyType): string

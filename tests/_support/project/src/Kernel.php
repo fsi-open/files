@@ -37,6 +37,7 @@ use Symfony\Component\Routing\RouteCollectionBuilder;
 use Tests\FSi\App\Controller\IndexController;
 use Tests\FSi\App\Controller\NativeFilesController;
 use Tests\FSi\App\Controller\SymfonyFilesController;
+use Tests\FSi\App\Entity\ChildFileEntity;
 use Tests\FSi\App\Entity\EmbeddedFile;
 use Tests\FSi\App\Entity\FileEntity;
 use Tests\FSi\App\Entity\TwiceEmbeddedFile;
@@ -151,6 +152,14 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'other_public' => 'fsi_files.url_adapter.other_public'
             ],
             'entities' => [
+                ChildFileEntity::class => [
+                    'fields' => [
+                        [
+                            'name' => 'file',
+                            'prefix' => 'child_file'
+                        ]
+                    ]
+                ],
                 FileEntity::class => [
                     'fields' => [
                         [
