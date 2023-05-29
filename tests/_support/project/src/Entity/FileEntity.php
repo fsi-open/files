@@ -13,7 +13,7 @@ namespace Tests\FSi\App\Entity;
 
 use FSi\Component\Files\WebFile;
 
-final class FileEntity
+class FileEntity
 {
     /**
      * @var int|null

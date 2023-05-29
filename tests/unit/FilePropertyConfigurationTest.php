@@ -14,7 +14,10 @@ namespace Tests\FSi\Component\Files;
 use Codeception\Test\Unit;
 use FSi\Component\Files\Exception\InvalidFieldTypeException;
 use FSi\Component\Files\FilePropertyConfiguration;
+use FSi\Component\Files\UploadedWebFile;
 use ReflectionException;
+use Tests\FSi\Component\Files\Entity\TestChildChildEntity;
+use Tests\FSi\Component\Files\Entity\TestChildEntity;
 use Tests\FSi\Component\Files\Entity\TestEntity;
 
 final class FilePropertyConfigurationTest extends Unit
@@ -79,5 +82,39 @@ final class FilePropertyConfigurationTest extends Unit
             'file',
             'test'
         );
+    }
+
+    public function testPropertyInParentClass(): void
+    {
+        $propertyConfiguration = new FilePropertyConfiguration(
+            TestChildEntity::class,
+            'file',
+            'filesystem',
+            'filePath',
+            'test'
+        );
+
+        $child = new TestChildEntity(null);
+        $file = $this->createMock(UploadedWebFile::class);
+        $propertyConfiguration->getFilePropertyReflection()->setValue($child, $file);
+
+        self::assertSame($file, $child->getFile());
+    }
+
+    public function testPropertyInParentsParentClass(): void
+    {
+        $propertyConfiguration = new FilePropertyConfiguration(
+            TestChildChildEntity::class,
+            'file',
+            'filesystem',
+            'filePath',
+            'test'
+        );
+
+        $child = new TestChildChildEntity(null);
+        $file = $this->createMock(UploadedWebFile::class);
+        $propertyConfiguration->getFilePropertyReflection()->setValue($child, $file);
+
+        self::assertSame($file, $child->getFile());
     }
 }
