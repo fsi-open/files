@@ -106,7 +106,7 @@ final class EntityFileSubscriber implements EventSubscriber
         object $object
     ): void {
         if (true === $object instanceof Proxy && false === $object->__isInitialized()) {
-            $object->__load();
+            return;
         }
 
         $callable($object);
