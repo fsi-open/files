@@ -16,6 +16,8 @@ use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FileUrlResolver;
 use FSi\Component\Files\Integration\Symfony\Form\Listener\RemovableWebFileListener;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
+use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory;
+use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\RemovableFileTransformer;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
@@ -26,6 +28,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -45,14 +48,24 @@ final class WebFileType extends AbstractType
      * @var array<FormFileTransformer>
      */
     private array $fileTransformers;
+    private MultipleFileTransformerFactory $multipleFileTransformerFactory;
+    /**
+     * @var array<MultipleFileTransformer>
+     */
+    private ?array $multipleFileTransformers = null;
 
     /**
      * @param FileUrlResolver $urlResolver
      * @param FileManager $fileManager
+     * @param MultipleFileTransformerFactory $multipleFileTransformerFactory
      * @param iterable<FormFileTransformer> $fileTransformers
      */
-    public function __construct(FileUrlResolver $urlResolver, FileManager $fileManager, iterable $fileTransformers)
-    {
+    public function __construct(
+        FileUrlResolver $urlResolver,
+        FileManager $fileManager,
+        MultipleFileTransformerFactory $multipleFileTransformerFactory,
+        iterable $fileTransformers
+    ) {
         if (false === is_array($fileTransformers)) {
             $fileTransformers = iterator_to_array($fileTransformers);
         }
@@ -61,11 +74,12 @@ final class WebFileType extends AbstractType
         $this->urlResolver = $urlResolver;
         $this->fileManager = $fileManager;
         $this->fileTransformers = $fileTransformers;
+        $this->multipleFileTransformerFactory = $multipleFileTransformerFactory;
     }
 
     /**
      * @param FormBuilderInterface<FormBuilderInterface> $builder
-     * @param array{removable: bool, remove_field_options: array<string, mixed>} $options
+     * @param array{multiple: bool, removable: bool, remove_field_options: array<string, mixed>} $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -89,11 +103,17 @@ final class WebFileType extends AbstractType
                 'error_mapping' => []
             ]);
 
-            $builder->add(self::FILE_FIELD, WebFileType::class, $fileFieldOptions);
+            $builder->add(self::FILE_FIELD, self::class, $fileFieldOptions);
             $builder->add(self::REMOVE_FIELD, CheckboxType::class, $removeFieldOptions);
 
             $builder->addEventListener(FormEvents::PRE_SUBMIT, new RemovableWebFileListener());
             $builder->addModelTransformer(new RemovableFileTransformer(self::FILE_FIELD));
+        } elseif (true === $options['multiple']) {
+            $multipleFileTransformers = $this->getMultipleFileTransformers();
+
+            foreach ($multipleFileTransformers as $transformer) {
+                $builder->addEventListener(FormEvents::PRE_SUBMIT, $transformer);
+            }
         } else {
             foreach ($this->fileTransformers as $transformer) {
                 $builder->addEventListener(FormEvents::PRE_SUBMIT, $transformer);
@@ -104,28 +124,39 @@ final class WebFileType extends AbstractType
     /**
      * @param FormView $view
      * @param FormInterface<FormInterface> $form
-     * @param array{image: bool, removable: bool, resolve_url: bool, url_resolver: callable|null} $options
+     * @param array{
+     *     image: bool,
+     *     multiple: bool,
+     *     removable: bool,
+     *     resolve_url: bool,
+     *     url_resolver: callable|null
+     * } $options
      */
     public function finishView(FormView $view, FormInterface $form, array $options): void
     {
         $data = $form->getData();
         $removable = $options['removable'];
+        $multiple = $options['multiple'];
         $resolveUrl = $options['resolve_url'];
         /** @var callable|null $urlResolver */
         $urlResolver = $options['url_resolver'];
         $view->vars = array_replace($view->vars, [
-            'basename' => false === $removable ? $this->createFileBasename($data) : null,
+            'basename' => (false === $removable && false === $multiple) ? $this->createFileBasename($data) : null,
             'image' => $options['image'],
             'label' => false === $removable ? $view->vars['label'] : false,
             'multipart' => true,
-            'multiple' => false,
             'removable' => $removable,
             'type' => 'file',
-            'url' => (false === $removable && true === $resolveUrl)
+            'url' => (false === $removable && false === $multiple && true === $resolveUrl)
                 ? $this->createFileUrl($data, $urlResolver)
                 : null,
             'value' => ''
         ]);
+        if (true === $multiple) {
+            Assertion::keyExists($view->vars, 'full_name');
+            $view->vars['full_name'] .= '[]';
+            $view->vars['attr']['multiple'] = 'multiple';
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -141,6 +172,10 @@ final class WebFileType extends AbstractType
                 return true === $options['removable'];
             },
             'data_class' => function (Options $options): ?string {
+                if (true === $options['multiple']) {
+                    return null;
+                }
+
                 return false === $options['removable'] ? WebFile::class : null;
             },
             'empty_data' => null,
@@ -148,6 +183,7 @@ final class WebFileType extends AbstractType
                 return true === $options['removable'] ? ['.' => self::FILE_FIELD] : [];
             },
             'image' => false,
+            'multiple' => false,
             'url_resolver' => null,
             'removable' => false,
             'remove_field_options' => [
@@ -159,10 +195,21 @@ final class WebFileType extends AbstractType
         ]);
 
         $resolver->setAllowedTypes('image', ['bool']);
+        $resolver->setAllowedTypes('multiple', ['bool']);
         $resolver->setAllowedTypes('removable', ['bool']);
         $resolver->setAllowedTypes('remove_field_options', ['array']);
         $resolver->setAllowedTypes('resolve_url', ['bool']);
         $resolver->setAllowedTypes('url_resolver', ['callable', 'null']);
+
+        $resolver->setNormalizer('multiple', function (Options $options, bool $value): bool {
+            if (false !== $value && (true === $options['removable'] || true === $options['image'])) {
+                throw new InvalidOptionsException(
+                    "'multiple' option is forbidden when 'removable' or 'image' option is set"
+                );
+            }
+
+            return $value;
+        });
     }
 
     private function createFileUrl(?WebFile $file, ?callable $fileResolver): ?string
@@ -192,5 +239,22 @@ final class WebFileType extends AbstractType
         }
 
         return $this->fileManager->filename($file);
+    }
+
+    /**
+     * @return array<MultipleFileTransformer>
+     */
+    private function getMultipleFileTransformers(): array
+    {
+        if (null === $this->multipleFileTransformers) {
+            $this->multipleFileTransformers = array_map(
+                fn(FormFileTransformer $fileTransformer): callable => $this->multipleFileTransformerFactory->create(
+                    $fileTransformer
+                ),
+                $this->fileTransformers
+            );
+        }
+
+        return $this->multipleFileTransformers;
     }
 }

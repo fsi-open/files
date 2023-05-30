@@ -11,11 +11,14 @@ declare(strict_types=1);
 
 namespace Tests\FSi\Module;
 
+use Assert\Assertion;
 use Codeception\Module;
 use Codeception\Module\Symfony;
 use Codeception\TestInterface;
 use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\Upload\PhpFilesHandler;
+use Symfony\Component\BrowserKit\AbstractBrowser;
+use Symfony\Component\DomCrawler\Crawler;
 
 final class UploadModule extends Module
 {
@@ -46,5 +49,17 @@ final class UploadModule extends Module
         /** @var FileFactory $fileFactory */
         $fileFactory = $this->symfony->grabService('test.' . FileFactory::class);
         return $fileFactory;
+    }
+
+    public function grabClient(): AbstractBrowser
+    {
+        Assertion::notNull($this->symfony->client);
+
+        return $this->symfony->client;
+    }
+
+    public function grabCrawler(): Crawler
+    {
+        return $this->grabClient()->getCrawler();
     }
 }

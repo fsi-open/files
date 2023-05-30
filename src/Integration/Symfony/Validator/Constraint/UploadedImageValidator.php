@@ -72,7 +72,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
         }
 
         $size = @getimagesizefromstring($value->getStream()->getContents());
-        if (false === is_array($size) || 0 === count($size) || (0 === $size[0]) || (0 === $size[1])) {
+        if (false === is_array($size) || (0 === $size[0]) || (0 === $size[1])) {
             $this->context->buildViolation($constraint->sizeNotDetectedMessage)
                 ->setCode(UploadedImage::SIZE_NOT_DETECTED_ERROR)
                 ->addViolation()
