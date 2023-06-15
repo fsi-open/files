@@ -1,0 +1,11 @@
+<p>
+    <a href="{{ path('index') }}">Index</a>
+</p>
+{% if message is not null %}
+    <p id="message">{{ message|nl2br|raw }}</p>
+{% endif %}
+{% form_theme form '@Files/formTheme.html.twig' %}
+{{ form_start(form) }}
+    {{ form_rest(form) }}
+    <button>Submit</button>
+{{ form_end(form) }}

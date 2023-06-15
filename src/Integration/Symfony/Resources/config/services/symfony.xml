@@ -22,10 +22,15 @@
             <tag name="fsi_files.form_file_transformer" />
         </service>
 
+        <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactoryImpl" />
+        <service id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory"
+                 alias="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactoryImpl" />
+
         <!-- Form type -->
         <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
             <argument type="service" id="FSi\Component\Files\FileUrlResolver" />
             <argument type="service" id="FSi\Component\Files\FileManager" />
+            <argument type="service" id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
             <tag name="form.type" />
         </service>
