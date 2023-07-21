@@ -12,10 +12,14 @@ declare(strict_types=1);
 namespace Tests\FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
+use DOMElement;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
+use Symfony\Component\DomCrawler\Field\FileFormField;
 use Tests\FSi\App\Entity\FileEntity;
 use Tests\FSi\FunctionalTester;
+
+use function codecept_data_dir;
 
 final class WebFileTypeCest
 {
@@ -87,5 +91,37 @@ final class WebFileTypeCest
         $twiceEmbeddedFile = $embeddedFile->embeddedFile;
         Assertion::notNull($twiceEmbeddedFile);
         $I->assertNull($twiceEmbeddedFile->file);
+    }
+
+    public function testMultipleUpload(FunctionalTester $I): void
+    {
+        $I->amOnPage('/multiple');
+        $I->seeResponseCodeIs(200);
+
+        $I->see('Multiple file', 'label');
+        $I->seeElement('#multiple_file_files', ['data-test' => 'test']);
+
+        $client = $I->grabClient();
+        $crawler = $I->grabCrawler();
+        $form = $crawler->filter('form')->form();
+        $node = $crawler->filter("#multiple_file_files")->getNode(0);
+        Assertion::isInstanceOf($node, DOMElement::class);
+        $newField = new FileFormField($node);
+        $form->set($newField);
+        $fileField = $form['multiple_file[files]'];
+        Assertion::isArray($fileField);
+        $fileField1 = $fileField[0];
+        Assertion::isInstanceOf($fileField1, FileFormField::class);
+        $fileField1->upload(codecept_data_dir() . 'test_pdf.pdf');
+        $fileField2 = $fileField[1];
+        Assertion::isInstanceOf($fileField2, FileFormField::class);
+        $fileField2->upload(codecept_data_dir() . 'another_test_pdf.pdf');
+        $crawler = $client->submit($form);
+        $I->assertEquals(
+            'Uploaded 2 files: "test_pdf.pdf", "another_test_pdf.pdf"',
+            $crawler->filter('#message')->html()
+        );
+
+        $I->submitForm('form', [], 'Submit');
     }
 }
