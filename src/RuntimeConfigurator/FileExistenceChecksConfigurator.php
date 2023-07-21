@@ -9,10 +9,12 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\FileManagerConfigurator;
+namespace FSi\Component\Files\RuntimeConfigurator;
 
-interface FileExistenceChecksConfigurator extends FileExistanceChecksConfigurator
+interface FileExistenceChecksConfigurator
 {
     public function disableFileExistenceChecksOnLoad(): void;
     public function enableFileExistenceChecksOnLoad(): void;
+    public function disableClassFileExistenceChecksOnLoad(string $className): void;
+    public function enableClassFileExistenceChecksOnLoad(string $className): void;
 }

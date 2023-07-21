@@ -17,7 +17,9 @@ use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
 use function array_keys;
 use function ctype_digit;
 use function implode;
+use function intval;
 use function preg_match;
+use function strlen;
 
 /**
  * This is a copy of Symfony File constraint, adjusted for the slight differences
@@ -181,12 +183,14 @@ class UploadedWebFile extends Constraint
             'g' => 1000 * 1000 * 1000,
             'gi' => 1 << 30,
         ];
-        if (ctype_digit((string) $maxSize)) {
+
+        if (true === ctype_digit((string) $maxSize)) {
             $this->maxSize = (int) $maxSize;
             $this->binaryFormat = null === $this->binaryFormat ? false : $this->binaryFormat;
         } elseif (preg_match('/^(\d++)(' . implode('|', array_keys($factors)) . ')$/i', $maxSize, $matches)) {
-            $this->maxSize = (int) $matches[1] * $factors[$unit = strtolower($matches[2])];
-            $this->binaryFormat = null === $this->binaryFormat ? 2 === \strlen($unit) : $this->binaryFormat;
+            $unit = strtolower($matches[2]);
+            $this->maxSize = intval($matches[1]) * $factors[$unit];
+            $this->binaryFormat = null === $this->binaryFormat ? 2 === strlen($unit) : $this->binaryFormat;
         } else {
             throw new ConstraintDefinitionException(sprintf('"%s" is not a valid maximum size', $this->maxSize));
         }

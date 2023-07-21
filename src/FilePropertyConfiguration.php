@@ -27,7 +27,7 @@ use function ltrim;
 final class FilePropertyConfiguration
 {
     /**
-     * @var class-string
+     * @var class-string<object>
      */
     private string $entityClass;
     private string $filePropertyName;
@@ -38,7 +38,7 @@ final class FilePropertyConfiguration
     private ?ReflectionProperty $pathPropertyReflection;
 
     /**
-     * @param class-string $entityClass
+     * @param class-string<object> $entityClass
      */
     public function __construct(
         string $entityClass,
@@ -60,7 +60,7 @@ final class FilePropertyConfiguration
     }
 
     /**
-     * @return class-string
+     * @return class-string<object>
      */
     public function getEntityClass(): string
     {
