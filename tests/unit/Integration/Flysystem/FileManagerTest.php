@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace Tests\FSi\Component\Files\Integration\Flysystem;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use FSi\Component\Files\Integration\FlySystem\FileManager;
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\MountManager;
@@ -26,7 +27,7 @@ final class FileManagerTest extends TestCase
             ->expects($this->once())
             ->method('listContents')
             ->with('fs://parent/child')
-            ->willReturn(new DirectoryListing(['a file']))
+            ->willReturn(new DirectoryListing(new ArrayCollection(['a file'])))
         ;
 
         (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
@@ -40,7 +41,7 @@ final class FileManagerTest extends TestCase
             ->expects($this->once())
             ->method('listContents')
             ->with('fs://parent/child')
-            ->willReturn(new DirectoryListing([]))
+            ->willReturn(new DirectoryListing(new ArrayCollection([])))
         ;
 
         (new FileManager($mountManager))->removeDirectoryIfEmpty('fs', 'parent/child');
