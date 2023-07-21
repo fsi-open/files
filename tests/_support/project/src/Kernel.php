@@ -35,6 +35,7 @@ use Symfony\Component\HttpKernel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Routing\RouteCollectionBuilder;
 use Tests\FSi\App\Controller\IndexController;
+use Tests\FSi\App\Controller\MultipleUploadController;
 use Tests\FSi\App\Controller\NativeFilesController;
 use Tests\FSi\App\Controller\SymfonyFilesController;
 use Tests\FSi\App\Entity\ChildFileEntity;
@@ -196,6 +197,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $this->registerPublicControllerService($container, IndexController::class);
         $this->registerPublicControllerService($container, NativeFilesController::class);
         $this->registerPublicControllerService($container, SymfonyFilesController::class);
+        $this->registerPublicControllerService($container, MultipleUploadController::class);
 
         $container->register(Psr18Client::class);
         $psr17Factory = $container->register(Psr17Factory::class);
@@ -233,6 +235,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $routes->add('/', IndexController::class, 'index');
         $routes->add('/native', NativeFilesController::class, 'native_files');
         $routes->add('/symfony', SymfonyFilesController::class, 'symfony_files');
+        $routes->add('/multiple', MultipleUploadController::class, 'multiple_symfony_files');
     }
 
     private function registerPublicControllerService(ContainerBuilder $container, string $class): void
