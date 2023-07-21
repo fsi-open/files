@@ -158,7 +158,11 @@ final class FileManager implements Files\FileManager, FileExistenceChecksConfigu
 
     private function isDirectoryEmpty(string $path): bool
     {
-        return 0 === count($this->mountManager->listContents($path)->toArray());
+        foreach ($this->mountManager->listContents($path) as $file) {
+            return false;
+        }
+
+        return true;
     }
 
     private function isEmptyPathOrRootDirectory(string $path): bool
