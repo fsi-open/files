@@ -26,3 +26,6 @@ parameters:
         -
             message: '#Parameter \#2 \$fileSystem of method FSi\\Component\\Files\\Integration\\Symfony\\DependencyInjection\\FilesExtension\:\:createFilePropertyConfigurationDefinition\(\) expects string\, string\|null given\.#'
             path: '%currentWorkingDirectory%/src/Integration/Symfony/DependencyInjection/FilesExtension.php'
+        -
+            message: '#PHPDoc tag \@implements contains generic type Symfony\\Component\\Form\\DataTransformerInterface<FSi\\Component\\Files\\WebFile\|null, array<string\, FSi\\Component\\Files\\WebFile\|null>> but interface Symfony\\Component\\Form\\DataTransformerInterface is not generic\.#'
+            path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/RemovableFileTransformer.php'
