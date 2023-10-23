@@ -11,11 +11,15 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony\Form\Transformer;
 
+use FSi\Component\Files\WebFile;
 use Symfony\Component\Form\DataTransformerInterface;
 
 use function array_key_exists;
 use function is_array;
 
+/**
+ * @implements DataTransformerInterface<WebFile|null, array<string, WebFile|null>>
+ */
 final class RemovableFileTransformer implements DataTransformerInterface
 {
     private string $fileField;
