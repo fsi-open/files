@@ -80,7 +80,8 @@
         ]
     },
     "conflict": {
-        "oneup/flysystem-bundle": "<4.0"
+        "oneup/flysystem-bundle": "<4.0",
+        "symfony/validator": ">=6.0"
     },
     "config": {
         "bin-dir": "vendor/bin",
