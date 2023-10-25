@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use Doctrine\Common\EventSubscriber;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
@@ -76,9 +77,13 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function preFlush(PreFlushEventArgs $eventArgs): void
     {
-        $manager = $eventArgs->getObjectManager();
-        $identityMap = $manager->getUnitOfWork()->getIdentityMap();
+        /** @var EntityManagerInterface $manager */
+        $manager = true === method_exists($eventArgs, 'getObjectManager')
+            ? $eventArgs->getObjectManager()
+            : $eventArgs->getEntityManager()
+        ;
 
+        $identityMap = $manager->getUnitOfWork()->getIdentityMap();
         array_walk($identityMap, function (array $entities) use ($manager): void {
             array_walk($entities, function (?object $entity) use ($manager): void {
                 if (null === $entity) {
