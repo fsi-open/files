@@ -12,12 +12,12 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\Proxy;
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
@@ -51,8 +51,8 @@ final class EntityFileSubscriber implements EventSubscriber
     {
         $this->callIterativelyForObjectAndItsEmbbedables(
             [$this->fileLoader, 'loadEntityFiles'],
-            $event->getEntityManager(),
-            $event->getEntity()
+            $event->getObjectManager(),
+            $event->getObject()
         );
     }
 
@@ -60,8 +60,8 @@ final class EntityFileSubscriber implements EventSubscriber
     {
         $this->callIterativelyForObjectAndItsEmbbedables(
             [$this->fileUpdater, 'updateFiles'],
-            $event->getEntityManager(),
-            $event->getEntity()
+            $event->getObjectManager(),
+            $event->getObject()
         );
     }
 
@@ -69,15 +69,14 @@ final class EntityFileSubscriber implements EventSubscriber
     {
         $this->callIterativelyForObjectAndItsEmbbedables(
             [$this->fileRemover, 'clearEntityFiles'],
-            $event->getEntityManager(),
-            $event->getEntity()
+            $event->getObjectManager(),
+            $event->getObject()
         );
     }
 
     public function preFlush(PreFlushEventArgs $eventArgs): void
     {
-        /** @var EntityManagerInterface $manager */
-        $manager = $eventArgs->getEntityManager();
+        $manager = $eventArgs->getObjectManager();
         $identityMap = $manager->getUnitOfWork()->getIdentityMap();
 
         array_walk($identityMap, function (array $entities) use ($manager): void {
@@ -102,7 +101,7 @@ final class EntityFileSubscriber implements EventSubscriber
 
     private function callIterativelyForObjectAndItsEmbbedables(
         callable $callable,
-        EntityManagerInterface $manager,
+        ObjectManager $manager,
         object $object
     ): void {
         if (true === $object instanceof Proxy && false === $object->__isInitialized()) {
