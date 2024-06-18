@@ -8,8 +8,8 @@ services:
             dockerfile: Dockerfile
         container_name: files
         environment:
-            XDEBUG_CONFIG: 'idekey=PHPSTORM'
-            XDEBUG_MODE: 'off'
+            XDEBUG_CONFIG: 'idekey=PHPSTORM discover_client_host=false client_host=host.docker.internal'
+            XDEBUG_MODE: 'debug'
             PHP_IDE_CONFIG: 'serverName=localhost'
             DOCROOT: '/var/www/application/tests/_support/project/public'
             HOST_UID: 1000
@@ -21,3 +21,5 @@ services:
         volumes:
             - .:/var/www/application
             - ~/.composer:/var/www/.composer
+        extra_hosts:
+            - "host.docker.internal:host-gateway"

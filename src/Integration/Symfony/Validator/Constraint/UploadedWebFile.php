@@ -129,11 +129,7 @@ class UploadedWebFile extends Constraint
         }
     }
 
-    /**
-     * @param string $option
-     * @param mixed $value
-     */
-    public function __set($option, $value): void
+    public function __set(string $option, mixed $value): void
     {
         if ('maxSize' === $option) {
             $this->normalizeBinaryFormat($value);
@@ -144,11 +140,7 @@ class UploadedWebFile extends Constraint
         parent::__set($option, $value);
     }
 
-    /**
-     * @param string $option
-     * @return mixed
-     */
-    public function __get($option)
+    public function __get(string $option): mixed
     {
         if ('maxSize' === $option) {
             return $this->maxSize;
@@ -157,11 +149,7 @@ class UploadedWebFile extends Constraint
         return parent::__get($option);
     }
 
-    /**
-     * @param string $option
-     * @return bool
-     */
-    public function __isset($option): bool
+    public function __isset(string $option): bool
     {
         if ('maxSize' === $option) {
             return true;

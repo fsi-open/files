@@ -11,13 +11,15 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
+use ArrayAccess;
+use Closure;
 use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
 use Doctrine\ORM\Events;
-use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\Mapping\ClassMetadata as ORMClassMetadata;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\Proxy;
 use FSi\Component\Files\Entity\FileLoader;
@@ -26,6 +28,7 @@ use FSi\Component\Files\Entity\FileUpdater;
 
 use function array_walk;
 use function get_class;
+use function method_exists;
 
 final class EntityFileSubscriber implements EventSubscriber
 {
@@ -48,6 +51,9 @@ final class EntityFileSubscriber implements EventSubscriber
         return [Events::postLoad, Events::prePersist, Events::preRemove, Events::preFlush, Events::postFlush];
     }
 
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $event
+     */
     public function postLoad(LifecycleEventArgs $event): void
     {
         $this->callIterativelyForObjectAndItsEmbbedables(
@@ -57,6 +63,9 @@ final class EntityFileSubscriber implements EventSubscriber
         );
     }
 
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $event
+     */
     public function prePersist(LifecycleEventArgs $event): void
     {
         $this->callIterativelyForObjectAndItsEmbbedables(
@@ -66,6 +75,9 @@ final class EntityFileSubscriber implements EventSubscriber
         );
     }
 
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $event
+     */
     public function preRemove(LifecycleEventArgs $event): void
     {
         $this->callIterativelyForObjectAndItsEmbbedables(
@@ -77,11 +89,10 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function preFlush(PreFlushEventArgs $eventArgs): void
     {
-        /** @var EntityManagerInterface $manager */
-        $manager = true === method_exists($eventArgs, 'getObjectManager')
-            ? $eventArgs->getObjectManager()
-            : $eventArgs->getEntityManager()
-        ;
+        $manager = $eventArgs->getObjectManager();
+        if (false === method_exists($manager, 'getUnitOfWork')) {
+            return;
+        }
 
         $identityMap = $manager->getUnitOfWork()->getIdentityMap();
         array_walk($identityMap, function (array $entities) use ($manager): void {
@@ -115,12 +126,16 @@ final class EntityFileSubscriber implements EventSubscriber
 
         $callable($object);
 
-        /** @var ClassMetadataInfo<object> $metadata */
+        /** @var ClassMetadata<object> $metadata */
         $metadata = $manager->getClassMetadata(get_class($object));
+        if (false === $metadata instanceof ORMClassMetadata) {
+            return;
+        }
+
         array_walk(
             $metadata->embeddedClasses,
             function (
-                array $configuration,
+                array|ArrayAccess $configuration,
                 string $property,
                 callable $callable
             ) use (

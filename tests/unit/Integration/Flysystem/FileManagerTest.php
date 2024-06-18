@@ -48,7 +48,7 @@ final class FileManagerTest extends TestCase
     }
 
     /**
-     * @dataProvider provideEmptyOrRootDirectoryPaths()
+     * @dataProvider provideEmptyOrRootDirectoryPaths
      */
     public function testNotRemovingEmptyOrRootDirectories(string $path): void
     {

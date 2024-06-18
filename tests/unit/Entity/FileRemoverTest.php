@@ -26,13 +26,23 @@ final class FileRemoverTest extends TestCase
 
         $fileManager = $this->createMock(FileManager::class);
         $fileManager->expects($this->once())->method('remove')->with($file);
-        $fileManager->expects($this->exactly(2))
+        $matcher = $this->exactly(2);
+        $fileManager->expects($matcher)
             ->method('removeDirectoryIfEmpty')
-            ->withConsecutive(
-                ['fs', 'path-prefix/directory/subdirectory'],
-                ['fs', 'path-prefix/directory']
-            )
-            ->willReturnOnConsecutiveCalls(true, false)
+            ->willReturnCallback(function (string $fileSystemName, string $path) use ($matcher) {
+                $this->assertEquals('fs', $fileSystemName);
+                match ($matcher->numberOfInvocations()) {
+                    1 => $this->assertEquals('path-prefix/directory/subdirectory', $path),
+                    2 => $this->assertEquals('path-prefix/directory', $path),
+                    default => $this->fail('Unexpected invocation'),
+                };
+
+                return match ($matcher->numberOfInvocations()) {
+                    1 => true,
+                    2 => false,
+                    default => $this->fail('Unexpected invocation'),
+                };
+            })
         ;
 
         $configurationResolver = new FilePropertyConfigurationResolver([]);
