@@ -18,8 +18,6 @@ parameters:
         - '%currentWorkingDirectory%/tests/unit/Entity/UnionTestEntity.php'
         - '%currentWorkingDirectory%/tests/unit/FileUnionPropertyConfigurationTest.php'
     ignoreErrors:
-        - '#Call to an undefined method ReflectionProperty\:\:hasDefaultValue\(\)\.#'
-        - '#Call to an undefined method ReflectionProperty\:\:getDefaultValue\(\)\.#'
         -
             message: '#Strict comparison using === between null and string will always evaluate to false\.#'
             path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/SymfonyFileToWebFileTransformer.php'
@@ -29,3 +27,6 @@ parameters:
         -
             message: '#PHPDoc tag \@implements contains generic type Symfony\\Component\\Form\\DataTransformerInterface<FSi\\Component\\Files\\WebFile\|null, array<string\, FSi\\Component\\Files\\WebFile\|null>> but interface Symfony\\Component\\Form\\DataTransformerInterface is not generic\.#'
             path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/RemovableFileTransformer.php'
+        -
+            message: '#PHPDoc tag \@param for parameter \$event contains generic type Doctrine\\Persistence\\Event\\LifecycleEventArgs<Doctrine\\Persistence\\ObjectManager> but class Doctrine\\Persistence\\Event\\LifecycleEventArgs is not generic\.#'
+            path: '%currentWorkingDirectory%/src/Integration/Doctrine/ORM/EntityFileSubscriber.php'

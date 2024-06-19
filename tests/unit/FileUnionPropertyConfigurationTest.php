@@ -18,10 +18,6 @@ use Tests\FSi\Component\Files\Entity\UnionTestEntity;
 
 final class FileUnionPropertyConfigurationTest extends Unit
 {
-    /**
-     * @env php8
-     * @return void
-     */
     public function testUnionProperties(): void
     {
         $configuration = new FilePropertyConfiguration(
@@ -36,10 +32,6 @@ final class FileUnionPropertyConfigurationTest extends Unit
         self::assertSame(UnionTestEntity::class, $configuration->getEntityClass());
     }
 
-    /**
-     * @env php8
-     * @return void
-     */
     public function testIncorrectUnionFilePropertyType(): void
     {
         self::expectException(InvalidUnionFieldTypeException::class);
@@ -57,10 +49,6 @@ final class FileUnionPropertyConfigurationTest extends Unit
         );
     }
 
-    /**
-     * @env php8
-     * @return void
-     */
     public function testIncorrectUnionFilePathPropertyType(): void
     {
         self::expectException(InvalidUnionFieldTypeException::class);

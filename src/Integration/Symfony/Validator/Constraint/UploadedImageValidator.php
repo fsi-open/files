@@ -36,6 +36,9 @@ use function sprintf;
  */
 final class UploadedImageValidator extends UploadedWebFileValidator
 {
+    /**
+     * @param mixed $value
+     */
     public function validate($value, Constraint $constraint): void
     {
         if (false === $constraint instanceof UploadedImage) {

@@ -24,6 +24,9 @@ use function sprintf;
 
 final class BasenameLengthValidator extends ConstraintValidator
 {
+    /**
+     * @param mixed $value
+     */
     public function validate($value, Constraint $constraint): void
     {
         if (null === $value) {

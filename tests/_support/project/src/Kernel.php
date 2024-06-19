@@ -33,7 +33,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpClient\Psr18Client;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\Routing\RouteCollectionBuilder;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Tests\FSi\App\Controller\IndexController;
 use Tests\FSi\App\Controller\MultipleUploadController;
 use Tests\FSi\App\Controller\NativeFilesController;
@@ -230,12 +230,12 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         );
     }
 
-    protected function configureRoutes(RouteCollectionBuilder $routes): void
+    protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->add('/', IndexController::class, 'index');
-        $routes->add('/native', NativeFilesController::class, 'native_files');
-        $routes->add('/symfony', SymfonyFilesController::class, 'symfony_files');
-        $routes->add('/multiple', MultipleUploadController::class, 'multiple_symfony_files');
+        $routes->add('index', '/')->controller(IndexController::class);
+        $routes->add('native_files', '/native')->controller(NativeFilesController::class);
+        $routes->add('symfony_files', '/symfony')->controller(SymfonyFilesController::class);
+        $routes->add('multiple_symfony_files', '/multiple')->controller(MultipleUploadController::class);
     }
 
     private function registerPublicControllerService(ContainerBuilder $container, string $class): void

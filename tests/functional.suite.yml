@@ -9,6 +9,6 @@ modules:
             app_path: tests/_support/project/src
             environment: test
             kernel_class: Tests\FSi\App\Kernel
-        - Doctrine2:
+        - Doctrine:
             depends: Symfony
             cleanup: true

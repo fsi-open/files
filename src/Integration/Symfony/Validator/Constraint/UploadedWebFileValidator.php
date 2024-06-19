@@ -50,6 +50,9 @@ class UploadedWebFileValidator extends ConstraintValidator
         self::MIB_BYTES => 'MiB',
     ];
 
+    /**
+     * @param mixed $value
+     */
     public function validate($value, Constraint $constraint): void
     {
         if (null === $value || '' === $value) {

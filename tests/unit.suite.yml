@@ -4,5 +4,3 @@ modules:
         - Asserts
         - \Tests\FSi\Helper\Unit
     step_decorators: ~
-env:
-    php8: ~
