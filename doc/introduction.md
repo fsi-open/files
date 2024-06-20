@@ -106,7 +106,7 @@ class FileEntity
 
     public function getFile(): ?WebFile
     {
-        return $this->file;
+        return (null !== $this->filePath) ? $this->file : null; // this is a trick to trigger the proxy loading
     }
 
     public function setFile(?WebFile $file): void
@@ -116,7 +116,7 @@ class FileEntity
 
     public function getImage(): ?WebFile
     {
-        return $this->image;
+        return (null !== $this->imagePath) ? $this->image : null; // this is a trick to trigger the proxy loading
     }
 
     public function setImage(?WebFile $image): void
