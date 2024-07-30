@@ -15,10 +15,12 @@ use Doctrine\Persistence\Proxy;
 
 trait ProxyTrait
 {
-    private function initializeProxy(): void
+    private function initializeProxy(): static
     {
         if ($this instanceof Proxy) {
             $this->__load();
         }
+
+        return $this;
     }
 }
