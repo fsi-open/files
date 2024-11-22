@@ -19,6 +19,7 @@ use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem;
+use FSi\Component\Files\Upload\FilePathGenerator;
 use FSi\Component\Files\WebFile;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -35,7 +36,7 @@ final class FileUpdaterTest extends Unit
     private FileUpdater $fileUpdater;
     private FileRemover $fileRemover;
 
-    public function testNotModyfingFile(): void
+    public function testNotModifyingFile(): void
     {
         $file = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
         $entity = new TestEntity($file);
@@ -249,6 +250,64 @@ final class FileUpdaterTest extends Unit
 
         $this->assertNull($entity->getFile());
         $this->assertNull($entity->getFilePath());
+
+        $this->fileRemover->flush();
+    }
+
+    public function testMovingTemporaryWebFileToTargetLocation(): void
+    {
+        $oldFile = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
+        $entity = new TestEntity($oldFile);
+        $entity->setFilePath('prefix/some-path.dat');
+
+        $tempFile = new FlySystem\TemporaryWebFile('temp', 'some-new-path.dat');
+        $entity->setFile($tempFile);
+
+        $this->fileManager->expects($this->once())
+            ->method('move')
+            ->with($tempFile, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-new-path.dat#i"))
+            ->willReturnCallback(
+                function (WebFile $sourceFile, string $fileSystemName, string $path): WebFile {
+                    $file = $this->createMock(WebFile::class);
+                    $file->expects($this->any())->method('getFileSystemName')->willReturn($fileSystemName);
+                    $file->expects($this->once())->method('getPath')->willReturn($path);
+
+                    return $file;
+                }
+            );
+
+        $this->fileManager->expects(self::once())->method('exists')->willReturn(true);
+        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
+        $this->fileUpdater->updateFiles($entity);
+
+        $this->assertInstanceOf(WebFile::class, $entity->getFile());
+        $this->assertNotSame($tempFile, $entity->getFile());
+        $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
+        $this->assertNotNull($entity->getFilePath());
+        $this->assertRegExp("#prefix/$this->filePathRegex/some-new-path.dat#i", $entity->getFilePath());
+
+        $this->fileRemover->flush();
+    }
+
+    public function testNotTouchingDirectlyUploadedWebFileToTargetLocation(): void
+    {
+        $oldFile = new FlySystem\WebFile('fs', 'prefix/some-path.dat');
+        $entity = new TestEntity($oldFile);
+        $entity->setFilePath('prefix/some-path.dat');
+
+        $directUploadPath = FilePathGenerator::generate('some-new-path.dat', 'prefix');
+        $directFile = new FlySystem\DirectlyUploadedWebFile('fs', $directUploadPath);
+        $entity->setFile($directFile);
+
+        $this->fileManager->expects(self::exactly(2))->method('exists')->willReturn(true);
+        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
+        $this->fileUpdater->updateFiles($entity);
+
+        $this->assertInstanceOf(WebFile::class, $entity->getFile());
+        $this->assertNotSame($directFile, $entity->getFile());
+        $this->assertEquals('fs', $entity->getFile()->getFileSystemName());
+        $this->assertNotNull($entity->getFilePath());
+        $this->assertSame($directUploadPath, $entity->getFilePath());
 
         $this->fileRemover->flush();
     }

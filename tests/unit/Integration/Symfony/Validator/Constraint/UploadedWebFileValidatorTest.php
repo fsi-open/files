@@ -16,6 +16,7 @@ use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFile;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFileValidator;
+use PHPUnit\Framework\MockObject\MockObject;
 use Tests\FSi\Helper\ConstraintViolationAssertion;
 use GuzzleHttp\Psr7\Stream;
 use Psr\Http\Message\StreamInterface;
@@ -33,6 +34,7 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+use function basename;
 use function codecept_data_dir;
 use function count;
 use function fopen;
@@ -49,6 +51,11 @@ final class UploadedWebFileValidatorTest extends Unit
      * @var StreamInterface
      */
     private $stream;
+
+    /**
+     * @var Files\FileManager&MockObject
+     */
+    private $fileManager;
 
     /**
      * @var UploadedWebFileValidator
@@ -115,8 +122,12 @@ final class UploadedWebFileValidatorTest extends Unit
             'maxSizeMessage' => 'myMessage',
         ]);
 
+        $this->fileManager->expects(self::exactly(2))->method('fileSize')->willReturn(7945);
+
         $this->validator->initialize($this->createContext());
         $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFile(), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFile(), $constraint);
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ limit }}', '7944')
@@ -124,12 +135,25 @@ final class UploadedWebFileValidatorTest extends Unit
             ->setParameter('{{ suffix }}', 'bytes')
             ->setParameter('{{ name }}', '"test_pdf.pdf"')
             ->setCode(File::TOO_LARGE_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ limit }}', '7944')
+            ->setParameter('{{ size }}', '7945')
+            ->setParameter('{{ suffix }}', 'bytes')
+            ->setParameter('{{ name }}', '"temporary_pdf.pdf"')
+            ->setCode(File::TOO_LARGE_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ limit }}', '7944')
+            ->setParameter('{{ size }}', '7945')
+            ->setParameter('{{ suffix }}', 'bytes')
+            ->setParameter('{{ name }}', '"direct_pdf.pdf"')
+            ->setCode(File::TOO_LARGE_ERROR)
             ->assertRaised()
         ;
     }
 
     public function testMaxSizeNotExceeded(): void
     {
+        $this->fileManager->expects(self::exactly(2))->method('fileSize')->willReturn(7945);
         $constraint = new UploadedWebFile([
             'maxSize' => 7945,
             'maxSizeMessage' => 'myMessage'
@@ -137,6 +161,8 @@ final class UploadedWebFileValidatorTest extends Unit
 
         $this->validator->initialize($this->createContext());
         $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFile(), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFile(), $constraint);
 
         $this->assertNoViolation();
     }
@@ -174,9 +200,13 @@ final class UploadedWebFileValidatorTest extends Unit
     public function testValidMimeType(): void
     {
         $constraint = new UploadedWebFile(['mimeTypes' => ['application/pdf']]);
+        $this->fileManager->expects(self::exactly(2))->method('fileSize')->willReturn(7945);
+        $this->fileManager->expects(self::exactly(2))->method('mimeType')->willReturn('application/pdf');
 
         $this->validator->initialize($this->createContext());
         $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFile(), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFile(), $constraint);
 
         $this->assertNoViolation();
     }
@@ -201,13 +231,28 @@ final class UploadedWebFileValidatorTest extends Unit
             'mimeTypesMessage' => 'myMessage'
         ]);
 
+        $this->fileManager->expects(self::exactly(2))->method('fileSize')->willReturn(7945);
+        $this->fileManager->expects(self::exactly(2))->method('mimeType')->willReturn('application/pdf');
+
         $this->validator->initialize($this->createContext());
         $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFile(), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFile(), $constraint);
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ type }}', '"application/pdf"')
             ->setParameter('{{ types }}', '"image/png", "image/jpg"')
             ->setParameter('{{ name }}', '"test_pdf.pdf"')
+            ->setCode(File::INVALID_MIME_TYPE_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ type }}', '"application/pdf"')
+            ->setParameter('{{ types }}', '"image/png", "image/jpg"')
+            ->setParameter('{{ name }}', '"temporary_pdf.pdf"')
+            ->setCode(File::INVALID_MIME_TYPE_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ type }}', '"application/pdf"')
+            ->setParameter('{{ types }}', '"image/png", "image/jpg"')
+            ->setParameter('{{ name }}', '"direct_pdf.pdf"')
             ->setCode(File::INVALID_MIME_TYPE_ERROR)
             ->assertRaised()
         ;
@@ -220,13 +265,28 @@ final class UploadedWebFileValidatorTest extends Unit
             'mimeTypesMessage' => 'myMessage'
         ]);
 
+        $this->fileManager->expects(self::exactly(2))->method('fileSize')->willReturn(7945);
+        $this->fileManager->expects(self::exactly(2))->method('mimeType')->willReturn('application/pdf');
+
         $this->validator->initialize($this->createContext());
         $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFile(), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFile(), $constraint);
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ type }}', '"application/pdf"')
             ->setParameter('{{ types }}', '"image/*", "image/jpg"')
             ->setParameter('{{ name }}', '"test_pdf.pdf"')
+            ->setCode(File::INVALID_MIME_TYPE_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ type }}', '"application/pdf"')
+            ->setParameter('{{ types }}', '"image/*", "image/jpg"')
+            ->setParameter('{{ name }}', '"temporary_pdf.pdf"')
+            ->setCode(File::INVALID_MIME_TYPE_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ type }}', '"application/pdf"')
+            ->setParameter('{{ types }}', '"image/*", "image/jpg"')
+            ->setParameter('{{ name }}', '"direct_pdf.pdf"')
             ->setCode(File::INVALID_MIME_TYPE_ERROR)
             ->assertRaised()
         ;
@@ -243,11 +303,26 @@ final class UploadedWebFileValidatorTest extends Unit
         $fileMock->expects($this->once())->method('getOriginalName')->willReturn('test_pdf.pdf');
         $fileMock->expects($this->once())->method('getError')->willReturn(UPLOAD_ERR_OK);
 
+        $this->fileManager->expects(self::exactly(2))->method('fileSize')->willReturn(0);
+        $this->fileManager->expects(self::exactly(2))->method('filename')->willReturnCallback(
+            static function (Files\WebFile $file): string {
+                return basename($file->getPath());
+            }
+        );
+
         $this->validator->initialize($this->createContext());
         $this->validator->validate($fileMock, $constraint);
+        $this->validator->validate($this->createTemporaryWebFile(), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFile(), $constraint);
 
         $this->buildViolation('myMessage')
             ->setParameter('{{ name }}', '"test_pdf.pdf"')
+            ->setCode(File::EMPTY_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ name }}', '"temporary_pdf.pdf"')
+            ->setCode(File::EMPTY_ERROR)
+            ->buildNextViolation('myMessage')
+            ->setParameter('{{ name }}', '"direct_pdf.pdf"')
             ->setCode(File::EMPTY_ERROR)
             ->assertRaised()
         ;
@@ -295,7 +370,7 @@ final class UploadedWebFileValidatorTest extends Unit
         $method = $reflection->getMethod('factorizeSizes');
         $method->setAccessible(true);
         [, $limit, $suffix] = $method->invokeArgs(
-            new UploadedWebFileValidator(),
+            new UploadedWebFileValidator($this->createMock(Files\FileManager::class)),
             [0, UploadedFile::getMaxFilesize(), false]
         );
 
@@ -341,7 +416,13 @@ final class UploadedWebFileValidatorTest extends Unit
         }
 
         $this->stream = new Stream($fileHandler);
-        $this->validator = new UploadedWebFileValidator();
+        $this->fileManager = $this->createMock(Files\FileManager::class);
+        $this->fileManager->method('filename')->willReturnCallback(
+            static function (Files\WebFile $file): string {
+                return basename($file->getPath());
+            }
+        );
+        $this->validator = new UploadedWebFileValidator($this->fileManager);
     }
 
     protected function tearDown(): void
@@ -395,5 +476,17 @@ final class UploadedWebFileValidatorTest extends Unit
     {
         $violationsCount = count($this->context->getViolations());
         $this->assertSame(0, $violationsCount, sprintf('0 violation expected. Got %u.', $violationsCount));
+    }
+
+    private function createTemporaryWebFile(): FlySystem\TemporaryWebFile
+    {
+        $temporaryWebFile = new FlySystem\TemporaryWebFile('test', 'temporary_pdf.pdf');
+
+        return $temporaryWebFile;
+    }
+
+    private function createDirectlyUploadedWebFile(): FlySystem\DirectlyUploadedWebFile
+    {
+        return new FlySystem\DirectlyUploadedWebFile('test', 'direct_pdf.pdf');
     }
 }

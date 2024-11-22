@@ -13,7 +13,7 @@ namespace FSi\Component\Files\Integration\FlySystem;
 
 use FSi\Component\Files;
 
-final class WebFile implements Files\WebFile
+final class DirectlyUploadedWebFile implements Files\DirectlyUploadedWebFile
 {
     use WebFileImplementation;
 }

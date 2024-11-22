@@ -14,6 +14,7 @@ namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 use Assert\Assertion;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -55,6 +56,7 @@ final class FilesExtension extends Extension
         /**
          * @var array{
          *   default_entity_filesystem: string|null,
+         *   temporary_filesystem: string|null,
          *   entities: array<string, array{
          *     filesystem: string,
          *     prefix: string,

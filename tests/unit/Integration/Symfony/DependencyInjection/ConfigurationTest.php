@@ -71,7 +71,8 @@ final class ConfigurationTest extends Unit
                             ]
                         ]
                     ]
-                ]
+                ],
+                'temporary_filesystem' => null,
             ],
             $parsedConfiguration
         );

@@ -174,11 +174,11 @@ class UploadedWebFile extends Constraint
 
         if (true === ctype_digit((string) $maxSize)) {
             $this->maxSize = (int) $maxSize;
-            $this->binaryFormat = null === $this->binaryFormat ? false : $this->binaryFormat;
+            $this->binaryFormat = $this->binaryFormat ?? false;
         } elseif (preg_match('/^(\d++)(' . implode('|', array_keys($factors)) . ')$/i', $maxSize, $matches)) {
             $unit = strtolower($matches[2]);
-            $this->maxSize = intval($matches[1]) * $factors[$unit];
-            $this->binaryFormat = null === $this->binaryFormat ? 2 === strlen($unit) : $this->binaryFormat;
+            $this->maxSize = (int) $matches[1] * $factors[$unit];
+            $this->binaryFormat = $this->binaryFormat ?? (2 === strlen($unit));
         } else {
             throw new ConstraintDefinitionException(sprintf('"%s" is not a valid maximum size', $this->maxSize));
         }

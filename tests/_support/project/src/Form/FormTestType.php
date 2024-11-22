@@ -63,6 +63,30 @@ final class FormTestType extends AbstractType
             'resolve_url' => false
         ]);
 
+        $builder->add('temporaryFile', WebFileType::class, [
+            'constraints' => [new NotBlank(), new UploadedWebFile()],
+            'label' => 'Directly uploaded temporary file',
+            'direct_upload' => [
+                'mode' => 'temporary',
+                'filesystem_name' => 'public',
+                'filesystem_prefix' => 'temporary',
+            ],
+            'required' => false,
+            'removable' => true,
+        ]);
+
+        $builder->add('directFile', WebFileType::class, [
+            'constraints' => [new NotBlank(), new UploadedWebFile()],
+            'label' => 'Directly uploaded file',
+            'direct_upload' => [
+                'mode' => 'entity',
+                'target_entity' => FileEntity::class,
+                'target_property' => 'directFile',
+            ],
+            'required' => false,
+            'removable' => true,
+        ]);
+
         $builder->add('embeddedFile', EmbeddedFileType::class);
     }
 
