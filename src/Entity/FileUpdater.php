@@ -12,17 +12,17 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
+use FSi\Component\Files\DirectlyUploadedWebFile;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
+use FSi\Component\Files\TemporaryWebFile;
+use FSi\Component\Files\Upload\FilePathGenerator;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
-use Ramsey\Uuid\Uuid;
 
 use function array_walk;
 use function basename;
-use function mb_substr;
-use function str_replace;
 use function sprintf;
 
 /**
@@ -107,7 +107,7 @@ final class FileUpdater
             return true;
         }
 
-        if (true === $newFile instanceof UploadedWebFile) {
+        if (true === $newFile instanceof UploadedWebFile || true === $newFile instanceof TemporaryWebFile) {
             // These always need to be transformed into target filesystem
             return true;
         }
@@ -129,22 +129,31 @@ final class FileUpdater
 
     private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void
     {
-        if (true === $file instanceof UploadedWebFile) {
-            $file = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
+        if (true === $file instanceof DirectlyUploadedWebFile) {
+            $newFile = $file;
+        } elseif (true === $file instanceof TemporaryWebFile) {
+            $newFile = $this->moveTemporaryFileToConfigurationFilesystem($file, $configuration);
+        } elseif (true === $file instanceof UploadedWebFile) {
+            $newFile = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
         } else {
-            $file = $this->copyFileToConfigurationFilesystem($file, $configuration);
+            $newFile = $this->copyFileToConfigurationFilesystem($file, $configuration);
         }
 
-        $configuration->getPathPropertyReflection()->setValue($entity, $file->getPath());
-        $configuration->getFilePropertyReflection()->setValue($entity, $file);
+        $configuration->getPathPropertyReflection()->setValue($entity, $newFile->getPath());
+        if (true === $file instanceof DirectlyUploadedWebFile) {
+            $newFile = $this->fileLoader->fromEntity($configuration, $entity);
+        }
+        $configuration->getFilePropertyReflection()->setValue($entity, $newFile);
     }
 
-    private function copyFileToConfigurationFilesystem(WebFile $file, FilePropertyConfiguration $configuration): WebFile
-    {
-        return $this->fileManager->copy(
+    private function moveTemporaryFileToConfigurationFilesystem(
+        TemporaryWebFile $file,
+        FilePropertyConfiguration $configuration
+    ): WebFile {
+        return $this->fileManager->move(
             $file,
             $configuration->getFileSystemName(),
-            $this->createFilesystemPath($configuration, basename($file->getPath()))
+            FilePathGenerator::generate(basename($file->getPath()), $configuration->getPathPrefix())
         );
     }
 
@@ -155,27 +164,16 @@ final class FileUpdater
         return $this->fileManager->copyFromStream(
             $file->getStream(),
             $configuration->getFileSystemName(),
-            $this->createFilesystemPath($configuration, $file->getOriginalName())
+            FilePathGenerator::generate($file->getOriginalName(), $configuration->getPathPrefix())
         );
     }
 
-    private function createFilesystemPath(FilePropertyConfiguration $configuration, string $filename): string
+    private function copyFileToConfigurationFilesystem(WebFile $file, FilePropertyConfiguration $configuration): WebFile
     {
-        // Mitigate filesystem limits for maximum number of subdirectories
-        $uuid = str_replace('-', '', Uuid::uuid4()->toString());
-        $splitUuid = sprintf(
-            '%s/%s/%s/%s',
-            mb_substr($uuid, 0, 3),
-            mb_substr($uuid, 3, 3),
-            mb_substr($uuid, 6, 3),
-            mb_substr($uuid, 9)
-        );
-
-        return sprintf(
-            '%s/%s/%s',
-            $configuration->getPathPrefix(),
-            $splitUuid,
-            $filename
+        return $this->fileManager->copy(
+            $file,
+            $configuration->getFileSystemName(),
+            FilePathGenerator::generate(basename($file->getPath()), $configuration->getPathPrefix())
         );
     }
 }

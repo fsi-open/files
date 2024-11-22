@@ -9,11 +9,8 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\FlySystem;
+namespace FSi\Component\Files;
 
-use FSi\Component\Files;
-
-final class WebFile implements Files\WebFile
+interface TemporaryWebFile extends WebFile
 {
-    use WebFileImplementation;
 }

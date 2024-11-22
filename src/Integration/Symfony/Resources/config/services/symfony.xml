@@ -30,9 +30,22 @@
         <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
             <argument type="service" id="FSi\Component\Files\FileUrlResolver" />
             <argument type="service" id="FSi\Component\Files\FileManager" />
+            <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
             <argument type="service" id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
             <tag name="form.type" />
+        </service>
+
+        <!-- Validators -->
+        <service id="FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFileValidator">
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <tag name="validator.constraint_validator" />
+        </service>
+
+        <service id="FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImageValidator">
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <tag name="validator.constraint_validator" />
         </service>
 
         <!-- Url resolver -->

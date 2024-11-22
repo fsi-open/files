@@ -17,6 +17,7 @@ use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\Upload\PhpFilesHandler;
 use FSi\Component\Files\UrlAdapter\BaseUrlAdapter;
+use League\Flysystem\MountManager;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Psr\Http\Client\ClientInterface;
@@ -178,6 +179,18 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                             'filesystem' => 'private',
                             'pathField' => 'privateFileKey',
                             'prefix' => 'private-file'
+                        ],
+                        [
+                            'name' => 'temporaryFile',
+                            'filesystem' => 'public',
+                            'pathField' => 'temporaryFileKey',
+                            'prefix' => 'temporary-file'
+                        ],
+                        [
+                            'name' => 'directFile',
+                            'filesystem' => 'public',
+                            'pathField' => 'directFileKey',
+                            'prefix' => 'direct-file'
                         ]
                     ]
                 ],
@@ -205,6 +218,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $container->setAlias(StreamFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(RequestFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ClientInterface::class, Psr18Client::class);
+        $container->setAlias(MountManager::class, 'oneup_flysystem.mount_manager')->setPublic(true);
 
         $container->register(FormTestType::class)
             ->setAutoconfigured(true)

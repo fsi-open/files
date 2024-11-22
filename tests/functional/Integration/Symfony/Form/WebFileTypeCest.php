@@ -13,13 +13,16 @@ namespace Tests\FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
 use DOMElement;
+use FSi\Component\Files\Upload\FilePathGenerator;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
+use League\Flysystem\MountManager;
 use Symfony\Component\DomCrawler\Field\FileFormField;
 use Tests\FSi\App\Entity\FileEntity;
 use Tests\FSi\FunctionalTester;
 
 use function codecept_data_dir;
+use function file_get_contents;
 
 final class WebFileTypeCest
 {
@@ -35,15 +38,32 @@ final class WebFileTypeCest
         $I->see('Private file', 'label');
         $I->see('Removable embedded image', 'label');
         $I->see('Removable twice embedded image', 'label');
+
+        $I->fillField('form_test[temporaryFile][path]', 'temporary/directly_uploaded_file.pdf');
+        $directUploadPath = FilePathGenerator::generate('direct_file.pdf', 'direct-file');
+        $I->fillField('form_test[directFile][path]', $directUploadPath);
+        $I->submitForm('form', [], 'Submit');
+        $I->see('File was not uploaded');
+
         $I->attachFile('Standard file', 'test_pdf.pdf');
         $I->attachFile('Image file', 'test.jpg');
         $I->attachFile('Private file', 'another_test_pdf.pdf');
         $I->attachFile('Removable embedded image', 'test.jpg');
         $I->attachFile('Removable twice embedded image', 'test.jpg');
+        /** @var MountManager $mountManager */
+        $mountManager = $I->grabService(MountManager::class);
+        $testPdfContents = file_get_contents(codecept_data_dir() . 'test_pdf.pdf');
+        Assertion::string($testPdfContents);
+        $mountManager->write('public://temporary/directly_uploaded_file.pdf', $testPdfContents);
+        // field 'form_test[temporaryFile][path]' has been already filled with path
+        $mountManager->write("public://{$directUploadPath}", $testPdfContents);
+        // field 'form_test[directFile][path]' has been already filled with path
 
         $I->submitForm('form', [], 'Submit');
 
         $I->see('test_pdf.pdf', 'a');
+        $I->see('directly_uploaded_file.pdf', 'a');
+        $I->see('direct_file.pdf', 'a');
         $I->dontSee('another_test_pdf.pdf', 'a');
         $I->seeElement('img[alt="test.jpg"]');
 
@@ -76,6 +96,12 @@ final class WebFileTypeCest
         $I->checkOption('#form_test_embeddedFile_embeddedFile_file_remove');
         $I->submitForm('form', [], 'Submit');
 
+        $I->dontSee('test_pdf.pdf', 'a');
+        $I->see('directly_uploaded_file.pdf', 'a');
+        $I->see('direct_file.pdf', 'a');
+        $I->dontSee('another_test_pdf.pdf', 'a');
+        $I->seeElement('img[alt="test.jpg"]');
+
         /** @var FileEntity|null $entity */
         $entity = $I->grabEntityFromRepository(FileEntity::class, ['id' => 1]);
         Assertion::notNull($entity);
@@ -91,6 +117,18 @@ final class WebFileTypeCest
         $twiceEmbeddedFile = $embeddedFile->embeddedFile;
         Assertion::notNull($twiceEmbeddedFile);
         $I->assertNull($twiceEmbeddedFile->file);
+
+        $I->checkOption('#form_test_temporaryFile_remove');
+        $I->checkOption('#form_test_directFile_remove');
+        $I->submitForm('form', [], 'Submit');
+
+        /** @var FileEntity|null $entity */
+        $entity = $I->grabEntityFromRepository(FileEntity::class, ['id' => 1]);
+        Assertion::notNull($entity);
+        Assertion::null($entity->getTemporaryFile());
+        Assertion::null($entity->getTemporaryFileKey());
+        Assertion::null($entity->getDirectFile());
+        Assertion::null($entity->getDirectFileKey());
     }
 
     public function testMultipleUpload(FunctionalTester $I): void
