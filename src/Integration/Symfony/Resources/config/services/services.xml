@@ -23,12 +23,14 @@
             <argument type="service" id="FSi\Component\Files\FileManager" />
             <argument type="service" id="FSi\Component\Files\Entity\FileLoader" />
             <argument type="service" id="FSi\Component\Files\Entity\FileRemover" />
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface" />
         </service>
 
         <service id="FSi\Component\Files\Entity\FileRemover">
             <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
             <argument type="service" id="FSi\Component\Files\FileManager" />
             <argument type="service" id="FSi\Component\Files\Entity\FileLoader" />
+            <argument type="service" id="Symfony\Contracts\EventDispatcher\EventDispatcherInterface" />
         </service>
 
     </services>
