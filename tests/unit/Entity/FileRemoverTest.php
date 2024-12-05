@@ -11,17 +11,29 @@ declare(strict_types=1);
 
 namespace Tests\FSi\Component\Files\Entity;
 
+use FSi\Component\Files\Entity\Event\WebFileRemoved;
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\FileManager;
+use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\Integration\FlySystem\WebFile;
 use PHPUnit\Framework\TestCase;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Tests\FSi\App\Entity\FileEntity;
 
 final class FileRemoverTest extends TestCase
 {
     public function testRemoving(): void
     {
+        $propertyConfiguration = new FilePropertyConfiguration(
+            FileEntity::class,
+            'file',
+            'fs',
+            'filePath',
+            'path-prefix'
+        );
+        $entity = new FileEntity();
         $file = new WebFile('fs', 'path-prefix/directory/subdirectory/file');
 
         $fileManager = $this->createMock(FileManager::class);
@@ -45,14 +57,25 @@ final class FileRemoverTest extends TestCase
             })
         ;
 
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $eventDispatcher->expects($this->once())->method('dispatch')->with(
+            self::callback(
+                static fn (WebFileRemoved $event) =>
+                    $event->getConfiguration() === $propertyConfiguration
+                    && $event->getEntity() === $entity
+                    && $event->getFile() === $file
+            )
+        );
+
         $configurationResolver = new FilePropertyConfigurationResolver([]);
         $remover = new FileRemover(
             $configurationResolver,
             $fileManager,
-            new FileLoader($fileManager, $configurationResolver)
+            new FileLoader($fileManager, $configurationResolver),
+            $eventDispatcher
         );
 
-        $remover->add('path-prefix', $file);
+        $remover->add($propertyConfiguration, $entity, $file);
 
         $remover->flush();
     }

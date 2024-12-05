@@ -13,6 +13,7 @@ namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
 use FSi\Component\Files\DirectlyUploadedWebFile;
+use FSi\Component\Files\Entity\Event\WebFileUsed;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
@@ -20,6 +21,8 @@ use FSi\Component\Files\TemporaryWebFile;
 use FSi\Component\Files\Upload\FilePathGenerator;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use RuntimeException;
 
 use function array_walk;
 use function basename;
@@ -34,17 +37,24 @@ final class FileUpdater
     private FileManager $fileManager;
     private FileLoader $fileLoader;
     private FileRemover $fileRemover;
+    private ?EventDispatcherInterface $eventDispatcher;
+    /**
+     * @var list<array{configuration:FilePropertyConfiguration, entity:object, file:WebFile}>
+     */
+    private array $filesUsed = [];
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
         FileLoader $fileLoader,
-        FileRemover $fileRemover
+        FileRemover $fileRemover,
+        ?EventDispatcherInterface $eventDispatcher = null
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
         $this->fileLoader = $fileLoader;
         $this->fileRemover = $fileRemover;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function updateFiles(object $entity): void
@@ -63,7 +73,7 @@ final class FileUpdater
                     return;
                 }
 
-                $this->clearCurrentFileIfExists($configuration->getPathPrefix(), $currentFile);
+                $this->clearCurrentFileIfExists($configuration, $entity, $currentFile);
                 if (null !== $newFile) {
                     $this->setNewFile($entity, $newFile, $configuration);
                 } else {
@@ -72,6 +82,21 @@ final class FileUpdater
             },
             $entity
         );
+    }
+
+    public function flush(): void
+    {
+        if (null === $this->eventDispatcher) {
+            return;
+        }
+
+        array_walk($this->filesUsed, function (array $fileEntry): void {
+            $this->eventDispatcher?->dispatch(
+                new WebFileUsed($fileEntry['configuration'], $fileEntry['entity'], $fileEntry['file'])
+            );
+        });
+
+        $this->filesUsed = [];
     }
 
     private function readNewFileFromEntity(FilePropertyConfiguration $configuration, object $entity): ?WebFile
@@ -118,13 +143,16 @@ final class FileUpdater
         ;
     }
 
-    private function clearCurrentFileIfExists(string $pathPrefix, ?WebFile $oldFile): void
-    {
+    private function clearCurrentFileIfExists(
+        FilePropertyConfiguration $configuration,
+        object $entity,
+        ?WebFile $oldFile
+    ): void {
         if (null === $oldFile) {
             return;
         }
 
-        $this->fileRemover->add($pathPrefix, $oldFile);
+        $this->fileRemover->add($configuration, $entity, $oldFile);
     }
 
     private function setNewFile(object $entity, WebFile $file, FilePropertyConfiguration $configuration): void
@@ -142,8 +170,12 @@ final class FileUpdater
         $configuration->getPathPropertyReflection()->setValue($entity, $newFile->getPath());
         if (true === $file instanceof DirectlyUploadedWebFile) {
             $newFile = $this->fileLoader->fromEntity($configuration, $entity);
+            if (null === $newFile) {
+                throw new RuntimeException('Failed to load file after direct upload');
+            }
         }
         $configuration->getFilePropertyReflection()->setValue($entity, $newFile);
+        $this->filesUsed[] = ['configuration' => $configuration, 'entity' => $entity, 'file' => $newFile];
     }
 
     private function moveTemporaryFileToConfigurationFilesystem(
