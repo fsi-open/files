@@ -446,7 +446,7 @@ final class FileUpdaterTest extends Unit
             ));
 
         $this->fileManager->expects(self::exactly(2))->method('exists')->willReturn(true);
-        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
+        $this->fileManager->expects(self::once())->method('remove')->with($oldFile);
         $this->fileUpdater->updateFiles($entity);
 
         $this->assertInstanceOf(WebFile::class, $entity->getFile());

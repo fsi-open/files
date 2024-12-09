@@ -31,9 +31,11 @@
             <argument type="service" id="FSi\Component\Files\FileUrlResolver" />
             <argument type="service" id="FSi\Component\Files\FileManager" />
             <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
-            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
             <argument type="service" id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory" />
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+            <argument type="service" id="FSi\Component\Files\Integration\Symfony\Security\DirectUploadTargetEncryptor" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
+            <argument type="string">%kernel.secret%</argument>
             <tag name="form.type" />
         </service>
 
@@ -51,6 +53,12 @@
         <!-- Url resolver -->
         <service id="FSi\Component\Files\FileUrlResolver">
             <argument key="$adapters" type="collection" />
+        </service>
+
+        <!-- Security -->
+        <service id="FSi\Component\Files\Integration\Symfony\Security\DirectUploadTargetEncryptor">
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+            <argument type="string">%kernel.secret%</argument>
         </service>
 
     </services>
