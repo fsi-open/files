@@ -29,6 +29,7 @@
         "ramsey/uuid": "^3.8|^4.0"
     },
     "require-dev": {
+        "ext-openssl": "*",
         "ext-pdo_sqlite": "*",
         "aws/aws-sdk-php": "^3.17",
         "codeception/codeception": "^5.1",
@@ -58,7 +59,7 @@
         "symfony/doctrine-bridge": "^5.4.30|^6.0",
         "symfony/dom-crawler": "^5.4|^6.0",
         "symfony/form": "^5.4|^6.0",
-        "symfony/framework-bundle": "5.4",
+        "symfony/framework-bundle": "5.4|^6.0",
         "symfony/http-client": "^5.4|^6.0",
         "symfony/http-foundation": "^5.4|^6.0",
         "symfony/http-kernel": "^5.4|^6.0",

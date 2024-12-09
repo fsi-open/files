@@ -21,6 +21,7 @@ use FSi\Component\Files\Integration\Symfony\Form\Transformer\DirectlyUploadedWeb
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformer;
+use FSi\Component\Files\Integration\Symfony\Security\DirectUploadTargetEncryptor;
 use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
@@ -52,12 +53,13 @@ final class WebFileType extends AbstractType
     private FileUrlResolver $urlResolver;
     private FileManager $fileManager;
     private FileFactory $fileFactory;
-    private FilePropertyConfigurationResolver $filePropertyConfigurationResolver;
     private MultipleFileTransformerFactory $multipleFileTransformerFactory;
     /**
      * @var array<FormFileTransformer>
      */
     private array $fileTransformers;
+    private FilePropertyConfigurationResolver $filePropertyConfigurationResolver;
+    private DirectUploadTargetEncryptor $directUploadTargetEncryptor;
     private ?string $temporaryFileSystemName;
     /**
      * @var array<MultipleFileTransformer>
@@ -68,8 +70,9 @@ final class WebFileType extends AbstractType
      * @param FileUrlResolver $urlResolver
      * @param FileManager $fileManager
      * @param FileFactory $fileFactory
-     * @param FilePropertyConfigurationResolver $filePropertyConfigurationResolver
      * @param MultipleFileTransformerFactory $multipleFileTransformerFactory
+     * @param FilePropertyConfigurationResolver $filePropertyConfigurationResolver
+     * @param DirectUploadTargetEncryptor $directUploadTargetEncryptor
      * @param iterable<FormFileTransformer> $fileTransformers
      * @param string|null $temporaryFileSystemName
      */
@@ -77,8 +80,9 @@ final class WebFileType extends AbstractType
         FileUrlResolver $urlResolver,
         FileManager $fileManager,
         FileFactory $fileFactory,
-        FilePropertyConfigurationResolver $filePropertyConfigurationResolver,
         MultipleFileTransformerFactory $multipleFileTransformerFactory,
+        FilePropertyConfigurationResolver $filePropertyConfigurationResolver,
+        DirectUploadTargetEncryptor $directUploadTargetEncryptor,
         iterable $fileTransformers,
         ?string $temporaryFileSystemName = null
     ) {
@@ -89,10 +93,11 @@ final class WebFileType extends AbstractType
         Assertion::allIsInstanceOf($fileTransformers, FormFileTransformer::class);
         $this->urlResolver = $urlResolver;
         $this->fileManager = $fileManager;
-        $this->filePropertyConfigurationResolver = $filePropertyConfigurationResolver;
-        $this->fileTransformers = $fileTransformers;
-        $this->multipleFileTransformerFactory = $multipleFileTransformerFactory;
         $this->fileFactory = $fileFactory;
+        $this->multipleFileTransformerFactory = $multipleFileTransformerFactory;
+        $this->filePropertyConfigurationResolver = $filePropertyConfigurationResolver;
+        $this->directUploadTargetEncryptor = $directUploadTargetEncryptor;
+        $this->fileTransformers = $fileTransformers;
         $this->temporaryFileSystemName = $temporaryFileSystemName;
     }
 
@@ -197,6 +202,7 @@ final class WebFileType extends AbstractType
      *         path_field_options: array<string, mixed>,
      *         filesystem_name: string|null,
      *         filesystem_prefix: string|null,
+     *         target: string|null,
      *         target_entity: string|null,
      *         target_property: string|null,
      *     }
@@ -223,9 +229,15 @@ final class WebFileType extends AbstractType
                 ? $this->createFileUrl($data, $urlResolver)
                 : null,
             'value' => '',
-            'direct_filesystem_name' => $options['direct_upload']['filesystem_name'],
-            'direct_filesystem_prefix' => $options['direct_upload']['filesystem_prefix'],
         ]);
+        if ('temporary' === $options['direct_upload']['mode']) {
+            $view[self::PATH_FIELD]->vars['attr']['data-direct-filesystem']
+                = $options['direct_upload']['filesystem_name'];
+            $view[self::PATH_FIELD]->vars['attr']['data-direct-prefix']
+                = $options['direct_upload']['filesystem_prefix'];
+        } elseif ('entity' === $options['direct_upload']['mode']) {
+            $view[self::PATH_FIELD]->vars['attr']['data-direct-target'] = $options['direct_upload']['target'];
+        }
         if (true === $multiple) {
             Assertion::keyExists($view->vars, 'full_name');
             $view->vars['full_name'] .= '[]';
@@ -247,6 +259,7 @@ final class WebFileType extends AbstractType
                 'filesystem_prefix' => null,
                 'target_entity' => null,
                 'target_property' => null,
+                'target' => null,
             ]);
             $directUploadResolver->setAllowedValues('mode', ['none', 'temporary', 'entity']);
             $directUploadResolver->setAllowedTypes('path_field_options', ['array']);
@@ -254,6 +267,7 @@ final class WebFileType extends AbstractType
             $directUploadResolver->setAllowedTypes('filesystem_prefix', ['null', 'string']);
             $directUploadResolver->setAllowedTypes('target_entity', ['null', 'string']);
             $directUploadResolver->setAllowedTypes('target_property', ['null', 'string']);
+            $directUploadResolver->setAllowedTypes('target', ['null', 'string']);
             $directUploadResolver->setDefault('filesystem_name', function (Options $options): ?string {
                 if ('temporary' === $options['mode']) {
                     return $this->temporaryFileSystemName;
@@ -270,17 +284,15 @@ final class WebFileType extends AbstractType
 
                 return $filePropertyConfiguration->getFileSystemName();
             });
-            $directUploadResolver->setDefault('filesystem_prefix', function (Options $options): ?string {
+            $directUploadResolver->setDefault('target', function (Options $options): ?string {
                 if ('entity' !== $options['mode']) {
                     return null;
                 }
 
-                $filePropertyConfiguration = $this->filePropertyConfigurationResolver->resolveFileProperty(
+                return $this->directUploadTargetEncryptor->encrypt(
                     $options['target_entity'],
                     $options['target_property']
                 );
-
-                return $filePropertyConfiguration->getPathPrefix();
             });
         };
 

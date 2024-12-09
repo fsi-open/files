@@ -173,6 +173,8 @@ final class FileUpdater
             if (null === $newFile) {
                 throw new RuntimeException('Failed to load file after direct upload');
             }
+
+            $this->fileLoader->checkFileExistenceIfEnabled($configuration, $newFile);
         }
         $configuration->getFilePropertyReflection()->setValue($entity, $newFile);
         $this->filesUsed[] = ['configuration' => $configuration, 'entity' => $entity, 'file' => $newFile];
