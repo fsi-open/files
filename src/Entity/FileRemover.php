@@ -56,6 +56,7 @@ final class FileRemover
                     return;
                 }
 
+                $this->fileLoader->checkFileExistenceIfEnabled($configuration, $file);
                 $this->add($configuration->getPathPrefix(), $file);
             },
             $entity
