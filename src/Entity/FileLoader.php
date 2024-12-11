@@ -51,10 +51,11 @@ final class FileLoader implements FileExistenceChecksConfigurator
         array_walk(
             $configurations,
             function (FilePropertyConfiguration $configuration, $key, object $entity): void {
-                $configuration->getFilePropertyReflection()->setValue(
-                    $entity,
-                    $this->fromEntity($configuration, $entity)
-                );
+                $file = $this->fromEntity($configuration, $entity);
+                $configuration->getFilePropertyReflection()->setValue($entity, $file);
+                if (null !== $file) {
+                    $this->checkFileExistenceIfEnabled($configuration, $file);
+                }
             },
             $entity
         );
@@ -75,12 +76,7 @@ final class FileLoader implements FileExistenceChecksConfigurator
             return null;
         }
 
-        $file = $this->fileManager->load($configuration->getFileSystemName(), $path);
-        if (null !== $file) {
-            $this->checkFileExistenceIfEnabled($className, $file);
-        }
-
-        return $file;
+        return $this->fileManager->load($configuration->getFileSystemName(), $path);
     }
 
     public function disableFileExistenceChecksOnLoad(): void
@@ -112,16 +108,17 @@ final class FileLoader implements FileExistenceChecksConfigurator
     }
 
     /**
-     * @param class-string<object> $className
+     * @param FilePropertyConfiguration $configuration
      * @param WebFile $file
      * @return void
      */
-    private function checkFileExistenceIfEnabled(string $className, WebFile $file): void
+    public function checkFileExistenceIfEnabled(FilePropertyConfiguration $configuration, WebFile $file): void
     {
         if (false === $this->fileExistenceChecksOnLoad) {
             return;
         }
 
+        $className = $configuration->getEntityClass();
         if (false === array_key_exists($className, $this->classFileExistenceChecksOnLoad)) {
             $this->classFileExistenceChecksOnLoad[$className] = true;
         }

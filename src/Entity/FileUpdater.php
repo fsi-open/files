@@ -56,6 +56,9 @@ final class FileUpdater
             function (FilePropertyConfiguration $configuration, $key, object $entity): void {
                 $newFile = $this->readNewFileFromEntity($configuration, $entity);
                 $currentFile = $this->fileLoader->fromEntity($configuration, $entity);
+                if (null !== $currentFile) {
+                    $this->fileLoader->checkFileExistenceIfEnabled($configuration, $currentFile);
+                }
                 if (false === $this->shouldFilePropertyBeUpdated($newFile, $currentFile)) {
                     return;
                 }
