@@ -33,7 +33,7 @@
             <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
             <argument type="service" id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory" />
             <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
-            <argument type="service" id="FSi\Component\Files\Integration\Symfony\Security\DirectUploadTargetEncryptor" />
+            <argument type="service" id="FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
             <argument type="string">%kernel.secret%</argument>
             <tag name="form.type" />
@@ -55,11 +55,15 @@
             <argument key="$adapters" type="collection" />
         </service>
 
-        <!-- Security -->
-        <service id="FSi\Component\Files\Integration\Symfony\Security\DirectUploadTargetEncryptor">
+        <!-- Direct upload -->
+        <service id="FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor">
             <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
             <argument type="string">%kernel.secret%</argument>
         </service>
+        <service id="FSi\Component\Files\DirectUpload\AdapterRegistry">
+            <argument key="$adapters" type="collection" />
+        </service>
+        <service id="FSi\Component\Files\DirectUpload\Controller\DirectUploadController" autowire="true" public="true" />
 
     </services>
 

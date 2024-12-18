@@ -1,0 +1,30 @@
+---
+direct_upload_params:
+  path: "/params"
+  controller: FSi\Component\Files\DirectUpload\Controller\DirectUploadController::params
+  methods: ["POST"]
+
+direct_upload_multipart_create:
+  path: "/multipart_create"
+  controller: FSi\Component\Files\DirectUpload\Controller\DirectUploadController::createMultipart
+  methods: ["POST"]
+
+direct_upload_multipart_parts:
+  path: "/multipart_parts"
+  controller: FSi\Component\Files\DirectUpload\Controller\DirectUploadController::listParts
+  methods: ["POST"]
+
+direct_upload_multipart_sign:
+  path: "/multipart_sign"
+  controller: FSi\Component\Files\DirectUpload\Controller\DirectUploadController::signPart
+  methods: ["POST"]
+
+direct_upload_multipart_complete:
+  path: "/multipart_complete"
+  controller: FSi\Component\Files\DirectUpload\Controller\DirectUploadController::completeMultipart
+  methods: ["POST"]
+
+direct_upload_multipart_abort:
+  path: "/multipart_abort"
+  controller: FSi\Component\Files\DirectUpload\Controller\DirectUploadController::abortMultipart
+  methods: ["POST"]

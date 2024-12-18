@@ -22,6 +22,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -217,6 +218,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $container->setAlias(UriFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(StreamFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(RequestFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(ResponseFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ClientInterface::class, Psr18Client::class);
         $container->setAlias(MountManager::class, 'oneup_flysystem.mount_manager')->setPublic(true);
 

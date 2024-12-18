@@ -21,7 +21,7 @@ use FSi\Component\Files\Integration\Symfony\Form\Transformer\DirectlyUploadedWeb
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformer;
-use FSi\Component\Files\Integration\Symfony\Security\DirectUploadTargetEncryptor;
+use FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor;
 use FSi\Component\Files\Upload\FileFactory;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
