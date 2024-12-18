@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace FSi\Component\Files\Integration\Symfony\Security;
+namespace FSi\Component\Files\DirectUpload;
 
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;

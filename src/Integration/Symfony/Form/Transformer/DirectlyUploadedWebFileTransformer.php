@@ -78,7 +78,7 @@ final class DirectlyUploadedWebFileTransformer implements DataTransformerInterfa
             }
 
             if (false === $this->fileManager->exists($webFile)) {
-                throw new TransformationFailedException('File was not uploaded', 0, null, 'File was not uploaded');
+                throw new TransformationFailedException('File was not uploaded', 0, null, 'No file was uploaded.');
             }
 
             $value[$this->fileField] = $webFile;

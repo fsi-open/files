@@ -43,7 +43,7 @@ final class WebFileTypeCest
         $directUploadPath = FilePathGenerator::generate('direct_file.pdf', 'direct-file');
         $I->fillField('form_test[directFile][path]', $directUploadPath);
         $I->submitForm('form', [], 'Submit');
-        $I->see('File was not uploaded');
+        $I->see('No file was uploaded.');
 
         $I->attachFile('Standard file', 'test_pdf.pdf');
         $I->attachFile('Image file', 'test.jpg');

@@ -24,8 +24,10 @@
         "ext-gd": "*",
         "ext-intl": "*",
         "beberlei/assert": "^3.2",
+        "psr/event-dispatcher": "^1.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.0.1",
         "ramsey/uuid": "^3.8|^4.0"
     },
     "require-dev": {
