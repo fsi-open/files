@@ -28,6 +28,7 @@ final class Configuration implements ConfigurationInterface
         /** @var NodeBuilder $rootChildren */
         $rootChildren = $root->children();
         $rootChildren->scalarNode('default_entity_filesystem')->defaultNull();
+        $rootChildren->scalarNode('temporary_filesystem')->defaultNull();
 
         /** @var ArrayNodeDefinition $adaptersNode */
         $adaptersNode = $rootChildren->arrayNode('url_adapters')->beforeNormalization()->castToArray()->end();

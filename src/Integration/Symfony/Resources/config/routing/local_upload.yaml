@@ -1,0 +1,7 @@
+---
+local_upload:
+  path: "/{filesystem}/{path}"
+  controller: FSi\Component\Files\DirectUpload\Controller\LocalUploadController
+  methods: ["POST"]
+  requirements:
+    path: ".+"

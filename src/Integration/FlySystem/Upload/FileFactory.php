@@ -26,7 +26,6 @@ use function explode;
 use function basename;
 use function file_exists;
 use function is_string;
-use function mb_strlen;
 use function mime_content_type;
 use function mb_strtolower;
 use function reset;
@@ -130,17 +129,27 @@ final class FileFactory implements Files\Upload\FileFactory
         );
     }
 
+    public function createTemporary(string $fileSystemName, string $path): Files\TemporaryWebFile
+    {
+        return new FlySystem\TemporaryWebFile($fileSystemName, $path);
+    }
+
+    public function createDirectlyUploaded(string $fileSystemName, string $path): Files\DirectlyUploadedWebFile
+    {
+        return new FlySystem\DirectlyUploadedWebFile($fileSystemName, $path);
+    }
+
     private function getFileNameFromUri(UriInterface $uri): string
     {
         $path = $uri->getPath();
-        if (0 === mb_strlen($path)) {
+        if ('' === $path) {
             throw new RuntimeException(
                 sprintf('No path present in "%s".', (string) $uri)
             );
         }
 
         $name = basename($path);
-        if (0 === mb_strlen($name)) {
+        if ('' === $name) {
             throw new RuntimeException("Unable to read file name from path \"{$path}\".");
         }
 

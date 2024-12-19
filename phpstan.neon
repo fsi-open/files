@@ -25,8 +25,14 @@ parameters:
             message: '#Parameter \#2 \$fileSystem of method FSi\\Component\\Files\\Integration\\Symfony\\DependencyInjection\\FilesExtension\:\:createFilePropertyConfigurationDefinition\(\) expects string\, string\|null given\.#'
             path: '%currentWorkingDirectory%/src/Integration/Symfony/DependencyInjection/FilesExtension.php'
         -
-            message: '#PHPDoc tag \@implements contains generic type Symfony\\Component\\Form\\DataTransformerInterface<FSi\\Component\\Files\\WebFile\|null, array<string\, FSi\\Component\\Files\\WebFile\|null>> but interface Symfony\\Component\\Form\\DataTransformerInterface is not generic\.#'
-            path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/RemovableFileTransformer.php'
+            message: '#PHPDoc tag \@implements contains generic type Symfony\\Component\\Form\\DataTransformerInterface<FSi\\Component\\Files\\WebFile\|null, array<string\, FSi\\Component\\Files\\WebFile\|string\|null>> but interface Symfony\\Component\\Form\\DataTransformerInterface is not generic\.#'
+            path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/CompoundWebFileTransformer.php'
+        -
+            message: '#PHPDoc tag \@implements contains generic type Symfony\\Component\\Form\\DataTransformerInterface<array<string\, FSi\\Component\\Files\\WebFile\|string\|null>, array<string\, FSi\\Component\\Files\\WebFile\|string\|null>> but interface Symfony\\Component\\Form\\DataTransformerInterface is not generic\.#'
+            path: '%currentWorkingDirectory%/src/Integration/Symfony/Form/Transformer/DirectlyUploadedWebFileTransformer.php'
         -
             message: '#PHPDoc tag \@param for parameter \$event contains generic type Doctrine\\Persistence\\Event\\LifecycleEventArgs<Doctrine\\Persistence\\ObjectManager> but class Doctrine\\Persistence\\Event\\LifecycleEventArgs is not generic\.#'
             path: '%currentWorkingDirectory%/src/Integration/Doctrine/ORM/EntityFileSubscriber.php'
+        -
+            message: '#Method Tests\\FSi\\Module\\UploadModule::grabClient\(\) return type with generic class Symfony\\Component\\BrowserKit\\AbstractBrowser does not specify its types: TRequest, TResponse#'
+            path: '%currentWorkingDirectory%/tests/_support/Module/UploadModule'

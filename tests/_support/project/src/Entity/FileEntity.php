@@ -51,6 +51,26 @@ class FileEntity
     private $privateFileKey;
 
     /**
+     * @var WebFile|null
+     */
+    private $temporaryFile;
+
+    /**
+     * @var string|null
+     */
+    private $temporaryFileKey;
+
+    /**
+     * @var WebFile|null
+     */
+    private $directFile;
+
+    /**
+     * @var string|null
+     */
+    private $directFileKey;
+
+    /**
      * @var EmbeddedFile|null
      */
     private $embeddedFile;
@@ -123,6 +143,46 @@ class FileEntity
     public function setPrivateFileKey(?string $privateFileKey): void
     {
         $this->privateFileKey = $privateFileKey;
+    }
+
+    public function getTemporaryFile(): ?WebFile
+    {
+        return $this->temporaryFile;
+    }
+
+    public function setTemporaryFile(?WebFile $temporaryFile): void
+    {
+        $this->temporaryFile = $temporaryFile;
+    }
+
+    public function getTemporaryFileKey(): ?string
+    {
+        return $this->temporaryFileKey;
+    }
+
+    public function setTemporaryFileKey(?string $temporaryFileKey): void
+    {
+        $this->temporaryFileKey = $temporaryFileKey;
+    }
+
+    public function getDirectFile(): ?WebFile
+    {
+        return $this->directFile;
+    }
+
+    public function setDirectFile(?WebFile $directFile): void
+    {
+        $this->directFile = $directFile;
+    }
+
+    public function getDirectFileKey(): ?string
+    {
+        return $this->directFileKey;
+    }
+
+    public function setDirectFileKey(?string $directFileKey): void
+    {
+        $this->directFileKey = $directFileKey;
     }
 
     public function getEmbeddedFile(): ?EmbeddedFile
