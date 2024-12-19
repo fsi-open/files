@@ -65,6 +65,12 @@
         </service>
         <service id="FSi\Component\Files\DirectUpload\Controller\DirectUploadController" autowire="true" public="true" />
 
+        <service id="FSi\Component\Files\Upload\PsrFilesHandler" autowire="true" />
+        <service id="FSi\Component\Files\DirectUpload\Controller\LocalUploadController" autowire="true" public="true" />
+        <service id="FSi\Component\Files\DirectUpload\Controller\LocalUploadSigner" autowire="true" public="true">
+            <argument key="$secret" type="string">%kernel.secret%</argument>
+        </service>
+
     </services>
 
 </container>

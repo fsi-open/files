@@ -13,8 +13,12 @@ namespace FSi\Component\Files\Integration\Symfony\DependencyInjection\CompilerPa
 
 use Assert\Assertion;
 use FSi\Component\Files\DirectUpload\AdapterRegistry;
+use FSi\Component\Files\DirectUpload\Controller\LocalUploadSigner;
+use FSi\Component\Files\Integration\FlySystem\DirectUpload\LocalAdapter;
 use FSi\Component\Files\Integration\FlySystem\DirectUpload\S3Adapter;
-use Oneup\FlysystemBundle\DependencyInjection\Configuration;
+use FSi\Component\Files\Integration\Symfony\DependencyInjection\Configuration as FilesConfiguration;
+use FSi\Component\Files\Integration\Symfony\DependencyInjection\FilesExtension;
+use Oneup\FlysystemBundle\DependencyInjection\Configuration as FlySystemConfiguration;
 use Oneup\FlysystemBundle\DependencyInjection\OneupFlysystemExtension;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -28,13 +32,21 @@ final class BuildDirectUploadAdaptersPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
+        $processor = new Processor();
+
         $flySystemConfigs = $container->getExtensionConfig('oneup_flysystem');
         $flySystemExtension = $container->getExtension('oneup_flysystem');
         Assertion::isInstanceOf($flySystemExtension, OneupFlysystemExtension::class);
-        $configuration = $flySystemExtension->getConfiguration($flySystemConfigs, $container);
-        Assertion::isInstanceOf($configuration, Configuration::class);
-        $processor = new Processor();
-        $flySystemConfig = $processor->processConfiguration($configuration, $flySystemConfigs);
+        $flySystemConfiguration = $flySystemExtension->getConfiguration($flySystemConfigs, $container);
+        Assertion::isInstanceOf($flySystemConfiguration, FlySystemConfiguration::class);
+        $flySystemConfig = $processor->processConfiguration($flySystemConfiguration, $flySystemConfigs);
+
+        $filesConfigs = $container->getExtensionConfig('fsi_files');
+        $filesExtension = $container->getExtension('fsi_files');
+        Assertion::isInstanceOf($filesExtension, FilesExtension::class);
+        $filesConfiguration = $filesExtension->getConfiguration($filesConfigs, $container);
+        Assertion::isInstanceOf($filesConfiguration, FilesConfiguration::class);
+        $filesConfig = $processor->processConfiguration($filesConfiguration, $filesConfigs);
 
         $adapters = [];
         foreach ($flySystemConfig['filesystems'] as $filesystemName => $filesystem) {
@@ -46,11 +58,23 @@ final class BuildDirectUploadAdaptersPass implements CompilerPassInterface
                     $adapterConfig['awss3v3']['bucket'],
                     $adapterConfig['awss3v3']['path_prefix'] ?? '',
                     $adapterConfig['awss3v3']['options'] ?? [],
+                    $filesConfig['direct_upload']['signature_expiration'],
                 ]);
+            } else {
+                $adapters[$filesystem['mount'] ?? $filesystemName] = (new Definition(LocalAdapter::class, [
+                    '$localUploadPath' => $filesConfig['direct_upload']['local_upload_path'],
+                    '$signatureExpiration' => $filesConfig['direct_upload']['signature_expiration'],
+                ]))->setAutowired(true);
             }
         }
 
         $adapterRegistry = $container->getDefinition(AdapterRegistry::class);
         $adapterRegistry->setArgument('$adapters', $adapters);
+
+        $resolverDefinition = $container->getDefinition(LocalUploadSigner::class);
+        $resolverDefinition->setArgument(
+            '$algorithm',
+            $filesConfig['direct_upload']['local_upload_signature_algo']
+        );
     }
 }

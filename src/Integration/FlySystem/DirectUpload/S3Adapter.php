@@ -31,6 +31,7 @@ final class S3Adapter implements DirectUploadAdapter
      * @var array<string, mixed>
      */
     private array $options;
+    private string $signatureExpiration;
 
     /**
      * @param S3ClientInterface $client
@@ -43,24 +44,27 @@ final class S3Adapter implements DirectUploadAdapter
         string $bucket,
         string $prefix = '',
         array $options = [],
+        string $signatureExpiration = '+1 hour'
     ) {
         $this->client = $client;
         $this->bucket = $bucket;
         $this->prefix = new PathPrefixer($prefix);
         $this->options = $options;
+        $this->signatureExpiration = $signatureExpiration;
     }
 
     public function prepare(WebFileDirectUpload $event): Params
     {
+        $fileSystem = $event->getWebFile()->getFileSystemName();
         $key = $this->prefix->prefixPath($event->getWebFile()->getPath());
         $cmd = $this->client->getCommand('PutObject', [
             'Bucket' => $this->bucket,
             'Key' => $key,
         ] + $event->getOptions() + $this->options);
 
-        $signedRequest = $this->client->createPresignedRequest($cmd, '+1 hour');
+        $signedRequest = $this->client->createPresignedRequest($cmd, $this->signatureExpiration);
 
-        return new Params($signedRequest->getUri(), $key, $signedRequest->getHeaders());
+        return new Params($signedRequest->getUri(), $fileSystem, $key, $signedRequest->getHeaders());
     }
 
     public function multipart(WebFileDirectUpload $event): Multipart
@@ -72,7 +76,7 @@ final class S3Adapter implements DirectUploadAdapter
         );
         $result = $this->client->execute($cmd);
 
-        return new Multipart($result->get('UploadId'), $key);
+        return new Multipart($result->get('UploadId'), $event->getWebFile()->getFileSystemName(), $key);
     }
 
     public function parts(string $uploadId, string $key): array
@@ -96,7 +100,7 @@ final class S3Adapter implements DirectUploadAdapter
             'PartNumber' => $number,
         ]);
 
-        return $this->client->createPresignedRequest($cmd, '+1 hour')->getUri();
+        return $this->client->createPresignedRequest($cmd, $this->signatureExpiration)->getUri();
     }
 
     public function complete(string $uploadId, string $key, array $parts): void

@@ -11,7 +11,11 @@ declare(strict_types=1);
 
 namespace Tests\FSi\App;
 
+use Aws\MockHandler;
+use Aws\S3\S3Client;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor;
+use FSi\Component\Files\Integration\AmazonS3\UrlAdapter\S3PrivateUrlAdapter;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\Integration\Symfony\FilesBundle;
 use FSi\Component\Files\Upload\FileFactory;
@@ -20,18 +24,27 @@ use FSi\Component\Files\UrlAdapter\BaseUrlAdapter;
 use League\Flysystem\MountManager;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Oneup\FlysystemBundle\OneupFlysystemBundle;
+use Psr\Clock\ClockInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Symfony\Bridge\PsrHttpMessage\ArgumentValueResolver\PsrServerRequestResolver;
+use Symfony\Bridge\PsrHttpMessage\EventListener\PsrResponseListener;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpClient\Psr18Client;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -96,7 +109,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'driver' => 'pdo_sqlite',
                 'user' => 'admin',
                 'charset' => 'UTF8',
-                'path' => sprintf('%s/../var/data.sqlite', __DIR__)
+                'path' => sprintf('%s/../var/data.sqlite', __DIR__),
             ],
             'orm' => [
                 'auto_generate_proxy_classes' => true,
@@ -108,10 +121,10 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                         'dir' => sprintf('%s/Resources/config/doctrine', __DIR__),
                         'alias' => 'FSi',
                         'prefix' => 'Tests\FSi\App\Entity',
-                        'is_bundle' => false
-                    ]
-                ]
-            ]
+                        'is_bundle' => false,
+                    ],
+                ],
+            ],
         ]);
 
         $container->loadFromExtension('oneup_flysystem', [
@@ -119,40 +132,55 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'local_adapter' => [
                     'local' => [
                         'location' => sprintf('%s/../public/files', __DIR__)
-                    ]
+                    ],
                 ],
                 'other_local_adapter' => [
                     'local' => [
                         'location' => sprintf('%s/../public/other_files', __DIR__)
-                    ]
+                    ],
                 ],
                 'private_adapter' => [
                     'local' => [
                         'location' => sprintf('%s/../var/private_files', __DIR__)
-                    ]
-                ]
+                    ],
+                ],
+                's3_adapter' => [
+                    'awss3v3' => [
+                        'client' => S3Client::class,
+                        'bucket' => 'test',
+                    ],
+                ],
             ],
             'filesystems' => [
                 'public' => [
                     'adapter' => 'local_adapter',
-                    'mount' => 'public'
+                    'mount' => 'public',
                 ],
                 'other_public' => [
                     'adapter' => 'other_local_adapter',
-                    'mount' => 'other_public'
+                    'mount' => 'other_public',
                 ],
                 'private' => [
                     'adapter' => 'private_adapter',
-                    'mount' => 'private'
-                ]
-            ]
+                    'mount' => 'private',
+                ],
+                'remote' => [
+                    'adapter' => 's3_adapter',
+                    'mount' => 'remote',
+                ],
+            ],
         ]);
 
         $container->loadFromExtension('fsi_files', [
             'default_entity_filesystem' => 'public',
+            'direct_upload' => [
+                'local_upload_path' => '/upload',
+                'signature_expiration' => '+2 seconds',
+            ],
             'url_adapters' => [
                 'public' => 'fsi_files.url_adapter.public',
-                'other_public' => 'fsi_files.url_adapter.other_public'
+                'other_public' => 'fsi_files.url_adapter.other_public',
+                'remote' => 'fsi_files.url_adapter.remote',
             ],
             'entities' => [
                 ChildFileEntity::class => [
@@ -218,9 +246,19 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $container->setAlias(UriFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(StreamFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(RequestFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(ServerRequestFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ResponseFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(UploadedFileFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ClientInterface::class, Psr18Client::class);
-        $container->setAlias(MountManager::class, 'oneup_flysystem.mount_manager')->setPublic(true);
+        $container->setAlias(MountManager::class, 'oneup_flysystem.mount_manager');
+        $container->getDefinition(DirectUploadTargetEncryptor::class)->setPublic(true);
+
+        $container->register(PsrResponseListener::class)->setAutowired(true)->setAutoconfigured(true);
+        $container->register(PsrHttpFactory::class)->setAutowired(true)->setAutoconfigured(true);
+        $container->setAlias(HttpMessageFactoryInterface::class, PsrHttpFactory::class);
+        $container->register(PsrServerRequestResolver::class)->setAutowired(true)->setAutoconfigured(true);
+        $container->register(NativeClock::class);
+        $container->setAlias(ClockInterface::class, NativeClock::class);
 
         $container->register(FormTestType::class)
             ->setAutoconfigured(true)
@@ -244,6 +282,13 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
             $psr17Factory,
             '/other_files/'
         );
+        $container->register('fsi_files.url_adapter.remote', S3PrivateUrlAdapter::class)
+            ->setArguments([
+                '$s3Client' => new Reference(S3Client::class),
+                '$s3Bucket' => 'test',
+            ]);
+
+        $this->registerS3ClientMock($container);
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
@@ -252,6 +297,8 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $routes->add('native_files', '/native')->controller(NativeFilesController::class);
         $routes->add('symfony_files', '/symfony')->controller(SymfonyFilesController::class);
         $routes->add('multiple_symfony_files', '/multiple')->controller(MultipleUploadController::class);
+        $routes->import('@FilesBundle/Resources/config/routing/direct_upload.yaml')->prefix('/upload');
+        $routes->import('@FilesBundle/Resources/config/routing/local_upload.yaml')->prefix('/upload');
     }
 
     private function registerPublicControllerService(ContainerBuilder $container, string $class): void
@@ -271,5 +318,23 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $definition->setClass(BaseUrlAdapter::class);
         $definition->setArgument('$uriFactory', $uriFactory);
         $definition->setArgument('$baseUrl', $publicDirectory);
+    }
+
+    private function registerS3ClientMock(ContainerBuilder $container): void
+    {
+        $container->register(S3Client::class)
+            ->setArguments([
+                '$args' => [
+                    'version' => '2006-03-01',
+                    'region' => 'eu-east-1',
+                    'credentials' => [
+                        'key' => 'FAKEKEY',
+                        'secret' => 'FAKESECRET',
+                    ],
+                    'handler' => new Reference(MockHandler::class),
+                ],
+            ]);
+
+        $container->register(MockHandler::class)->setPublic(true);
     }
 }

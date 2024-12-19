@@ -69,11 +69,16 @@ final class DirectUploadController
         $dto = DirectUploadParamsDTO::fromRequest($request);
 
         $event = $this->dispatchDirectUploadEvent($dto);
+        $params = $this->getAdapter($dto)->prepare($event);
+        $publicUri = $this->fileUrlResolver->tryResolve($event->getWebFile());
 
-        return $this->createJsonResponse(array_merge(
-            (array) $this->getAdapter($dto)->prepare($event),
-            ['url' => $this->fileUrlResolver->resolve($event->getWebFile())]
-        ));
+        return $this->createJsonResponse([
+            'url' => (string) $params->url,
+            'fileSystem' => $params->fileSystem,
+            'key' => $params->key,
+            'headers' => $params->headers,
+            'publicUrl' => (null !== $publicUri) ? (string) $publicUri : null,
+        ]);
     }
 
     public function createMultipart(ServerRequestInterface $request): ResponseInterface
@@ -81,11 +86,15 @@ final class DirectUploadController
         $dto = DirectUploadParamsDTO::fromRequest($request);
 
         $event = $this->dispatchDirectUploadEvent($dto);
+        $multipart = $this->getAdapter($dto)->multipart($event);
+        $publicUri = $this->fileUrlResolver->tryResolve($event->getWebFile());
 
-        return $this->createJsonResponse(array_merge(
-            (array) $this->getAdapter($dto)->multipart($event),
-            ['url' => $this->fileUrlResolver->resolve($event->getWebFile())]
-        ));
+        return $this->createJsonResponse([
+            'uploadId' => $multipart->uploadId,
+            'fileSystem' => $multipart->fileSystem,
+            'key' => $multipart->key,
+            'publicUrl' => (null !== $publicUri) ? (string) $publicUri : null,
+        ]);
     }
 
     public function listParts(ServerRequestInterface $request): ResponseInterface

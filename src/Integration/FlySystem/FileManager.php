@@ -34,7 +34,11 @@ final class FileManager implements Files\FileManager
 
     public function copy(Files\WebFile $source, string $fileSystemName, string $path): Files\WebFile
     {
-        $this->writeStream($fileSystemName, $path, $this->readStream($source));
+        $this->mountManager->copy(
+            $this->createPrefixedFilePath($source),
+            $this->prefixPathWithFileSystem($fileSystemName, $path)
+        );
+
         return $this->load($fileSystemName, $path);
     }
 
@@ -107,15 +111,6 @@ final class FileManager implements Files\FileManager
 
         $this->mountManager->deleteDirectory($prefixedPath);
         return true;
-    }
-
-    /**
-     * @param Files\WebFile $file
-     * @return resource
-     */
-    private function readStream(Files\WebFile $file)
-    {
-        return $this->mountManager->readStream($this->createPrefixedFilePath($file));
     }
 
     /**

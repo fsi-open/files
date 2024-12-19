@@ -13,16 +13,13 @@ namespace Tests\FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
 use DOMElement;
-use FSi\Component\Files\Upload\FilePathGenerator;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
-use League\Flysystem\MountManager;
 use Symfony\Component\DomCrawler\Field\FileFormField;
 use Tests\FSi\App\Entity\FileEntity;
 use Tests\FSi\FunctionalTester;
 
 use function codecept_data_dir;
-use function file_get_contents;
 
 final class WebFileTypeCest
 {
@@ -39,9 +36,10 @@ final class WebFileTypeCest
         $I->see('Removable embedded image', 'label');
         $I->see('Removable twice embedded image', 'label');
 
-        $I->fillField('form_test[temporaryFile][path]', 'temporary/directly_uploaded_file.pdf');
-        $directUploadPath = FilePathGenerator::generate('direct_file.pdf', 'direct-file');
-        $I->fillField('form_test[directFile][path]', $directUploadPath);
+        $tempParams = $I->prepareTemporaryUploadParameters('directly_uploaded_file.pdf', 'public', 'temporary');
+        $I->fillField('form_test[temporaryFile][path]', $tempParams['key']);
+        $entityParams = $I->prepareEntityUploadParameters('direct_file.pdf', FileEntity::class, 'directFile');
+        $I->fillField('form_test[directFile][path]', $entityParams['key']);
         $I->submitForm('form', [], 'Submit');
         $I->see('No file was uploaded.');
 
@@ -50,13 +48,20 @@ final class WebFileTypeCest
         $I->attachFile('Private file', 'another_test_pdf.pdf');
         $I->attachFile('Removable embedded image', 'test.jpg');
         $I->attachFile('Removable twice embedded image', 'test.jpg');
-        /** @var MountManager $mountManager */
-        $mountManager = $I->grabService(MountManager::class);
-        $testPdfContents = file_get_contents(codecept_data_dir() . 'test_pdf.pdf');
-        Assertion::string($testPdfContents);
-        $mountManager->write('public://temporary/directly_uploaded_file.pdf', $testPdfContents);
+
+        $I->haveUploadedFileDirectly(
+            'directly_uploaded_file.pdf',
+            $tempParams['fileSystem'],
+            $tempParams['key'],
+            $tempParams['headers']
+        );
         // field 'form_test[temporaryFile][path]' has been already filled with path
-        $mountManager->write("public://{$directUploadPath}", $testPdfContents);
+        $I->haveUploadedFileDirectly(
+            'direct_file.pdf',
+            $entityParams['fileSystem'],
+            $entityParams['key'],
+            $entityParams['headers']
+        );
         // field 'form_test[directFile][path]' has been already filled with path
 
         $I->submitForm('form', [], 'Submit');
