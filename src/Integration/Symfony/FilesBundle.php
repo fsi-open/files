@@ -28,10 +28,10 @@ final class FilesBundle extends Bundle
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
+        $this->loadExternalBundlesServices($container);
         $container->addCompilerPass(new UrlAdapterPass());
         $container->addCompilerPass(new TemporaryFilesystemPass());
         $container->addCompilerPass(new BuildDirectUploadAdaptersPass());
-        $this->loadExternalBundlesServices($container);
     }
 
     private function loadExternalBundlesServices(ContainerBuilder $container): void

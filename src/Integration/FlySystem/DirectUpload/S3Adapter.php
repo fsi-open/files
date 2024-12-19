@@ -31,6 +31,7 @@ final class S3Adapter implements DirectUploadAdapter
      * @var array<string, mixed>
      */
     private array $options;
+    private string $signatureExpiration;
 
     /**
      * @param S3ClientInterface $client
@@ -43,11 +44,13 @@ final class S3Adapter implements DirectUploadAdapter
         string $bucket,
         string $prefix = '',
         array $options = [],
+        string $signatureExpiration = '+1 hour'
     ) {
         $this->client = $client;
         $this->bucket = $bucket;
         $this->prefix = new PathPrefixer($prefix);
         $this->options = $options;
+        $this->signatureExpiration = $signatureExpiration;
     }
 
     public function prepare(WebFileDirectUpload $event): Params
@@ -58,7 +61,7 @@ final class S3Adapter implements DirectUploadAdapter
             'Key' => $key,
         ] + $event->getOptions() + $this->options);
 
-        $signedRequest = $this->client->createPresignedRequest($cmd, '+1 hour');
+        $signedRequest = $this->client->createPresignedRequest($cmd, $this->signatureExpiration);
 
         return new Params($signedRequest->getUri(), $key, $signedRequest->getHeaders());
     }
@@ -96,7 +99,7 @@ final class S3Adapter implements DirectUploadAdapter
             'PartNumber' => $number,
         ]);
 
-        return $this->client->createPresignedRequest($cmd, '+1 hour')->getUri();
+        return $this->client->createPresignedRequest($cmd, $this->signatureExpiration)->getUri();
     }
 
     public function complete(string $uploadId, string $key, array $parts): void

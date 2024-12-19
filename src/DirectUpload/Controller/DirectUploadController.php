@@ -72,7 +72,7 @@ final class DirectUploadController
 
         return $this->createJsonResponse(array_merge(
             (array) $this->getAdapter($dto)->prepare($event),
-            ['url' => $this->fileUrlResolver->resolve($event->getWebFile())]
+            ['url' => (string) $this->fileUrlResolver->resolve($event->getWebFile())]
         ));
     }
 
@@ -84,7 +84,7 @@ final class DirectUploadController
 
         return $this->createJsonResponse(array_merge(
             (array) $this->getAdapter($dto)->multipart($event),
-            ['url' => $this->fileUrlResolver->resolve($event->getWebFile())]
+            ['url' => (string) $this->fileUrlResolver->resolve($event->getWebFile())]
         ));
     }
 

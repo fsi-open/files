@@ -12,3 +12,6 @@ modules:
         - Doctrine:
             depends: Symfony
             cleanup: true
+        - REST:
+              url: http://localhost
+              depends: Symfony
