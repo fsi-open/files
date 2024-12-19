@@ -58,6 +58,7 @@ final class S3Adapter implements DirectUploadAdapter
             'Key' => $key,
         ] + $event->getOptions() + $this->options);
 
+        // TODO extract time interval as constructor argument
         $signedRequest = $this->client->createPresignedRequest($cmd, '+1 hour');
 
         return new Params($signedRequest->getUri(), $key, $signedRequest->getHeaders());
@@ -96,6 +97,7 @@ final class S3Adapter implements DirectUploadAdapter
             'PartNumber' => $number,
         ]);
 
+        // TODO extract time interval as constructor argument
         return $this->client->createPresignedRequest($cmd, '+1 hour')->getUri();
     }
 

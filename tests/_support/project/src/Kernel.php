@@ -23,8 +23,14 @@ use Oneup\FlysystemBundle\OneupFlysystemBundle;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Symfony\Bridge\PsrHttpMessage\ArgumentValueResolver\PsrServerRequestResolver;
+use Symfony\Bridge\PsrHttpMessage\EventListener\PsrResponseListener;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -218,9 +224,16 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $container->setAlias(UriFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(StreamFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(RequestFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(ServerRequestFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ResponseFactoryInterface::class, Psr17Factory::class);
+        $container->setAlias(UploadedFileFactoryInterface::class, Psr17Factory::class);
         $container->setAlias(ClientInterface::class, Psr18Client::class);
         $container->setAlias(MountManager::class, 'oneup_flysystem.mount_manager')->setPublic(true);
+
+        $container->register(PsrResponseListener::class)->setAutowired(true)->setAutoconfigured(true);
+        $container->register(PsrHttpFactory::class)->setAutowired(true)->setAutoconfigured(true);
+        $container->setAlias(HttpMessageFactoryInterface::class, PsrHttpFactory::class);
+        $container->register(PsrServerRequestResolver::class)->setAutowired(true)->setAutoconfigured(true);
 
         $container->register(FormTestType::class)
             ->setAutoconfigured(true)
@@ -252,6 +265,8 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $routes->add('native_files', '/native')->controller(NativeFilesController::class);
         $routes->add('symfony_files', '/symfony')->controller(SymfonyFilesController::class);
         $routes->add('multiple_symfony_files', '/multiple')->controller(MultipleUploadController::class);
+        $routes->import('@FilesBundle/Resources/config/routing/direct_upload.yaml')->prefix('/upload');
+        $routes->import('@FilesBundle/Resources/config/routing/local_upload.yaml')->prefix('/upload');
     }
 
     private function registerPublicControllerService(ContainerBuilder $container, string $class): void

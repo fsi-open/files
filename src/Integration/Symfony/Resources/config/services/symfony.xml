@@ -64,6 +64,11 @@
             <argument key="$adapters" type="collection" />
         </service>
         <service id="FSi\Component\Files\DirectUpload\Controller\DirectUploadController" autowire="true" public="true" />
+        <service id="FSi\Component\Files\DirectUpload\Controller\LocalUploadSigner">
+            <argument key="$secret" type="string">%kernel.secret%</argument>
+            <!-- TODO add algoeithm to FilesBundle's configuration -->
+            <argument key="$algorithm" type="string">sha-512</argument>
+        </service>
 
     </services>
 
