@@ -15,6 +15,7 @@ use FSi\Component\Files;
 use RuntimeException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
+use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 use function count;
 use function ctype_digit;
@@ -49,10 +50,6 @@ final class UploadedImageValidator extends UploadedWebFileValidator
             ));
         }
 
-        if (true === $value instanceof Files\WebFile && false === $value instanceof Files\UploadedWebFile) {
-            return;
-        }
-
         $violations = count($this->context->getViolations());
         parent::validate($value, $constraint);
 
@@ -74,7 +71,19 @@ final class UploadedImageValidator extends UploadedWebFileValidator
             return;
         }
 
-        $size = @getimagesizefromstring($value->getStream()->getContents());
+        if (
+            true === $value instanceof Files\TemporaryWebFile
+            || true === $value instanceof Files\DirectlyUploadedWebFile
+        ) {
+            $size = @getimagesizefromstring($this->fileManager->contents($value));
+        } elseif (true === $value instanceof Files\UploadedWebFile) {
+            $size = @getimagesizefromstring($value->getStream()->getContents());
+        } elseif (true === $value instanceof Files\WebFile) {
+            return;
+        } else {
+            throw new UnexpectedValueException($value, Files\UploadedWebFile::class);
+        }
+
         if (false === is_array($size) || (0 === $size[0]) || (0 === $size[1])) {
             $this->context->buildViolation($constraint->sizeNotDetectedMessage)
                 ->setCode(UploadedImage::SIZE_NOT_DETECTED_ERROR)
@@ -84,11 +93,10 @@ final class UploadedImageValidator extends UploadedWebFileValidator
             return;
         }
 
-        $width = $size[0];
-        $height = $size[1];
+        [$width, $height] = $size;
 
         if (null !== $constraint->minWidth && 0 !== $constraint->minWidth) {
-            if (false === ctype_digit("$constraint->minWidth")) {
+            if (false === ctype_digit((string) $constraint->minWidth)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid minimum width.', $constraint->minWidth)
                 );
@@ -96,8 +104,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($width < $constraint->minWidth) {
                 $this->context->buildViolation($constraint->minWidthMessage)
-                    ->setParameter('{{ width }}', "$width")
-                    ->setParameter('{{ min_width }}', "$constraint->minWidth")
+                    ->setParameter('{{ width }}', (string) $width)
+                    ->setParameter('{{ min_width }}', (string) $constraint->minWidth)
                     ->setCode(UploadedImage::TOO_NARROW_ERROR)
                     ->addViolation()
                 ;
@@ -107,7 +115,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
         }
 
         if (null !== $constraint->maxWidth && 0 !== $constraint->maxWidth) {
-            if (false === ctype_digit("$constraint->maxWidth")) {
+            if (false === ctype_digit((string) $constraint->maxWidth)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid maximum width.', $constraint->maxWidth)
                 );
@@ -115,8 +123,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($width > $constraint->maxWidth) {
                 $this->context->buildViolation($constraint->maxWidthMessage)
-                    ->setParameter('{{ width }}', "$width")
-                    ->setParameter('{{ max_width }}', "$constraint->maxWidth")
+                    ->setParameter('{{ width }}', (string) $width)
+                    ->setParameter('{{ max_width }}', (string) $constraint->maxWidth)
                     ->setCode(UploadedImage::TOO_WIDE_ERROR)
                     ->addViolation()
                 ;
@@ -126,7 +134,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
         }
 
         if (null !== $constraint->minHeight && 0 !== $constraint->minHeight) {
-            if (false === ctype_digit("$constraint->minHeight")) {
+            if (false === ctype_digit((string) $constraint->minHeight)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid minimum height', $constraint->minHeight)
                 );
@@ -134,8 +142,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($height < $constraint->minHeight) {
                 $this->context->buildViolation($constraint->minHeightMessage)
-                    ->setParameter('{{ height }}', "$height")
-                    ->setParameter('{{ min_height }}', "$constraint->minHeight")
+                    ->setParameter('{{ height }}', (string) $height)
+                    ->setParameter('{{ min_height }}', (string) $constraint->minHeight)
                     ->setCode(UploadedImage::TOO_LOW_ERROR)
                     ->addViolation()
                 ;
@@ -145,7 +153,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
         }
 
         if (null !== $constraint->maxHeight && 0 !== $constraint->maxHeight) {
-            if (false === ctype_digit("$constraint->maxHeight")) {
+            if (false === ctype_digit((string) $constraint->maxHeight)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid maximum height', $constraint->maxHeight)
                 );
@@ -153,8 +161,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($height > $constraint->maxHeight) {
                 $this->context->buildViolation($constraint->maxHeightMessage)
-                    ->setParameter('{{ height }}', "$height")
-                    ->setParameter('{{ max_height }}', "$constraint->maxHeight")
+                    ->setParameter('{{ height }}', (string) $height)
+                    ->setParameter('{{ max_height }}', (string) $constraint->maxHeight)
                     ->setCode(UploadedImage::TOO_HIGH_ERROR)
                     ->addViolation()
                 ;
@@ -163,7 +171,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
         $pixels = $width * $height;
         if (null !== $constraint->minPixels && 0 !== $constraint->minPixels) {
-            if (false === ctype_digit("$constraint->minPixels")) {
+            if (false === ctype_digit((string) $constraint->minPixels)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid minimum amount of pixels', $constraint->minPixels)
                 );
@@ -171,10 +179,10 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($pixels < $constraint->minPixels) {
                 $this->context->buildViolation($constraint->minPixelsMessage)
-                    ->setParameter('{{ pixels }}', "$pixels")
-                    ->setParameter('{{ min_pixels }}', "$constraint->minPixels")
-                    ->setParameter('{{ height }}', "$height")
-                    ->setParameter('{{ width }}', "$width")
+                    ->setParameter('{{ pixels }}', (string) $pixels)
+                    ->setParameter('{{ min_pixels }}', (string) $constraint->minPixels)
+                    ->setParameter('{{ height }}', (string) $height)
+                    ->setParameter('{{ width }}', (string) $width)
                     ->setCode(UploadedImage::TOO_FEW_PIXEL_ERROR)
                     ->addViolation()
                 ;
@@ -182,7 +190,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
         }
 
         if (null !== $constraint->maxPixels && 0 !== $constraint->maxPixels) {
-            if (false === ctype_digit("$constraint->maxPixels")) {
+            if (false === ctype_digit((string) $constraint->maxPixels)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid maximum amount of pixels', $constraint->maxPixels)
                 );
@@ -190,10 +198,10 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($pixels > $constraint->maxPixels) {
                 $this->context->buildViolation($constraint->maxPixelsMessage)
-                    ->setParameter('{{ pixels }}', "$pixels")
-                    ->setParameter('{{ max_pixels }}', "$constraint->maxPixels")
-                    ->setParameter('{{ height }}', "$height")
-                    ->setParameter('{{ width }}', "$width")
+                    ->setParameter('{{ pixels }}', (string) $pixels)
+                    ->setParameter('{{ max_pixels }}', (string) $constraint->maxPixels)
+                    ->setParameter('{{ height }}', (string) $height)
+                    ->setParameter('{{ width }}', (string) $width)
                     ->setCode(UploadedImage::TOO_MANY_PIXEL_ERROR)
                     ->addViolation()
                 ;
@@ -202,7 +210,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
         $ratio = round($width / $height, 2);
         if (null !== $constraint->minRatio && 0 != $constraint->minRatio) {
-            if (false === is_numeric("$constraint->minRatio")) {
+            if (false === is_numeric((string) $constraint->minRatio)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid minimum ratio', $constraint->minRatio)
                 );
@@ -210,8 +218,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($ratio < $constraint->minRatio) {
                 $this->context->buildViolation($constraint->minRatioMessage)
-                    ->setParameter('{{ ratio }}', "$ratio")
-                    ->setParameter('{{ min_ratio }}', "$constraint->minRatio")
+                    ->setParameter('{{ ratio }}', (string) $ratio)
+                    ->setParameter('{{ min_ratio }}', (string) $constraint->minRatio)
                     ->setCode(UploadedImage::RATIO_TOO_SMALL_ERROR)
                     ->addViolation()
                 ;
@@ -219,7 +227,7 @@ final class UploadedImageValidator extends UploadedWebFileValidator
         }
 
         if (null !== $constraint->maxRatio && 0 != $constraint->maxRatio) {
-            if (false === is_numeric("$constraint->maxRatio")) {
+            if (false === is_numeric((string) $constraint->maxRatio)) {
                 throw new ConstraintDefinitionException(
                     sprintf('"%s" is not a valid maximum ratio', $constraint->maxRatio)
                 );
@@ -227,8 +235,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
             if ($ratio > $constraint->maxRatio) {
                 $this->context->buildViolation($constraint->maxRatioMessage)
-                    ->setParameter('{{ ratio }}', "$ratio")
-                    ->setParameter('{{ max_ratio }}', "$constraint->maxRatio")
+                    ->setParameter('{{ ratio }}', (string) $ratio)
+                    ->setParameter('{{ max_ratio }}', (string) $constraint->maxRatio)
                     ->setCode(UploadedImage::RATIO_TOO_BIG_ERROR)
                     ->addViolation()
                 ;
@@ -237,8 +245,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
         if (false === $constraint->allowSquare && $width == $height) {
             $this->context->buildViolation($constraint->allowSquareMessage)
-                ->setParameter('{{ width }}', "$width")
-                ->setParameter('{{ height }}', "$height")
+                ->setParameter('{{ width }}', (string) $width)
+                ->setParameter('{{ height }}', (string) $height)
                 ->setCode(UploadedImage::SQUARE_NOT_ALLOWED_ERROR)
                 ->addViolation()
             ;
@@ -246,8 +254,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
         if (false === $constraint->allowLandscape && $width > $height) {
             $this->context->buildViolation($constraint->allowLandscapeMessage)
-                ->setParameter('{{ width }}', "$width")
-                ->setParameter('{{ height }}', "$height")
+                ->setParameter('{{ width }}', (string) $width)
+                ->setParameter('{{ height }}', (string) $height)
                 ->setCode(UploadedImage::LANDSCAPE_NOT_ALLOWED_ERROR)
                 ->addViolation()
             ;
@@ -255,8 +263,8 @@ final class UploadedImageValidator extends UploadedWebFileValidator
 
         if (false === $constraint->allowPortrait && $width < $height) {
             $this->context->buildViolation($constraint->allowPortraitMessage)
-                ->setParameter('{{ width }}', "$width")
-                ->setParameter('{{ height }}', "$height")
+                ->setParameter('{{ width }}', (string) $width)
+                ->setParameter('{{ height }}', (string) $height)
                 ->setCode(UploadedImage::PORTRAIT_NOT_ALLOWED_ERROR)
                 ->addViolation()
             ;

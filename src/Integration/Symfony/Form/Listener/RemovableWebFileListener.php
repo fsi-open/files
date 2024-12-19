@@ -32,6 +32,7 @@ final class RemovableWebFileListener
 
         $event->getForm()->get(WebFileType::FILE_FIELD)->setData(null);
         unset($data[WebFileType::FILE_FIELD]);
+        unset($data[WebFileType::PATH_FIELD]);
         $event->setData($data);
     }
 }
