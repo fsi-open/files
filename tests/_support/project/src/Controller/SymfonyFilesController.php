@@ -59,7 +59,9 @@ final class SymfonyFilesController
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
             return new RedirectResponse($this->urlGenerator->generate('symfony_files'));
-        } elseif (true === $form->isSubmitted()) {
+        }
+
+        if (true === $form->isSubmitted()) {
             $message = $this->formErrorsToMessage($form->getErrors(true));
         } else {
             $message = null;

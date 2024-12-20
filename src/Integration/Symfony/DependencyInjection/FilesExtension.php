@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use Assert\Assertion;
+use FSi\Component\Files\DirectUpload\Controller\LocalUploadSigner;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use Symfony\Component\Config\FileLocator;
@@ -55,6 +56,7 @@ final class FilesExtension extends Extension
         /**
          * @var array{
          *   default_entity_filesystem: string|null,
+         *   temporary_filesystem: string|null,
          *   entities: array<string, array{
          *     filesystem: string,
          *     prefix: string,
@@ -72,7 +74,7 @@ final class FilesExtension extends Extension
         $container->addDefinitions($entityConfigurations);
 
         $resolverDefinition = $container->getDefinition(FilePropertyConfigurationResolver::class);
-        $resolverDefinition->replaceArgument('$configurations', $entityConfigurations);
+        $resolverDefinition->setArgument('$configurations', $entityConfigurations);
     }
 
     public function getAlias(): string

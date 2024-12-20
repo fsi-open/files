@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use ArrayAccess;
-use Closure;
 use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
@@ -112,6 +111,7 @@ final class EntityFileSubscriber implements EventSubscriber
 
     public function postFlush(PostFlushEventArgs $event): void
     {
+        $this->fileUpdater->flush();
         $this->fileRemover->flush();
     }
 
