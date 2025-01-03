@@ -1,4 +1,4 @@
-# Upgrade to 1.1
+# Upgrade to 2.1
 
 ## BC Break: Using doctrine/orm >= 3.0 requires manually initializing proxied entity before returning any WebFile property
 
