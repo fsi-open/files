@@ -38,17 +38,6 @@ final class WebFileTypeCest
 
         $tempParams = $I->prepareTemporaryUploadParameters('directly_uploaded_file.pdf', 'public', 'temporary');
         $I->fillField('form_test[temporaryFile][path]', $tempParams['key']);
-        $entityParams = $I->prepareEntityUploadParameters('direct_file.pdf', FileEntity::class, 'directFile');
-        $I->fillField('form_test[directFile][path]', $entityParams['key']);
-        $I->submitForm('form', [], 'Submit');
-        $I->see('No file was uploaded.');
-
-        $I->attachFile('Standard file', 'test_pdf.pdf');
-        $I->attachFile('Image file', 'test.jpg');
-        $I->attachFile('Private file', 'another_test_pdf.pdf');
-        $I->attachFile('Removable embedded image', 'test.jpg');
-        $I->attachFile('Removable twice embedded image', 'test.jpg');
-
         $I->haveUploadedFileDirectly(
             'directly_uploaded_file.pdf',
             $tempParams['fileSystem'],
@@ -56,6 +45,14 @@ final class WebFileTypeCest
             $tempParams['headers']
         );
         // field 'form_test[temporaryFile][path]' has been already filled with path
+        $entityParams = $I->prepareEntityUploadParameters('direct_file.pdf', FileEntity::class, 'directFile');
+        $I->fillField('form_test[directFile][path]', $entityParams['key']);
+        $I->submitForm('form', [], 'Submit');
+        $I->see('No file was uploaded.');
+
+        $I->fillField('form_test[text]', '');
+        $entityParams = $I->prepareEntityUploadParameters('direct_file.pdf', FileEntity::class, 'directFile');
+        $I->fillField('form_test[directFile][path]', $entityParams['key']);
         $I->haveUploadedFileDirectly(
             'direct_file.pdf',
             $entityParams['fileSystem'],
@@ -63,7 +60,16 @@ final class WebFileTypeCest
             $entityParams['headers']
         );
         // field 'form_test[directFile][path]' has been already filled with path
+        $I->submitForm('form', [], 'Submit');
 
+        $I->see('This value should not be blank.');
+
+        $I->fillField('form_test[text]', 'test');
+        $I->attachFile('Standard file', 'test_pdf.pdf');
+        $I->attachFile('Image file', 'test.jpg');
+        $I->attachFile('Private file', 'another_test_pdf.pdf');
+        $I->attachFile('Removable embedded image', 'test.jpg');
+        $I->attachFile('Removable twice embedded image', 'test.jpg');
         $I->submitForm('form', [], 'Submit');
 
         $I->see('test_pdf.pdf', 'a');

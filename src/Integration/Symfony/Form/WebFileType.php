@@ -17,7 +17,7 @@ use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\FileUrlResolver;
 use FSi\Component\Files\Integration\Symfony\Form\Listener\RemovableWebFileListener;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\CompoundWebFileTransformer;
-use FSi\Component\Files\Integration\Symfony\Form\Transformer\DirectlyUploadedWebFileTransformer;
+use FSi\Component\Files\Integration\Symfony\Form\Listener\DirectlyUploadedWebFileListener;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\FormFileTransformer;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory;
 use FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformer;
@@ -130,7 +130,8 @@ final class WebFileType extends AbstractType
                 'removable' => false,
                 'direct_upload' => ['mode' => 'none'],
                 'error_bubbling' => false,
-                'error_mapping' => []
+                'error_mapping' => [],
+                'required' => false,
             ]);
 
             $builder->add(self::FILE_FIELD, self::class, $fileFieldOptions);
@@ -163,12 +164,10 @@ final class WebFileType extends AbstractType
                     'none' !== $options['direct_upload']['mode']
                     && null !== $options['direct_upload']['filesystem_name']
                 ) {
-                    $builder->addModelTransformer(new DirectlyUploadedWebFileTransformer(
+                    $builder->addEventListener(FormEvents::PRE_SUBMIT, new DirectlyUploadedWebFileListener(
                         $this->fileManager,
                         $this->fileFactory,
                         'temporary' === $options['direct_upload']['mode'],
-                        self::FILE_FIELD,
-                        self::PATH_FIELD,
                         $options['direct_upload']['filesystem_name']
                     ));
                 }

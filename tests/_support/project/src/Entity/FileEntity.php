@@ -21,6 +21,11 @@ class FileEntity
     private $id;
 
     /**
+     * @var string|null
+     */
+    private $text;
+
+    /**
      * @var WebFile|null
      */
     private $file;
@@ -83,6 +88,16 @@ class FileEntity
     public function setId(int $id): void
     {
         $this->id = $id;
+    }
+
+    public function getText(): ?string
+    {
+        return $this->text;
+    }
+
+    public function setText(?string $text): void
+    {
+        $this->text = $text;
     }
 
     public function getFile(): ?WebFile

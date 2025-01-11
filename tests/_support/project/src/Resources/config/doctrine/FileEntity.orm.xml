@@ -15,6 +15,7 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="text" type="string" nullable="true" />
         <field name="filePath" nullable="true" />
         <field name="anotherFileKey" nullable="true" />
         <field name="privateFileKey" nullable="true" />
