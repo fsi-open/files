@@ -338,13 +338,26 @@ final class WebFileType extends AbstractType
         $resolver->setAllowedTypes('url_resolver', ['callable', 'null']);
 
         $resolver->setNormalizer('multiple', function (Options $options, bool $value): bool {
-            if (false !== $value && (true === $options['removable'] || true === $options['image'])) {
+            if (false === $value) {
+                return false;
+            }
+
+            if (
+                true === $options['removable']
+                || true === $options['image']
+            ) {
                 throw new InvalidOptionsException(
                     "'multiple' option is forbidden when 'removable' or 'image' option is set"
                 );
             }
 
-            return $value;
+            if ('none' !== $options['direct_upload']['mode']) {
+                throw new InvalidOptionsException(
+                    "'multiple' option is forbidden when direct upload mode is other than 'none'"
+                );
+            }
+
+            return true;
         });
 
         $resolver->setNormalizer(
