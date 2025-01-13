@@ -13,7 +13,7 @@ namespace FSi\Component\Files\Entity;
 
 use Assert\Assertion;
 use FSi\Component\Files\DirectlyUploadedWebFile;
-use FSi\Component\Files\Entity\Event\WebFileUsed;
+use FSi\Component\Files\Entity\Event\WebFilePersisted;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
@@ -92,7 +92,7 @@ final class FileUpdater
 
         array_walk($this->filesUsed, function (array $fileEntry): void {
             $this->eventDispatcher?->dispatch(
-                new WebFileUsed($fileEntry['configuration'], $fileEntry['entity'], $fileEntry['file'])
+                new WebFilePersisted($fileEntry['configuration'], $fileEntry['entity'], $fileEntry['file'])
             );
         });
 

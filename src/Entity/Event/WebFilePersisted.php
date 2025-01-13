@@ -11,7 +11,7 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Entity\Event;
 
-final class WebFileUsed
+final class WebFilePersisted
 {
     use WebFileEvent;
 }

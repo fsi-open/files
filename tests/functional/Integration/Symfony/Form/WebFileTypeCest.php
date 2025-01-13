@@ -40,8 +40,7 @@ final class WebFileTypeCest
         $I->fillField('form_test[temporaryFile][path]', $tempParams['key']);
         $I->haveUploadedFileDirectly(
             'directly_uploaded_file.pdf',
-            $tempParams['fileSystem'],
-            $tempParams['key'],
+            $tempParams['url'],
             $tempParams['headers']
         );
         // field 'form_test[temporaryFile][path]' has been already filled with path
@@ -55,8 +54,7 @@ final class WebFileTypeCest
         $I->fillField('form_test[directFile][path]', $entityParams['key']);
         $I->haveUploadedFileDirectly(
             'direct_file.pdf',
-            $entityParams['fileSystem'],
-            $entityParams['key'],
+            $entityParams['url'],
             $entityParams['headers']
         );
         // field 'form_test[directFile][path]' has been already filled with path

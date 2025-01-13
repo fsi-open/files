@@ -13,7 +13,7 @@ namespace Tests\FSi\Component\Files\Entity;
 
 use Codeception\Test\Unit;
 use FSi\Component\Files\Entity\Event\WebFileRemoved;
-use FSi\Component\Files\Entity\Event\WebFileUsed;
+use FSi\Component\Files\Entity\Event\WebFilePersisted;
 use FSi\Component\Files\Entity\FileLoader;
 use FSi\Component\Files\Entity\FileRemover;
 use FSi\Component\Files\Entity\FileUpdater;
@@ -98,7 +98,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed $event) =>
+                fn (WebFilePersisted $event) =>
                     $event->getConfiguration() === $this->configuration
                     && $event->getEntity() === $entity
                     && $event->getFile() !== $file
@@ -138,7 +138,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed $event) =>
+                fn (WebFilePersisted $event) =>
                     $event->getConfiguration() === $this->configuration
                     && $event->getEntity() === $entity
                     && $event->getFile() !== $file
@@ -177,7 +177,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed $event) =>
+                fn (WebFilePersisted $event) =>
                     $event->getConfiguration() === $this->configuration
                     && $event->getEntity() === $entity
                     && $event->getFile() !== $file
@@ -221,7 +221,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed $event) =>
+                fn (WebFilePersisted $event) =>
                     $event->getConfiguration() === $this->configuration
                     && $event->getEntity() === $newEntity
                     && $event->getFile() !== $file
@@ -254,14 +254,14 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::exactly(2))
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed|WebFileRemoved $event) =>
+                fn (WebFilePersisted|WebFileRemoved $event) =>
                     (
                         true === $event instanceof WebFileRemoved
                         && $event->getConfiguration() === $this->configuration
                         && $event->getEntity() === $entity
                         && $event->getFile() !== $oldFile
                     ) || (
-                        true === $event instanceof WebFileUsed
+                        true === $event instanceof WebFilePersisted
                         && $event->getConfiguration() === $this->configuration
                         && $event->getEntity() === $entity
                         && $event->getFile() !== $newFile
@@ -303,7 +303,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::exactly(2))
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed|WebFileRemoved $event) =>
+                fn (WebFilePersisted|WebFileRemoved $event) =>
                     (
                         true === $event instanceof WebFileRemoved
                         && $event->getConfiguration() === $this->configuration
@@ -311,7 +311,7 @@ final class FileUpdaterTest extends Unit
                         && $event->getFile()->getFileSystemName() === $oldFile->getFileSystemName()
                         && $event->getFile()->getPath() === $oldFile->getPath()
                     ) || (
-                        true === $event instanceof WebFileUsed
+                        true === $event instanceof WebFilePersisted
                         && $event->getConfiguration() === $this->configuration
                         && $event->getEntity() === $entity
                         && $event->getFile() !== $tempFile
@@ -385,7 +385,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::exactly(2))
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed|WebFileRemoved $event) =>
+                fn (WebFilePersisted|WebFileRemoved $event) =>
                     (
                         true === $event instanceof WebFileRemoved
                         && $event->getConfiguration() === $this->configuration
@@ -393,7 +393,7 @@ final class FileUpdaterTest extends Unit
                         && $event->getFile()->getFileSystemName() === $oldFile->getFileSystemName()
                         && $event->getFile()->getPath() === $oldFile->getPath()
                     ) || (
-                        true === $event instanceof WebFileUsed
+                        true === $event instanceof WebFilePersisted
                         && $event->getConfiguration() === $this->configuration
                         && $event->getEntity() === $entity
                         && $event->getFile() !== $tempFile
@@ -429,7 +429,7 @@ final class FileUpdaterTest extends Unit
         $this->eventDispatcher->expects(self::once())
             ->method('dispatch')
             ->with(self::callback(
-                fn (WebFileUsed|WebFileRemoved $event) =>
+                fn (WebFilePersisted|WebFileRemoved $event) =>
                     (
                         true === $event instanceof WebFileRemoved
                         && $event->getConfiguration() === $this->configuration

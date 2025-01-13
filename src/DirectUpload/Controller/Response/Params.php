@@ -20,7 +20,6 @@ final class Params
      */
     public function __construct(
         public readonly UriInterface $url,
-        public readonly string $fileSystem,
         public readonly string $key,
         public readonly array $headers
     ) {

@@ -12,10 +12,26 @@ declare(strict_types=1);
 namespace FSi\Component\Files\DirectUpload\Controller\DTO;
 
 use Assert\Assertion;
-use FSi\Component\Files\UploadedWebFile;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 
-final class LocalUploadDTO extends PostRequestDTO
+final class LocalUploadDTO
 {
+    private StreamInterface $body;
+    /**
+     * @var array<string, string|null>
+     */
+    public array $attributes;
+
+    public static function fromRequest(ServerRequestInterface $request): static
+    {
+        $instance = new static();
+        $instance->body = $request->getBody();
+        $instance->attributes = $request->getAttributes();
+
+        return $instance;
+    }
+
     public function getFileSystemName(): string
     {
         Assertion::keyExists($this->attributes, 'filesystem');
@@ -32,11 +48,8 @@ final class LocalUploadDTO extends PostRequestDTO
         return $this->attributes['path'];
     }
 
-    public function getFile(): UploadedWebFile
+    public function getFileContents(): StreamInterface
     {
-        Assertion::keyExists($this->files, 'file');
-        Assertion::isInstanceOf($this->files['file'], UploadedWebFile::class);
-
-        return $this->files['file'];
+        return $this->body;
     }
 }

@@ -15,7 +15,6 @@ final class Multipart
 {
     public function __construct(
         public readonly string $uploadId,
-        public readonly string $fileSystem,
         public readonly string $key
     ) {
     }

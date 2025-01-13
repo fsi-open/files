@@ -61,8 +61,12 @@ final class BuildDirectUploadAdaptersPass implements CompilerPassInterface
                     $filesConfig['direct_upload']['signature_expiration'],
                 ]);
             } else {
+                $localUploadPath = $filesConfig['direct_upload']['local_upload_path'];
+                if (false === is_string($localUploadPath)) {
+                    continue;
+                }
                 $adapters[$filesystem['mount'] ?? $filesystemName] = (new Definition(LocalAdapter::class, [
-                    '$localUploadPath' => $filesConfig['direct_upload']['local_upload_path'],
+                    '$localUploadPath' => $localUploadPath,
                     '$signatureExpiration' => $filesConfig['direct_upload']['signature_expiration'],
                 ]))->setAutowired(true);
             }

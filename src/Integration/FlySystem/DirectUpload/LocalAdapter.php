@@ -55,9 +55,8 @@ final class LocalAdapter implements DirectUploadAdapter
 
         return new Params(
             $this->uriFactory->createUri()->withPath($path),
-            $event->getWebFile()->getFileSystemName(),
             $event->getWebFile()->getPath(),
-            [
+            $event->getOptions() + [
                 'x-expires-at' => $expiresAt,
                 'x-signature' => $this->localUploadSigner->sign($dataToSign),
             ]

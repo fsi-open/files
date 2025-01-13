@@ -74,7 +74,6 @@ final class DirectUploadController
 
         return $this->createJsonResponse([
             'url' => (string) $params->url,
-            'fileSystem' => $params->fileSystem,
             'key' => $params->key,
             'headers' => $params->headers,
             'publicUrl' => (null !== $publicUri) ? (string) $publicUri : null,
@@ -91,7 +90,6 @@ final class DirectUploadController
 
         return $this->createJsonResponse([
             'uploadId' => $multipart->uploadId,
-            'fileSystem' => $multipart->fileSystem,
             'key' => $multipart->key,
             'publicUrl' => (null !== $publicUri) ? (string) $publicUri : null,
         ]);

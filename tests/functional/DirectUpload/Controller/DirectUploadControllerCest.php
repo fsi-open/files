@@ -99,7 +99,6 @@ final class DirectUploadControllerCest
         $I->assertStringStartsWith('/files/' . $pathPrefix, $responseData['publicUrl'] ?? '');
         $I->assertStringEndsWith($filename, $responseData['publicUrl'] ?? '');
         $I->assertStringEndsWith($responseData['key'], $responseData['publicUrl'] ?? '');
-        $I->assertEquals($fileSystem, $responseData['fileSystem']);
 
         $fileSystem = 'private';
         $responseData = $I->prepareTemporaryUploadParameters($filename, $fileSystem, $pathPrefix);
@@ -110,7 +109,6 @@ final class DirectUploadControllerCest
         $I->assertStringEndsWith($filename, $responseData['url']);
         $I->assertStringEndsWith($responseData['key'], $responseData['url']);
         $I->assertStringEndsWith($filename, $responseData['key']);
-        $I->assertEquals($fileSystem, $responseData['fileSystem']);
         $I->assertNull($responseData['publicUrl']);
     }
 
@@ -188,7 +186,6 @@ final class DirectUploadControllerCest
         $I->assertStringStartsWith('/other_files/anotherFile', $responseData['publicUrl'] ?? '');
         $I->assertStringEndsWith($filename, $responseData['publicUrl'] ?? '');
         $I->assertStringEndsWith($responseData['key'], $responseData['publicUrl'] ?? '');
-        $I->assertEquals('other_public', $responseData['fileSystem']);
 
         $targetProperty = 'privateFile';
         $responseData = $I->prepareEntityUploadParameters($filename, $targetEntity, $targetProperty);
@@ -200,7 +197,6 @@ final class DirectUploadControllerCest
         $I->assertStringEndsWith($responseData['key'], $responseData['url']);
         $I->assertStringStartsWith('private-file', $responseData['key']);
         $I->assertStringEndsWith($filename, $responseData['key']);
-        $I->assertEquals('private', $responseData['fileSystem']);
         $I->assertNull($responseData['publicUrl']);
     }
 
@@ -248,7 +244,6 @@ final class DirectUploadControllerCest
         $I->assertArrayHasKey('key', $responseData);
         $I->assertStringStartsWith($pathPrefix, $responseData['key']);
         $I->assertStringEndsWith($filename, $responseData['key']);
-        $I->assertEquals($fileSystem, $responseData['fileSystem']);
         $I->assertStringEndsWith($responseData['key'], $url->getPath());
         $I->assertArrayHasKey('uploadId', $responseData);
     }

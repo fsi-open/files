@@ -55,7 +55,6 @@ final class S3Adapter implements DirectUploadAdapter
 
     public function prepare(WebFileDirectUpload $event): Params
     {
-        $fileSystem = $event->getWebFile()->getFileSystemName();
         $key = $this->prefix->prefixPath($event->getWebFile()->getPath());
         $cmd = $this->client->getCommand('PutObject', [
             'Bucket' => $this->bucket,
@@ -64,7 +63,7 @@ final class S3Adapter implements DirectUploadAdapter
 
         $signedRequest = $this->client->createPresignedRequest($cmd, $this->signatureExpiration);
 
-        return new Params($signedRequest->getUri(), $fileSystem, $key, $signedRequest->getHeaders());
+        return new Params($signedRequest->getUri(), $key, $signedRequest->getHeaders());
     }
 
     public function multipart(WebFileDirectUpload $event): Multipart
@@ -76,7 +75,7 @@ final class S3Adapter implements DirectUploadAdapter
         );
         $result = $this->client->execute($cmd);
 
-        return new Multipart($result->get('UploadId'), $event->getWebFile()->getFileSystemName(), $key);
+        return new Multipart($result->get('UploadId'), $key);
     }
 
     public function parts(string $uploadId, string $key): array

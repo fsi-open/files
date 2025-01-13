@@ -14,7 +14,6 @@ namespace FSi\Component\Files\DirectUpload\Controller;
 use DateTimeImmutable;
 use FSi\Component\Files\DirectUpload\Controller\DTO\LocalUploadDTO;
 use FSi\Component\Files\FileManager;
-use FSi\Component\Files\Upload\PsrFilesHandler;
 use Psr\Clock\ClockInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -24,7 +23,6 @@ final class LocalUploadController
 {
     public function __construct(
         private readonly FileManager $fileManager,
-        private readonly PsrFilesHandler $psrFilesHandler,
         private readonly LocalUploadSigner $localUploadSigner,
         private readonly ClockInterface $clock,
         private readonly ResponseFactoryInterface $responseFactory
@@ -33,7 +31,7 @@ final class LocalUploadController
 
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
-        $dto = LocalUploadDTO::fromRequestWithFiles($request, $this->psrFilesHandler);
+        $dto = LocalUploadDTO::fromRequest($request);
 
         $expiresAt = (int) $request->getHeaderLine('x-expires-at');
         $signature = $request->getHeaderLine('x-signature');
@@ -52,7 +50,7 @@ final class LocalUploadController
         }
 
         $this->fileManager->copyFromStream(
-            $dto->getFile()->getStream(),
+            $dto->getFileContents(),
             $dto->getFileSystemName(),
             $dto->getPath()
         );

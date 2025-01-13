@@ -55,7 +55,6 @@ final class UploadModule extends Module
      * @param string $targetPrefix
      * @return array{
      *     url: string,
-     *     fileSystem: string,
      *     key: string,
      *     publicUrl: string|null,
      *     headers: array<string, string>
@@ -85,7 +84,6 @@ final class UploadModule extends Module
      * @param string $targetProperty
      * @return array{
      *     url: string,
-     *     fileSystem: string,
      *     key: string,
      *     publicUrl: string|null,
      *     headers: array<string, string>
@@ -113,31 +111,17 @@ final class UploadModule extends Module
 
     /**
      * @param string $filename
-     * @param string $fileSystem
-     * @param string $path
+     * @param string $url
      * @param array<string, string> $headers
      */
-    public function haveUploadedFileDirectly(string $filename, string $fileSystem, string $path, array $headers): void
+    public function haveUploadedFileDirectly(string $filename, string $url, array $headers): void
     {
         $sourceFilePath = codecept_data_dir($filename);
-        $contentType = mime_content_type($sourceFilePath);
 
         foreach ($headers as $headerName => $headerValue) {
-            $this->rest->haveHttpHeader($headerName, $headerValue);
+            $this->symfony->haveHttpHeader($headerName, $headerValue);
         }
-        $this->rest->sendPost(
-            "/upload/{$fileSystem}/{$path}",
-            [],
-            [
-                'file' => [
-                    'name' => $filename,
-                    'type' => $contentType,
-                    'error' => 0,
-                    'size' => filesize($sourceFilePath),
-                    'tmp_name' => $sourceFilePath,
-                ]
-            ]
-        );
+        $this->symfony->_request('PUT', $url, [], [], [], file_get_contents($sourceFilePath) ?: '');
     }
 
     public function grabAwsMockHandler(): MockHandler
@@ -181,7 +165,6 @@ final class UploadModule extends Module
      * @param string $response
      * @return array{
      *     url: string,
-     *     fileSystem: string,
      *     key: string,
      *     publicUrl: string|null,
      *     headers: array<string, string>
@@ -191,14 +174,12 @@ final class UploadModule extends Module
     {
         /** @var array{
          *     url: string,
-         *     fileSystem: string,
          *     key: string,
          *     publicUrl: string|null,
          *     headers: array<string, string>
          * } $responseData */
         $responseData = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
         Assert::assertArrayHasKey('url', $responseData);
-        Assert::assertArrayHasKey('fileSystem', $responseData);
         Assert::assertArrayHasKey('key', $responseData);
         Assert::assertArrayHasKey('publicUrl', $responseData);
         Assert::assertArrayHasKey('headers', $responseData);

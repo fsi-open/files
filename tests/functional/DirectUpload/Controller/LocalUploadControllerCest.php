@@ -17,6 +17,7 @@ use Tests\FSi\FunctionalTester;
 use function codecept_data_dir;
 use function sleep;
 use function sprintf;
+use function str_replace;
 
 final class LocalUploadControllerCest
 {
@@ -32,8 +33,7 @@ final class LocalUploadControllerCest
         $responseData['headers']['x-signature'] = 'invalid-signature';
         $I->haveUploadedFileDirectly(
             $filename,
-            $responseData['fileSystem'],
-            $responseData['key'],
+            $responseData['url'],
             $responseData['headers']
         );
         $I->seeResponseCodeIs(403);
@@ -42,8 +42,7 @@ final class LocalUploadControllerCest
         sleep(2);
         $I->haveUploadedFileDirectly(
             $filename,
-            $responseData['fileSystem'],
-            $responseData['key'],
+            $responseData['url'],
             $responseData['headers']
         );
         $I->seeResponseCodeIs(403);
@@ -59,13 +58,16 @@ final class LocalUploadControllerCest
 
         $I->haveUploadedFileDirectly(
             $filename,
-            $responseData['fileSystem'],
-            $responseData['key'],
+            $responseData['url'],
             $responseData['headers']
         );
         $I->seeResponseCodeIs(200);
 
-        $uploadedPath = sprintf('%s/../../../_support/project/public/files/%s', __DIR__, $responseData['key']);
+        $uploadedPath = sprintf(
+            '%s/../../../_support/project/public/files/%s',
+            __DIR__,
+            str_replace('/upload/public', '', $responseData['url'])
+        );
         $I->assertFileExists($uploadedPath);
         $sourceFilePath = codecept_data_dir($filename);
         $I->assertFileEquals($sourceFilePath, $uploadedPath);
@@ -83,8 +85,7 @@ final class LocalUploadControllerCest
 
         $I->haveUploadedFileDirectly(
             $filename,
-            $responseData['fileSystem'],
-            $responseData['key'],
+            $responseData['url'],
             $responseData['headers']
         );
         $I->seeResponseCodeIs(403);
@@ -93,8 +94,7 @@ final class LocalUploadControllerCest
         sleep(2);
         $I->haveUploadedFileDirectly(
             $filename,
-            $responseData['fileSystem'],
-            $responseData['key'],
+            $responseData['url'],
             $responseData['headers']
         );
         $I->seeResponseCodeIs(403);
@@ -110,13 +110,16 @@ final class LocalUploadControllerCest
 
         $I->haveUploadedFileDirectly(
             $filename,
-            $responseData['fileSystem'],
-            $responseData['key'],
+            $responseData['url'],
             $responseData['headers']
         );
         $I->seeResponseCodeIs(200);
 
-        $uploadedPath = sprintf('%s/../../../_support/project/var/private_files/%s', __DIR__, $responseData['key']);
+        $uploadedPath = sprintf(
+            '%s/../../../_support/project/var/private_files/%s',
+            __DIR__,
+            str_replace('/upload/private', '', $responseData['url'])
+        );
         $I->assertFileExists($uploadedPath);
         $sourceFilePath = codecept_data_dir($filename);
         $I->assertFileEquals($sourceFilePath, $uploadedPath);
