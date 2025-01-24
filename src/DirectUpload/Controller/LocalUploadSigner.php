@@ -11,7 +11,8 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\DirectUpload\Controller;
 
-use function hash;
+use function hash_equals;
+use function hash_hmac;
 use function json_encode;
 
 final class LocalUploadSigner
@@ -26,9 +27,7 @@ final class LocalUploadSigner
      */
     public function sign(array $data): string
     {
-        $data['secret'] = $this->secret;
-
-        return hash($this->algorithm, json_encode($data, JSON_THROW_ON_ERROR));
+        return hash_hmac($this->algorithm, json_encode($data, JSON_THROW_ON_ERROR), $this->secret);
     }
 
     /**
@@ -38,8 +37,9 @@ final class LocalUploadSigner
      */
     public function verify(array $data, string $signature): bool
     {
-        $data['secret'] = $this->secret;
-
-        return hash($this->algorithm, json_encode($data, JSON_THROW_ON_ERROR)) === $signature;
+        return hash_equals(
+            hash_hmac($this->algorithm, json_encode($data, JSON_THROW_ON_ERROR), $this->secret),
+            $signature
+        );
     }
 }

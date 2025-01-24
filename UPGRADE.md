@@ -58,11 +58,6 @@ The last possible solution is to eagerly load the entity with the file through t
 
 # Upgrade to 3.0
 
-## BC Break: psr/clock-implementation required
-
-It's up to you to choose the implementation of the PSR-20. You can use for instance the `symfony/psr-clock` or
-`lcobucci/clock` packages.
-
 ## BC Break: psr/event-dispatcher-implementation required
 
 It's up to you to choose the implementation of the PSR-14. You can freely use any of the available implementations

@@ -66,6 +66,15 @@ to the application how to handle such files. Example scenarios:
   with the aforementioned tag can be removed after some time threshold using the 
   [Lifecycle configuration](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html).
 
+There are some additional requirements that must be met to use direct upload:
+1. Import `@FilesBundle/Resources/config/routing/direct_upload.xml` in your routing and use routes it defines in
+   browser code to handle direct uploads,
+2. Optionally, if you want to use local direct uploads (not S3 or any other compatible)
+   - add `psr/clock` and some of its implementation to your `composer.json` file and register `Psr\Clock\ClockInterface`
+     as some of its implementations.
+   - import `@FilesBundle/Resources/config/routing/local_upload.xml` in your routing 
+   - configure `direct_upload.local_upload_path` bundle's config option to path prefix where the above routes where
+     imported,
 
 ## Url adapters
 

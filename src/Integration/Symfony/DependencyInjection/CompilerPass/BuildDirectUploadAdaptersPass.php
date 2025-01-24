@@ -20,6 +20,8 @@ use FSi\Component\Files\Integration\Symfony\DependencyInjection\Configuration as
 use FSi\Component\Files\Integration\Symfony\DependencyInjection\FilesExtension;
 use Oneup\FlysystemBundle\DependencyInjection\Configuration as FlySystemConfiguration;
 use Oneup\FlysystemBundle\DependencyInjection\OneupFlysystemExtension;
+use Psr\Clock\ClockInterface;
+use RuntimeException;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -27,6 +29,8 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 use function array_key_exists;
+use function class_exists;
+use function interface_exists;
 
 final class BuildDirectUploadAdaptersPass implements CompilerPassInterface
 {
@@ -64,6 +68,12 @@ final class BuildDirectUploadAdaptersPass implements CompilerPassInterface
                 $localUploadPath = $filesConfig['direct_upload']['local_upload_path'];
                 if (false === is_string($localUploadPath)) {
                     continue;
+                }
+                if (false === interface_exists(ClockInterface::class)) {
+                    throw new RuntimeException(
+                        'To use LocalAdapter you need to install "psr/clock" package and configure '
+                            . 'Psr\\Clock\\ClockInterface service with some implementation'
+                    );
                 }
                 $adapters[$filesystem['mount'] ?? $filesystemName] = (new Definition(LocalAdapter::class, [
                     '$localUploadPath' => $localUploadPath,
