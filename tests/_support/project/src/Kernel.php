@@ -45,6 +45,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpClient\Psr18Client;
 use Symfony\Component\HttpKernel;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -259,6 +260,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
         $container->register(PsrServerRequestResolver::class)->setAutowired(true)->setAutoconfigured(true);
         $container->register(NativeClock::class);
         $container->setAlias(ClockInterface::class, NativeClock::class);
+        $container->setAlias(FormFactoryInterface::class, 'form.factory')->setPublic(true);
 
         $container->register(FormTestType::class)
             ->setAutoconfigured(true)

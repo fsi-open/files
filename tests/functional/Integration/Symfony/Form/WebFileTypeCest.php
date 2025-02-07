@@ -13,13 +13,18 @@ namespace Tests\FSi\Component\Files\Integration\Symfony\Form;
 
 use Assert\Assertion;
 use DOMElement;
+use FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor;
+use FSi\Component\Files\Integration\Symfony\Form\WebFileType;
 use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Symfony\Component\DomCrawler\Field\FileFormField;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Tests\FSi\App\Entity\FileEntity;
 use Tests\FSi\FunctionalTester;
 
 use function codecept_data_dir;
+use function sprintf;
 
 final class WebFileTypeCest
 {
@@ -170,5 +175,132 @@ final class WebFileTypeCest
         );
 
         $I->submitForm('form', [], 'Submit');
+    }
+
+    public function testOptionsValidation(FunctionalTester $I): void
+    {
+        /** @var FormFactoryInterface $formFactory */
+        $formFactory = $I->grabService(FormFactoryInterface::class);
+
+        $I->expectThrowable(
+            new InvalidOptionsException(
+                sprintf(
+                    'An error has occurred resolving the options of the form "%s": '
+                        . 'Missing required option "filesystem_name" and no "temporary_filesystem" has been defined '
+                        . 'in FilesBundle\'s configuration',
+                    WebFileType::class
+                )
+            ),
+            static function () use ($formFactory): void {
+                $formFactory->create(WebFileType::class, null, [
+                    'direct_upload' => [
+                        'mode' => 'temporary',
+                    ]
+                ]);
+            }
+        );
+
+        $I->expectThrowable(
+            new InvalidOptionsException(
+                sprintf(
+                    'An error has occurred resolving the options of the form "%s": '
+                        . 'Missing required option "target_entity" when direct_upload.mode option is set to "entity"',
+                    WebFileType::class
+                )
+            ),
+            static function () use ($formFactory): void {
+                $formFactory->create(WebFileType::class, null, [
+                    'direct_upload' => [
+                        'mode' => 'entity',
+                    ]
+                ]);
+            }
+        );
+
+        $I->expectThrowable(
+            new InvalidOptionsException(
+                sprintf(
+                    'An error has occurred resolving the options of the form "%s": '
+                        . 'Missing required option "target_property" when direct_upload.mode option is set to "entity"',
+                    WebFileType::class
+                )
+            ),
+            static function () use ($formFactory): void {
+                $formFactory->create(WebFileType::class, null, [
+                    'direct_upload' => [
+                        'mode' => 'entity',
+                        'target_entity' => FileEntity::class,
+                    ]
+                ]);
+            }
+        );
+
+        $I->expectThrowable(
+            new InvalidOptionsException(
+                sprintf(
+                    'An error has occurred resolving the options of the form "%s": '
+                        . "'multiple' option is forbidden when direct upload mode is other than 'none'",
+                    WebFileType::class
+                )
+            ),
+            static function () use ($formFactory): void {
+                $formFactory->create(WebFileType::class, null, [
+                    'direct_upload' => [
+                        'mode' => 'temporary',
+                        'filesystem_name' => 'public',
+                        'filesystem_prefix' => 'temp',
+                    ],
+                    'multiple' => true,
+                ]);
+            }
+        );
+
+        $I->expectThrowable(
+            new InvalidOptionsException(
+                sprintf(
+                    'An error has occurred resolving the options of the form "%s": '
+                        . "'multiple' option is forbidden when 'removable' or 'image' option is set",
+                    WebFileType::class
+                )
+            ),
+            static function () use ($formFactory): void {
+                $formFactory->create(WebFileType::class, null, [
+                    'removable' => true,
+                    'multiple' => true,
+                ]);
+            }
+        );
+
+        $I->expectThrowable(
+            new InvalidOptionsException(
+                sprintf(
+                    'An error has occurred resolving the options of the form "%s": '
+                        . "'multiple' option is forbidden when 'removable' or 'image' option is set",
+                    WebFileType::class
+                )
+            ),
+            static function () use ($formFactory): void {
+                $formFactory->create(WebFileType::class, null, [
+                    'multiple' => true,
+                    'image' => true,
+                ]);
+            }
+        );
+
+        $form = $formFactory->create(WebFileType::class, null, [
+            'direct_upload' => [
+                'mode' => 'entity',
+                'target_entity' => FileEntity::class,
+                'target_property' => 'file',
+            ],
+        ]);
+
+        $directUploadTarget = $form->getConfig()->getOption('direct_upload')['target'];
+        $I->assertNotEmpty($directUploadTarget);
+        /** @var DirectUploadTargetEncryptor $targetEncryptor */
+        $targetEncryptor = $I->grabService(DirectUploadTargetEncryptor::class);
+        $filePropertyConfiguration = $targetEncryptor->decrypt($directUploadTarget);
+        $I->assertEquals(FileEntity::class, $filePropertyConfiguration->getEntityClass());
+        $I->assertEquals('file', $filePropertyConfiguration->getFilePropertyName());
     }
 }

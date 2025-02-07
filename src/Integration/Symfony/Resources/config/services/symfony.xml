@@ -35,7 +35,6 @@
             <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
             <argument type="service" id="FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
-            <argument type="string">%kernel.secret%</argument>
             <tag name="form.type" />
         </service>
 

@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Symfony\DependencyInjection;
 
 use Assert\Assertion;
-use FSi\Component\Files\DirectUpload\Controller\LocalUploadSigner;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use Symfony\Component\Config\FileLocator;

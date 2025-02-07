@@ -34,7 +34,6 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
-use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -260,6 +259,7 @@ final class WebFileType extends AbstractType
                 'target_property' => null,
                 'target' => null,
             ]);
+            $directUploadResolver->setRequired(['mode', 'path_field_options', 'filesystem_name', 'filesystem_prefix']);
             $directUploadResolver->setAllowedValues('mode', ['none', 'temporary', 'entity']);
             $directUploadResolver->setAllowedTypes('path_field_options', ['array']);
             $directUploadResolver->setAllowedTypes('filesystem_name', ['null', 'string']);
@@ -274,6 +274,17 @@ final class WebFileType extends AbstractType
 
                 if ('entity' !== $options['mode']) {
                     return null;
+                }
+
+                if (null === $options['target_entity']) {
+                    throw new InvalidOptionsException(
+                        'Missing required option "target_entity" when direct_upload.mode option is set to "entity"'
+                    );
+                }
+                if (null === $options['target_property']) {
+                    throw new InvalidOptionsException(
+                        'Missing required option "target_property" when direct_upload.mode option is set to "entity"'
+                    );
                 }
 
                 $filePropertyConfiguration = $this->filePropertyConfigurationResolver->resolveFileProperty(
@@ -380,7 +391,7 @@ final class WebFileType extends AbstractType
                         );
                     }
                 } elseif ('temporary' === $value['mode'] && null === $value['filesystem_name']) {
-                    throw new MissingOptionsException(
+                    throw new InvalidOptionsException(
                         'Missing required option "filesystem_name" and no "temporary_filesystem" has been defined '
                             . 'in FilesBundle\'s configuration'
                     );
