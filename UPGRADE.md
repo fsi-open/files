@@ -72,6 +72,7 @@ need to implement the new methods:
     public function move(WebFile $source, string $fileSystemName, string $path): WebFile;
     public function fileSize(WebFile $file): int;
     public function mimeType(WebFile $file): string;
+    public function lastModified(WebFile $file): int;
 ```
 
 ## BC Break: `FileFactory` interface has new methods

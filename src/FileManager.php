@@ -26,6 +26,7 @@ interface FileManager
     public function exists(WebFile $file): bool;
     public function fileSize(WebFile $file): int;
     public function mimeType(WebFile $file): string;
+    public function lastModified(WebFile $file): int;
     public function filename(WebFile $file): string;
     public function contents(WebFile $file): string;
     public function remove(WebFile $file): void;

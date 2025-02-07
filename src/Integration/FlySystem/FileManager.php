@@ -83,6 +83,11 @@ final class FileManager implements Files\FileManager
         return $this->mountManager->mimeType($this->createPrefixedFilePath($file));
     }
 
+    public function lastModified(WebFile $file): int
+    {
+        return $this->mountManager->lastModified($this->createPrefixedFilePath($file));
+    }
+
     public function filename(Files\WebFile $file): string
     {
         return basename($file->getPath());
