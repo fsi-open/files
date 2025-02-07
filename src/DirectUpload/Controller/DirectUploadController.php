@@ -35,7 +35,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 
 use function array_map;
-use function array_merge;
 use function json_encode;
 
 use const JSON_HEX_AMP;

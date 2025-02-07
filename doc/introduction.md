@@ -72,6 +72,10 @@ There are some additional requirements that must be met to use direct upload:
 2. Optionally, if you want to use local direct uploads (not S3 or any other compatible)
    - add `psr/clock` and some of its implementation to your `composer.json` file and register `Psr\Clock\ClockInterface`
      as some of its implementations.
+   - add `symfony/psr-http-message-bridge` to your `composer.json` file and register required services in your
+     service container: `Symfony\Bridge\PsrHttpMessage\EventListener\PsrResponseListener`,
+     `Symfony\Bridge\PsrHttpMessage\ArgumentValueResolver\PsrServerRequestResolver`,
+     `Psr\Http\Message\ResponseFactoryInterface`, `Psr\Http\Message\StreamFactoryInterface`
    - import `@FilesBundle/Resources/config/routing/local_upload.xml` in your routing 
    - configure `direct_upload.local_upload_path` bundle's config option to path prefix where the above routes where
      imported,
