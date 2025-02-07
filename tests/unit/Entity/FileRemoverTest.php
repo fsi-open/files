@@ -35,10 +35,22 @@ final class FileRemoverTest extends TestCase
         );
         $entity = new FileEntity();
         $file = new WebFile('fs', 'path-prefix/directory/subdirectory/file');
+        $tempFile = new WebFile('fs', 'temp/01/02/file');
 
         $fileManager = $this->createMock(FileManager::class);
-        $fileManager->expects($this->once())->method('remove')->with($file);
         $matcher = $this->exactly(2);
+        $fileManager->expects($matcher)
+            ->method('remove')
+            ->with(self::callback(
+                fn(WebFile $fileToRemove): bool => match ($matcher->numberOfInvocations()) {
+                    1 => $fileToRemove->getFileSystemName() === $file->getFileSystemName()
+                        && $fileToRemove->getPath() === $file->getPath(),
+                    2 => $fileToRemove->getFileSystemName() === $tempFile->getFileSystemName()
+                        && $fileToRemove->getPath() === $tempFile->getPath(),
+                    default => $this->fail('Unexpected invocation'),
+                }
+            ));
+        $matcher = $this->exactly(6);
         $fileManager->expects($matcher)
             ->method('removeDirectoryIfEmpty')
             ->willReturnCallback(function (string $fileSystemName, string $path) use ($matcher) {
@@ -46,12 +58,16 @@ final class FileRemoverTest extends TestCase
                 match ($matcher->numberOfInvocations()) {
                     1 => $this->assertEquals('path-prefix/directory/subdirectory', $path),
                     2 => $this->assertEquals('path-prefix/directory', $path),
+                    3 => $this->assertEquals('temp/01/02', $path),
+                    4 => $this->assertEquals('temp/01', $path),
+                    5 => $this->assertEquals('temp', $path),
+                    6 => $this->assertEquals('.', $path),
                     default => $this->fail('Unexpected invocation'),
                 };
 
                 return match ($matcher->numberOfInvocations()) {
-                    1 => true,
-                    2 => false,
+                    1, 3, 4, 5 => true,
+                    2, 6 => false,
                     default => $this->fail('Unexpected invocation'),
                 };
             })
@@ -76,6 +92,7 @@ final class FileRemoverTest extends TestCase
         );
 
         $remover->add($propertyConfiguration, $entity, $file);
+        $remover->add(null, $entity, $tempFile);
 
         $remover->flush();
     }

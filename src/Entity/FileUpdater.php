@@ -160,7 +160,8 @@ final class FileUpdater
         if (true === $file instanceof DirectlyUploadedWebFile) {
             $newFile = $file;
         } elseif (true === $file instanceof TemporaryWebFile) {
-            $newFile = $this->moveTemporaryFileToConfigurationFilesystem($file, $configuration);
+            $newFile = $this->copyFileToConfigurationFilesystem($file, $configuration);
+            $this->fileRemover->add(null, $entity, $file);
         } elseif (true === $file instanceof UploadedWebFile) {
             $newFile = $this->writeUploadedFileToTargetFilesystem($file, $configuration);
         } else {
@@ -178,17 +179,6 @@ final class FileUpdater
         }
         $configuration->getFilePropertyReflection()->setValue($entity, $newFile);
         $this->filesUsed[] = ['configuration' => $configuration, 'entity' => $entity, 'file' => $newFile];
-    }
-
-    private function moveTemporaryFileToConfigurationFilesystem(
-        TemporaryWebFile $file,
-        FilePropertyConfiguration $configuration
-    ): WebFile {
-        return $this->fileManager->move(
-            $file,
-            $configuration->getFileSystemName(),
-            FilePathGenerator::generate(basename($file->getPath()), $configuration->getPathPrefix())
-        );
     }
 
     private function writeUploadedFileToTargetFilesystem(

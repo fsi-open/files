@@ -370,7 +370,7 @@ final class FileUpdaterTest extends Unit
         $entity->setFile($tempFile);
 
         $this->fileManager->expects($this->once())
-            ->method('move')
+            ->method('copy')
             ->with($tempFile, 'fs', $this->matchesRegularExpression("#prefix/$this->filePathRegex/some-new-path.dat#i"))
             ->willReturnCallback(
                 function (WebFile $sourceFile, string $fileSystemName, string $path): WebFile {
@@ -382,28 +382,40 @@ final class FileUpdaterTest extends Unit
                 }
             );
 
-        $this->eventDispatcher->expects(self::exactly(2))
+        $matcher = $this->exactly(2);
+        $this->eventDispatcher->expects($matcher)
             ->method('dispatch')
             ->with(self::callback(
                 fn (WebFilePersisted|WebFileRemoved $event) =>
-                    (
-                        true === $event instanceof WebFileRemoved
-                        && $event->getConfiguration() === $this->configuration
-                        && $event->getEntity() === $entity
-                        && $event->getFile()->getFileSystemName() === $oldFile->getFileSystemName()
-                        && $event->getFile()->getPath() === $oldFile->getPath()
-                    ) || (
-                        true === $event instanceof WebFilePersisted
-                        && $event->getConfiguration() === $this->configuration
-                        && $event->getEntity() === $entity
-                        && $event->getFile() !== $tempFile
-                        && $event->getFile()->getFileSystemName() === $oldFile->getFileSystemName()
-                        && $event->getFile()->getPath() !== $tempFile->getPath()
-                    )
+                    match ($matcher->numberOfInvocations()) {
+                        1 => true === $event instanceof WebFilePersisted
+                            && $event->getConfiguration() === $this->configuration
+                            && $event->getEntity() === $entity
+                            && $event->getFile() !== $tempFile
+                            && $event->getFile()->getFileSystemName() === $oldFile->getFileSystemName()
+                            && $event->getFile()->getPath() !== $tempFile->getPath(),
+                        2 => true === $event instanceof WebFileRemoved
+                            && $event->getConfiguration() === $this->configuration
+                            && $event->getEntity() === $entity
+                            && $event->getFile()->getFileSystemName() === $oldFile->getFileSystemName()
+                            && $event->getFile()->getPath() === $oldFile->getPath(),
+                        default => $this->fail('Unexpected invocation'),
+                    }
             ));
 
         $this->fileManager->expects(self::once())->method('exists')->willReturn(true);
-        $this->fileManager->expects($this->once())->method('remove')->with($oldFile);
+        $matcher = $this->exactly(2);
+        $this->fileManager->expects($matcher)
+            ->method('remove')
+            ->with(self::callback(
+                fn(WebFile $file): bool => match ($matcher->numberOfInvocations()) {
+                    1 => $file->getFileSystemName() === $oldFile->getFileSystemName()
+                        && $file->getPath() === $oldFile->getPath(),
+                    2 => $file->getFileSystemName() === $tempFile->getFileSystemName()
+                        && $file->getPath() === $tempFile->getPath(),
+                    default => $this->fail('Unexpected invocation'),
+                }
+            ));
         $this->fileUpdater->updateFiles($entity);
         $this->fileUpdater->flush();
 
