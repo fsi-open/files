@@ -12,10 +12,15 @@ declare(strict_types=1);
 namespace Tests\FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
 use Codeception\Test\Unit;
+use FSi\Component\Files\FileManager;
+use FSi\Component\Files\Integration\FlySystem\DirectlyUploadedWebFile;
+use FSi\Component\Files\Integration\FlySystem\TemporaryWebFile;
 use FSi\Component\Files\Integration\FlySystem\UploadedWebFile;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImage;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImageValidator;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFileValidator;
+use FSi\Component\Files\WebFile;
+use PHPUnit\Framework\MockObject\MockObject;
 use Tests\FSi\Helper\ConstraintViolationAssertion;
 use GuzzleHttp\Psr7\Stream;
 use Psr\Http\Message\StreamInterface;
@@ -28,9 +33,13 @@ use Symfony\Component\Validator\Exception\ConstraintDefinitionException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+use function basename;
 use function codecept_data_dir;
 use function count;
+use function file_get_contents;
+use function filesize;
 use function fopen;
+use function mime_content_type;
 
 final class UploadedImageValidatorTest extends Unit
 {
@@ -38,6 +47,11 @@ final class UploadedImageValidatorTest extends Unit
      * @var StreamInterface
      */
     private $stream;
+
+    /**
+     * @var FileManager|MockObject
+     */
+    private $fileManager;
 
     /**
      * @var UploadedWebFileValidator
@@ -72,30 +86,46 @@ final class UploadedImageValidatorTest extends Unit
     {
         $this->validator->initialize($this->createContext());
         $this->validator->validate($this->createUploadedFile(), new UploadedImage());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), new UploadedImage());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), new UploadedImage());
         $this->assertNoViolation();
     }
 
     public function testValidSize(): void
     {
         $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'minWidth' => 610,
-            'maxWidth' => 611,
-            'minHeight' => 406,
-            'maxHeight' => 407
-        ]));
+        $constraint = new UploadedImage(['minWidth' => 610, 'maxWidth' => 611, 'minHeight' => 406, 'maxHeight' => 407]);
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
 
         $this->assertNoViolation();
     }
 
     public function testWidthTooSmall(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'minWidth' => 612,
-            'minWidthMessage' => 'myMessage'
-        ]));
+        $constraint = new UploadedImage(['minWidth' => 612, 'minWidthMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', '611')
+            ->setParameter('{{ min_width }}', '612')
+            ->setCode(UploadedImage::TOO_NARROW_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', '611')
+            ->setParameter('{{ min_width }}', '612')
+            ->setCode(UploadedImage::TOO_NARROW_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ width }}', '611')
             ->setParameter('{{ min_width }}', '612')
@@ -106,12 +136,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testWidthTooBig(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'maxWidth' => 610,
-            'maxWidthMessage' => 'myMessage'
-        ]));
+        $constraint = new UploadedImage(['maxWidth' => 610, 'maxWidthMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', '611')
+            ->setParameter('{{ max_width }}', '610')
+            ->setCode(UploadedImage::TOO_WIDE_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', '611')
+            ->setParameter('{{ max_width }}', '610')
+            ->setCode(UploadedImage::TOO_WIDE_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ width }}', '611')
             ->setParameter('{{ max_width }}', '610')
@@ -122,12 +168,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testHeightTooSmall(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'minHeight' => 408,
-            'minHeightMessage' => 'myMessage'
-        ]));
+        $constraint = new UploadedImage(['minHeight' => 408, 'minHeightMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ min_height }}', '408')
+            ->setCode(UploadedImage::TOO_LOW_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ min_height }}', '408')
+            ->setCode(UploadedImage::TOO_LOW_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ height }}', '407')
             ->setParameter('{{ min_height }}', '408')
@@ -138,12 +200,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testHeightTooBig(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'maxHeight' => 406,
-            'maxHeightMessage' => 'myMessage'
-        ]));
+        $constraint = new UploadedImage(['maxHeight' => 406, 'maxHeightMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ max_height }}', '406')
+            ->setCode(UploadedImage::TOO_HIGH_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ max_height }}', '406')
+            ->setCode(UploadedImage::TOO_HIGH_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ height }}', '407')
             ->setParameter('{{ max_height }}', '406')
@@ -154,12 +232,30 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testPixelsTooFew(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'minPixels' => 248678,
-            'minPixelsMessage' => 'myMessage',
-        ]));
+        $constraint = new UploadedImage(['minPixels' => 248678, 'minPixelsMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ pixels }}', '248677')
+            ->setParameter('{{ min_pixels }}', '248678')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ width }}', '611')
+            ->setCode(UploadedImage::TOO_FEW_PIXEL_ERROR)
+            ->assertRaised();
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ pixels }}', '248677')
+            ->setParameter('{{ min_pixels }}', '248678')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ width }}', '611')
+            ->setCode(UploadedImage::TOO_FEW_PIXEL_ERROR)
+            ->assertRaised();
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ pixels }}', '248677')
             ->setParameter('{{ min_pixels }}', '248678')
@@ -171,12 +267,30 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testPixelsTooMany(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'maxPixels' => 248676,
-            'maxPixelsMessage' => 'myMessage',
-        ]));
+        $constraint = new UploadedImage(['maxPixels' => 248676, 'maxPixelsMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ pixels }}', '248677')
+            ->setParameter('{{ max_pixels }}', '248676')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ width }}', '611')
+            ->setCode(UploadedImage::TOO_MANY_PIXEL_ERROR)
+            ->assertRaised();
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ pixels }}', '248677')
+            ->setParameter('{{ max_pixels }}', '248676')
+            ->setParameter('{{ height }}', '407')
+            ->setParameter('{{ width }}', '611')
+            ->setCode(UploadedImage::TOO_MANY_PIXEL_ERROR)
+            ->assertRaised();
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ pixels }}', '248677')
             ->setParameter('{{ max_pixels }}', '248676')
@@ -230,12 +344,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testRatioTooSmall(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'minRatio' => 2,
-            'minRatioMessage' => 'myMessage',
-        ]));
+        $constraint = new UploadedImage(['minRatio' => 2, 'minRatioMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ ratio }}', 1.5)
+            ->setParameter('{{ min_ratio }}', 2)
+            ->setCode(UploadedImage::RATIO_TOO_SMALL_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ ratio }}', 1.5)
+            ->setParameter('{{ min_ratio }}', 2)
+            ->setCode(UploadedImage::RATIO_TOO_SMALL_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ ratio }}', 1.5)
             ->setParameter('{{ min_ratio }}', 2)
@@ -246,12 +376,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testRatioTooBig(): void
     {
-        $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'maxRatio' => 1,
-            'maxRatioMessage' => 'myMessage',
-        ]));
+        $constraint = new UploadedImage(['maxRatio' => 1, 'maxRatioMessage' => 'myMessage']);
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ ratio }}', 1.5)
+            ->setParameter('{{ max_ratio }}', 1)
+            ->setCode(UploadedImage::RATIO_TOO_BIG_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ ratio }}', 1.5)
+            ->setParameter('{{ max_ratio }}', 1)
+            ->setCode(UploadedImage::RATIO_TOO_BIG_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ ratio }}', 1.5)
             ->setParameter('{{ max_ratio }}', 1)
@@ -262,11 +408,12 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testMaxRatioUsesTwoDecimalsOnly(): void
     {
+        $constraint = new UploadedImage(['maxRatio' => 1.51, 'maxRatioMessage' => 'myMessage']);
+
         $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'maxRatio' => 1.51,
-            'maxRatioMessage' => 'myMessage',
-        ]));
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
 
         $this->assertNoViolation();
     }
@@ -287,11 +434,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testLandscapeNotAllowed(): void
     {
+        $constraint = new UploadedImage(['allowLandscape' => false, 'allowLandscapeMessage' => 'myMessage']);
+
         $this->validator->initialize($this->createContext());
-        $this->validator->validate($this->createUploadedFile(), new UploadedImage([
-            'allowLandscape' => false,
-            'allowLandscapeMessage' => 'myMessage',
-        ]));
+        $this->validator->validate($this->createUploadedFile(), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', 611)
+            ->setParameter('{{ height }}', 407)
+            ->setCode(UploadedImage::LANDSCAPE_NOT_ALLOWED_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', 611)
+            ->setParameter('{{ height }}', 407)
+            ->setCode(UploadedImage::LANDSCAPE_NOT_ALLOWED_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ width }}', 611)
             ->setParameter('{{ height }}', 407)
@@ -302,14 +466,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testSquareNotAllowed(): void
     {
-        $file = $this->createUploadedFileFromName('test_img_square.jpeg');
+        $constraint = new UploadedImage(['allowSquare' => false, 'allowSquareMessage' => 'myMessage']);
 
         $this->validator->initialize($this->createContext());
-        $this->validator->validate($file, new UploadedImage([
-            'allowSquare' => false,
-            'allowSquareMessage' => 'myMessage',
-        ]));
+        $this->validator->validate($this->createUploadedFileFromName('test_img_square.jpeg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', 100)
+            ->setParameter('{{ height }}', 100)
+            ->setCode(UploadedImage::SQUARE_NOT_ALLOWED_ERROR)
+            ->assertRaised()
+        ;
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test_img_square.jpeg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', 100)
+            ->setParameter('{{ height }}', 100)
+            ->setCode(UploadedImage::SQUARE_NOT_ALLOWED_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test_img_square.jpeg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ width }}', 100)
             ->setParameter('{{ height }}', 100)
@@ -320,14 +498,28 @@ final class UploadedImageValidatorTest extends Unit
 
     public function testPortraitNotAllowed(): void
     {
-        $file = $this->createUploadedFileFromName('test_img_portrait.jpg');
+        $constraint = new UploadedImage(['allowPortrait' => false, 'allowPortraitMessage' => 'myMessage']);
 
         $this->validator->initialize($this->createContext());
-        $this->validator->validate($file, new UploadedImage([
-            'allowPortrait' => false,
-            'allowPortraitMessage' => 'myMessage',
-        ]));
+        $this->validator->validate($this->createUploadedFileFromName('test_img_portrait.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', 55)
+            ->setParameter('{{ height }}', 173)
+            ->setCode(UploadedImage::PORTRAIT_NOT_ALLOWED_ERROR)
+            ->assertRaised()
+        ;
 
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createTemporaryWebFileFromName('test_img_portrait.jpg'), $constraint);
+        $this->buildViolation('myMessage')
+            ->setParameter('{{ width }}', 55)
+            ->setParameter('{{ height }}', 173)
+            ->setCode(UploadedImage::PORTRAIT_NOT_ALLOWED_ERROR)
+            ->assertRaised()
+        ;
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($this->createDirectlyUploadedWebFileFromName('test_img_portrait.jpg'), $constraint);
         $this->buildViolation('myMessage')
             ->setParameter('{{ width }}', 55)
             ->setParameter('{{ height }}', 173)
@@ -346,7 +538,17 @@ final class UploadedImageValidatorTest extends Unit
         }
 
         $this->stream = new Stream($fileHandler);
-        $this->validator = new UploadedImageValidator();
+        $this->fileManager = $this->createMock(FileManager::class);
+        $this->fileManager->method('fileSize')->willReturnCallback(function (WebFile $file): int {
+            return filesize(codecept_data_dir(basename($file->getPath()))) ?: throw new RuntimeException();
+        });
+        $this->fileManager->method('mimeType')->willReturnCallback(function (WebFile $file): string {
+            return mime_content_type(codecept_data_dir(basename($file->getPath()))) ?: throw new RuntimeException();
+        });
+        $this->fileManager->method('contents')->willReturnCallback(function (WebFile $file): string {
+            return file_get_contents(codecept_data_dir(basename($file->getPath()))) ?: throw new RuntimeException();
+        });
+        $this->validator = new UploadedImageValidator($this->fileManager);
     }
 
     protected function tearDown(): void
@@ -393,6 +595,16 @@ final class UploadedImageValidatorTest extends Unit
             $size,
             UPLOAD_ERR_OK
         );
+    }
+
+    private function createTemporaryWebFileFromName(string $name): TemporaryWebFile
+    {
+        return new TemporaryWebFile('fs', $name);
+    }
+
+    private function createDirectlyUploadedWebFileFromName(string $name): DirectlyUploadedWebFile
+    {
+        return new DirectlyUploadedWebFile('fs', $name);
     }
 
     private function buildViolation(string $message): ConstraintViolationAssertion

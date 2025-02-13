@@ -30,14 +30,44 @@
         <service id="FSi\Component\Files\Integration\Symfony\Form\WebFileType">
             <argument type="service" id="FSi\Component\Files\FileUrlResolver" />
             <argument type="service" id="FSi\Component\Files\FileManager" />
+            <argument type="service" id="FSi\Component\Files\Upload\FileFactory" />
             <argument type="service" id="FSi\Component\Files\Integration\Symfony\Form\Transformer\MultipleFileTransformerFactory" />
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+            <argument type="service" id="FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor" />
             <argument type="tagged" tag="fsi_files.form_file_transformer" />
             <tag name="form.type" />
+        </service>
+
+        <!-- Validators -->
+        <service id="FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedWebFileValidator">
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <tag name="validator.constraint_validator" />
+        </service>
+
+        <service id="FSi\Component\Files\Integration\Symfony\Validator\Constraint\UploadedImageValidator">
+            <argument type="service" id="FSi\Component\Files\FileManager" />
+            <tag name="validator.constraint_validator" />
         </service>
 
         <!-- Url resolver -->
         <service id="FSi\Component\Files\FileUrlResolver">
             <argument key="$adapters" type="collection" />
+        </service>
+
+        <!-- Direct upload -->
+        <service id="FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor">
+            <argument type="service" id="FSi\Component\Files\FilePropertyConfigurationResolver" />
+            <argument type="string">%kernel.secret%</argument>
+        </service>
+        <service id="FSi\Component\Files\DirectUpload\AdapterRegistry">
+            <argument key="$adapters" type="collection" />
+        </service>
+        <service id="FSi\Component\Files\DirectUpload\Controller\DirectUploadController" autowire="true" public="true" />
+
+        <service id="FSi\Component\Files\Upload\PsrFilesHandler" autowire="true" />
+        <service id="FSi\Component\Files\DirectUpload\Controller\LocalUploadController" autowire="true" public="true" />
+        <service id="FSi\Component\Files\DirectUpload\Controller\LocalUploadSigner" autowire="true" public="true">
+            <argument key="$secret" type="string">%kernel.secret%</argument>
         </service>
 
     </services>

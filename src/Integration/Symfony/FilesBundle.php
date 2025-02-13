@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Integration\Symfony;
 
+use FSi\Component\Files\Integration\Symfony\DependencyInjection\CompilerPass\BuildDirectUploadAdaptersPass;
+use FSi\Component\Files\Integration\Symfony\DependencyInjection\CompilerPass\TemporaryFilesystemPass;
 use FSi\Component\Files\Integration\Symfony\DependencyInjection\CompilerPass\UrlAdapterPass;
 use FSi\Component\Files\Integration\Symfony\DependencyInjection\FilesExtension;
 use Symfony\Component\Config\FileLocator;
@@ -26,8 +28,10 @@ final class FilesBundle extends Bundle
     public function build(ContainerBuilder $container): void
     {
         parent::build($container);
-        $container->addCompilerPass(new UrlAdapterPass());
         $this->loadExternalBundlesServices($container);
+        $container->addCompilerPass(new UrlAdapterPass());
+        $container->addCompilerPass(new TemporaryFilesystemPass());
+        $container->addCompilerPass(new BuildDirectUploadAdaptersPass());
     }
 
     private function loadExternalBundlesServices(ContainerBuilder $container): void

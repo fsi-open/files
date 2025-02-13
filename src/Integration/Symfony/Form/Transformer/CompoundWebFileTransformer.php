@@ -18,9 +18,9 @@ use function array_key_exists;
 use function is_array;
 
 /**
- * @implements DataTransformerInterface<WebFile|null, array<string, WebFile|null>>
+ * @implements DataTransformerInterface<WebFile|null, array<string, WebFile|string|null>>
  */
-final class RemovableFileTransformer implements DataTransformerInterface
+final class CompoundWebFileTransformer implements DataTransformerInterface
 {
     private string $fileField;
 
@@ -40,10 +40,17 @@ final class RemovableFileTransformer implements DataTransformerInterface
 
     public function reverseTransform($value)
     {
-        if (false === is_array($value) || false === array_key_exists($this->fileField, $value)) {
+        if (false === is_array($value)) {
             return null;
         }
 
-        return $value[$this->fileField];
+        if (
+            true === array_key_exists($this->fileField, $value)
+            && true === $value[$this->fileField] instanceof WebFile
+        ) {
+            return $value[$this->fileField];
+        }
+
+        return null;
     }
 }

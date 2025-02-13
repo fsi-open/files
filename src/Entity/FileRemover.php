@@ -11,14 +11,17 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Entity;
 
+use Assert\Assertion;
+use FSi\Component\Files\Entity\Event\WebFileRemoved;
 use FSi\Component\Files\FileManager;
 use FSi\Component\Files\FilePropertyConfiguration;
 use FSi\Component\Files\FilePropertyConfigurationResolver;
 use FSi\Component\Files\WebFile;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
-use function array_key_exists;
 use function array_walk;
 use function dirname;
+use function str_starts_with;
 
 /**
  * @internal
@@ -29,19 +32,27 @@ final class FileRemover
     private FileManager $fileManager;
     private FileLoader $fileLoader;
     /**
-     * @var array<string, array<WebFile>>
+     * @var list<array{configuration: FilePropertyConfiguration|null, entity: object, file: WebFile}>
      */
     private array $filesToRemove;
+    /**
+     * @var list<array{fileSystemName: string, pathPrefix: string|null, path: string}>
+     */
+    private array $directoriesToRemove;
+    private ?EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         FilePropertyConfigurationResolver $configurationResolver,
         FileManager $fileManager,
-        FileLoader $fileLoader
+        FileLoader $fileLoader,
+        ?EventDispatcherInterface $eventDispatcher = null
     ) {
         $this->configurationResolver = $configurationResolver;
         $this->fileManager = $fileManager;
         $this->fileLoader = $fileLoader;
+        $this->eventDispatcher = $eventDispatcher;
         $this->filesToRemove = [];
+        $this->directoriesToRemove = [];
     }
 
     public function clearEntityFiles(object $entity): void
@@ -57,60 +68,84 @@ final class FileRemover
                 }
 
                 $this->fileLoader->checkFileExistenceIfEnabled($configuration, $file);
-                $this->add($configuration->getPathPrefix(), $file);
+                $this->add($configuration, $entity, $file);
             },
             $entity
         );
     }
 
-    public function add(string $pathPrefix, WebFile $file): void
+    public function add(?FilePropertyConfiguration $configuration, object $entity, WebFile $file): void
     {
-        if (false === array_key_exists($pathPrefix, $this->filesToRemove)) {
-            $this->filesToRemove[$pathPrefix] = [];
+        if (null !== $configuration) {
+            Assertion::same($configuration->getFileSystemName(), $file->getFileSystemName());
+            Assertion::isInstanceOf($entity, $configuration->getEntityClass());
         }
 
-        $this->filesToRemove[$pathPrefix][] = $file;
+        $this->filesToRemove[] = ['configuration' => $configuration, 'entity' => $entity, 'file' => $file];
+        $this->addEmptyDirectory(
+            $file->getFileSystemName(),
+            $configuration?->getPathPrefix(),
+            dirname($file->getPath())
+        );
+    }
+
+    public function addEmptyDirectory(string $fileSystemName, ?string $pathPrefix, string $path): void
+    {
+        if (null !== $pathPrefix && ($path === $pathPrefix || false === str_starts_with($path, $pathPrefix))) {
+            return;
+        }
+
+        $this->directoriesToRemove[] = [
+            'fileSystemName' => $fileSystemName,
+            'pathPrefix' => $pathPrefix,
+            'path' => $path
+        ];
     }
 
     public function flush(): void
     {
         // Remove files
-        array_walk($this->filesToRemove, function (array $files): void {
-            array_walk($files, function (WebFile $file): void {
-                $this->fileManager->remove($file);
-            });
+        array_walk($this->filesToRemove, function (array $fileEntry): void {
+            $this->fileManager->remove($fileEntry['file']);
         });
 
-        // Clear empty directories left after file removal
-        array_walk($this->filesToRemove, function (array $files, string $pathPrefix): void {
-            array_walk(
-                $files,
-                function (WebFile $file, $key, string $pathPrefix): void {
-                    $this->removeParentDirectoryIfEmpty(
-                        $file->getFileSystemName(),
-                        $pathPrefix,
-                        $file->getPath()
-                    );
-                },
-                $pathPrefix
+        // Clear empty directories
+        array_walk($this->directoriesToRemove, function (array $directoryEntry): void {
+            $this->removeDirectoryIfEmpty(
+                $directoryEntry['fileSystemName'],
+                $directoryEntry['pathPrefix'],
+                $directoryEntry['path']
             );
         });
 
+        if (null !== $this->eventDispatcher) {
+            // notify about removed files
+            array_walk($this->filesToRemove, function (array $file): void {
+                if (null === $file['configuration']) {
+                    return;
+                }
+
+                $this->eventDispatcher?->dispatch(
+                    new WebFileRemoved($file['configuration'], $file['entity'], $file['file'])
+                );
+            });
+        }
+
         $this->filesToRemove = [];
+        $this->directoriesToRemove = [];
     }
 
-    private function removeParentDirectoryIfEmpty(
+    private function removeDirectoryIfEmpty(
         string $fileSystemName,
-        string $pathPrefix,
+        ?string $pathPrefix,
         string $path
     ): void {
-        $parentDirectory = dirname($path);
-        if ($pathPrefix === $parentDirectory) {
+        if (null !== $pathPrefix && $pathPrefix === $path) {
             return;
         }
 
-        if (true === $this->fileManager->removeDirectoryIfEmpty($fileSystemName, $parentDirectory)) {
-            $this->removeParentDirectoryIfEmpty($fileSystemName, $pathPrefix, $parentDirectory);
+        if (true === $this->fileManager->removeDirectoryIfEmpty($fileSystemName, $path)) {
+            $this->removeDirectoryIfEmpty($fileSystemName, $pathPrefix, dirname($path));
         }
     }
 }

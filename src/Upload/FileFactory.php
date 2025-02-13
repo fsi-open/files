@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace FSi\Component\Files\Upload;
 
+use FSi\Component\Files\DirectlyUploadedWebFile;
+use FSi\Component\Files\TemporaryWebFile;
 use FSi\Component\Files\UploadedWebFile;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
@@ -26,4 +28,6 @@ interface FileFactory
         int $size,
         ?int $error
     ): UploadedWebFile;
+    public function createTemporary(string $fileSystemName, string $path): TemporaryWebFile;
+    public function createDirectlyUploaded(string $fileSystemName, string $path): DirectlyUploadedWebFile;
 }

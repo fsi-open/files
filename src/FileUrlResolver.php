@@ -16,6 +16,7 @@ use Psr\Http\Message\UriInterface;
 use RuntimeException;
 
 use function array_key_exists;
+use function get_class;
 use function sprintf;
 
 final class FileUrlResolver
@@ -44,6 +45,16 @@ final class FileUrlResolver
                 get_class($file),
                 $fileSystemName
             ));
+        }
+
+        return $this->adapters[$fileSystemName]->url($file);
+    }
+
+    public function tryResolve(WebFile $file): ?UriInterface
+    {
+        $fileSystemName = $file->getFileSystemName();
+        if (false === array_key_exists($fileSystemName, $this->adapters)) {
+            return null;
         }
 
         return $this->adapters[$fileSystemName]->url($file);

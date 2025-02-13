@@ -15,22 +15,5 @@ use FSi\Component\Files;
 
 final class WebFile implements Files\WebFile
 {
-    private string $fileSystemName;
-    private string $path;
-
-    public function __construct(string $fileSystemName, string $path)
-    {
-        $this->fileSystemName = $fileSystemName;
-        $this->path = $path;
-    }
-
-    public function getFileSystemName(): string
-    {
-        return $this->fileSystemName;
-    }
-
-    public function getPath(): string
-    {
-        return $this->path;
-    }
+    use WebFileImplementation;
 }

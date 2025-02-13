@@ -14,11 +14,11 @@ namespace FSi\Component\Files\Integration\FlySystem;
 use Assert\Assertion;
 use FSi\Component\Files;
 use FSi\Component\Files\Integration\FlySystem;
+use FSi\Component\Files\WebFile;
 use League\Flysystem\MountManager;
 use Psr\Http\Message\StreamInterface;
 
 use function basename;
-use function count;
 use function in_array;
 
 final class FileManager implements Files\FileManager
@@ -32,13 +32,14 @@ final class FileManager implements Files\FileManager
         $this->mountManager = $mountManager;
     }
 
-    public function copy(
-        Files\WebFile $sourceFile,
-        string $targetFileSystemName,
-        string $targetPath
-    ): Files\WebFile {
-        $this->writeStream($targetFileSystemName, $targetPath, $this->readStream($sourceFile));
-        return $this->load($targetFileSystemName, $targetPath);
+    public function copy(Files\WebFile $source, string $fileSystemName, string $path): Files\WebFile
+    {
+        $this->mountManager->copy(
+            $this->createPrefixedFilePath($source),
+            $this->prefixPathWithFileSystem($fileSystemName, $path)
+        );
+
+        return $this->load($fileSystemName, $path);
     }
 
     public function copyFromStream(
@@ -52,6 +53,16 @@ final class FileManager implements Files\FileManager
         return $this->load($targetFileSystemName, $targetPath);
     }
 
+    public function move(Files\WebFile $source, string $fileSystemName, string $path): Files\WebFile
+    {
+        $this->mountManager->move(
+            $this->createPrefixedFilePath($source),
+            $this->prefixPathWithFileSystem($fileSystemName, $path)
+        );
+
+        return $this->load($fileSystemName, $path);
+    }
+
     public function load(string $fileSystemName, string $path): Files\WebFile
     {
         return new FlySystem\WebFile($fileSystemName, $path);
@@ -60,6 +71,21 @@ final class FileManager implements Files\FileManager
     public function exists(Files\WebFile $file): bool
     {
         return $this->mountManager->fileExists($this->createPrefixedFilePath($file));
+    }
+
+    public function fileSize(WebFile $file): int
+    {
+        return $this->mountManager->fileSize($this->createPrefixedFilePath($file));
+    }
+
+    public function mimeType(WebFile $file): string
+    {
+        return $this->mountManager->mimeType($this->createPrefixedFilePath($file));
+    }
+
+    public function lastModified(WebFile $file): int
+    {
+        return $this->mountManager->lastModified($this->createPrefixedFilePath($file));
     }
 
     public function filename(Files\WebFile $file): string
@@ -90,15 +116,6 @@ final class FileManager implements Files\FileManager
 
         $this->mountManager->deleteDirectory($prefixedPath);
         return true;
-    }
-
-    /**
-     * @param Files\WebFile $file
-     * @return resource
-     */
-    private function readStream(Files\WebFile $file)
-    {
-        return $this->mountManager->readStream($this->createPrefixedFilePath($file));
     }
 
     /**

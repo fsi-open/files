@@ -56,4 +56,31 @@ class EntityWithFile {
 The last possible solution is to eagerly load the entity with the file through the relation
 (see https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/working-with-objects.html#by-eager-loading).
 
+# Upgrade to 3.0
+
+## BC Break: psr/event-dispatcher-implementation required
+
+It's up to you to choose the implementation of the PSR-14. You can freely use any of the available implementations
+especially the `symfony/event-dispatcher` package.
+
+## BC Break: `FileManager` interface has new methods
+
+If you have implemented the `FSi\Component\Files\FileManager` interface to integrate with 3rd party filesystems, you
+need to implement the new methods:
+
 ```php
+    public function move(WebFile $source, string $fileSystemName, string $path): WebFile;
+    public function fileSize(WebFile $file): int;
+    public function mimeType(WebFile $file): string;
+    public function lastModified(WebFile $file): int;
+```
+
+## BC Break: `FileFactory` interface has new methods
+
+If you have implemented the `FSi\Component\Files\Upload\FileFactory` interface to integrate with 3rd party filesystems,
+you need to implement the new methods:
+
+```php
+    public function createTemporary(string $fileSystemName, string $path): TemporaryWebFile;
+    public function createDirectlyUploaded(string $fileSystemName, string $path): DirectlyUploadedWebFile;
+```

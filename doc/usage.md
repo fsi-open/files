@@ -7,7 +7,7 @@ of these three things:
 2. How you will define and instantiate services classes.
 3. How you will define filesystems and perform the actual file operations.
 
-`FSi\Files` has an out of the box solution that utilizes `Doctrine\ORM` for entity
+`FSi\Files` has an out-of-the-box solution that utilizes `Doctrine\ORM` for entity
 storage, `Symfony` for dependency injection and `League\Flysystem` (through
 `1up-lab/OneupFlysystemBundle`) for file operations, but you are free to create any
 implementation for each of these components if you want to. Below you can find
@@ -34,15 +34,38 @@ return [
 ];
 ```
 
-This will register all services for whichever additonal bundles set you decided to use.
+This will register all services for whichever additional bundles set you decided to use.
 
-Below is an example of entity / url adapter configuration:
+If you want to use the direct upload feature, you will need to import required routes:
+
+```yaml
+# config/routes.yaml
+fsi_files_direct_upload:
+  resource: "@FilesBundle/Resources/config/routing/direct_upload.yaml"
+  prefix: /direct-upload
+```
+
+There is also an optional 
+
+
+Below is a short example of bundle's configuration with comments:
 
 ```yaml
 # config/packages/fsi_files.yaml
 fsi_files:
     default_entity_filesystem: null # this filesystem will be used if any entity does not define
                                     # one for itself
+    temporary_filesystem: null # this filesystem will be taken as a default value for the direct_upload.filesystem_name
+                               # form option in the FSi\Component\Files\Integration\Symfony\Form\WebFileType form field
+                               # when direct_upload.mode form option is set to 'temporary'
+    direct_upload:
+      signature_expiration: '+1 hour' # the time after which signed URLs for the direct upload will
+                                      # expire
+      local_upload_path: null # the path prefix at which FSi\Component\Files\DirectUpload\Controller\LocalUploadController
+                              # is imported to the router; when left null,
+                              # FSi\Component\Files\Integration\FlySystem\DirectUpload\LocalAdapter will not be used
+                              # for direct uploads to filesystems other than S3
+      local_upload_signature_algo: 'sha512' # the algorithm used to sign URLs to the local direct uploads
     url_adapters:
         # Here you can assign a url adapter service to a filesystem. This will
         # add it to the `FileUrlResolver` and will be used for every file in the
@@ -77,23 +100,38 @@ services:
 
 ## Form
 
-In order to create instances of `FSi\Component\Files\UploadedWebFile` inside of Symfony
-forms, you can use the `FSi\Component\Files\Integration\Symfony\Form\WebFileType`.
-It utilizes a collection of services implementing `Symfony\Component\Form\FormEvent\FormFileTransformer`,
-that can create them from various sources.
+In order to create instances of `FSi\Component\Files\UploadedWebFile`, `FSi\Component\Files\TemporaryWebFile` or
+`FSi\Component\Files\DirectlyUploadedWebFile` inside Symfony form, you can use the
+`FSi\Component\Files\Integration\Symfony\Form\WebFileType`.
 
 The field can be furthered configured with these options:
 
 - `image` - this option passes a variable to the form view and can be helpful if you would
-  like to display the image next to the field. It servers an informational purpose only.
+  like to display the image next to the field. It serves an informational purpose only.
 - `removable` - this will transform the field into a compound one, with an additional checkbox
   that can be checked in order to remove an existing file. The checkbox field can be configured
   through the `remove_field_options` option.
-- `url_resolver` - by default the `FSi\Component\Files\FileUrlResolver` service will be used
+- `url_resolver` - by default, the `FSi\Component\Files\FileUrlResolver` service will be used
   to create an url to the file. You can pass a callable to this option that will generate
   the link instead.
 - `resolve_url` - set this option to `false` if you do not want the file url to be created
-  at all, for example if there is no option to create a publicy available url.
+  at all, for example, if there is no option to create a publicly available url.
+- `direct_upload` - nested set of options that configures direct upload feature for the field:
+    - `mode` (default `none`) - set this option to `temporary` or `entity` if you want to use the direct upload feature
+      for the field. Value `temporary` will cause instance of `FSi\Component\Files\TemporaryWebFile` to be created in
+      form's data. Value `entity` will cause instance of `FSi\Component\Files\DirectlyUploadedWebFile` to be created in
+      form's data.
+    - `filesystem_name` - when `mode` is set to `temporary` then this option takes default value from
+      `fsi_files.temporary_filesystem` bundle's configuration option, otherwise default value is `null`. When `mode` is
+      set to `entity` then this option's value is set to the filesystem configured for the entity and field chosen in
+      `target_entity` and `target_property` options.
+    - `filesystem_prefix` (default `null`) - path prefix for directly uploaded files in chosen filesystem. when `mode`
+      is set to `entity` then this option's value is set to the path prefix configured for the entity and field chosen
+      in `target_entity` and `target_property` options.
+    - `target_entity` - FQCN of the entity that will be used to store the directly uploaded file.
+    - `target_property` - name of the property in the entity that will be used to store the directly uploaded file.
+    - `target` - this option's default value is calculated as an encrypted value of `target_entity` and `target_property`
+      options. It is passed to form's view instead of those two options in order not to reveal their values in the HTML. 
 
 For constraints, you will need to use either of these:
 
@@ -109,6 +147,154 @@ You can also constrain the length of the filename using the constraint below:
 This will check the length of the filename *only*, not the full path created during
 the file upload.
 
+### Direct upload
+
+`FSi\Component\Files\Integration\Symfony\Form\WebFileType` simplifies the process of directly uploading files to target
+filesystems. When the form field is configured to use direct upload, the form will be rendered with an additional
+hidden input field for the path of directly uploaded file. These field's name is ended with `[path]` suffix. It's up to
+you to use uploader of your choice i.e. [Uppy](https://uppy.io/) to handle the whole process in the browser. The upload
+process should start when the User selects a file using the file input field. Then, depending upon the upload type,
+different actions from the `FSi\Component\Files\DirectUpload\Controller\DirectUploadController` class should be used
+to handle different parts of the process. All of these actions described below accept POST JSON requests with some
+common parameters: 
+
+```jsonc
+{
+   "target": "", // value taken from the 'data-direct-target' attribute of [path] input field
+   "fileSystemName": "", // value taken from the 'data-direct-filesystem' attribute of [path] input field
+   "fileSystemPrefix": "", // value taken from the 'data-direct-prefix' attribute of [path] input field
+}
+```
+
+#### Single upload
+
+If the uploader decides that the file should be uploaded in one part, then it calls the
+`FSi\Component\Files\DirectUpload\Controller\DirectUploadController::params` action with a JSON object with the
+following additional parameters:
+
+```jsonc
+{
+   // common parameters
+   "filename": "somefile.pdf",
+   "contentType": "application/pdf"
+}
+```
+
+The action will return a JSON object with the following structure:
+
+```jsonc
+{
+   "url": "/upload/filesystem/prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf", // upload URL that should be used to upload the file
+   "key": "prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf", // path of the file in the target filesystem
+   "headers": { // headers that should be added to the request to the upload URL
+       "name": "value"
+   },
+   "publicUrl": "/uploaded/prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf" // public URL of the uploaded file which can be null
+}
+```
+
+The uploader should use returned information to perform the upload using PUT request to the returned URL with returned
+headers. After successful upload the uploader should save the `key` of the uploaded file in the `[path]` input
+field. The upload could also use returned `publicUrl`, if it does not equal to `null`, to display preview of the 
+uploaded file.
+
+#### Multipart upload (not supported by LocalAdapter)
+
+If multipart upload is required, then the uploader should use the following actions to handle the process:
+
+- `FSi\Component\Files\DirectUpload\Controller\DirectUploadController::createMultipart` - this action must be
+  called at first to create a new multipart upload with JSON object of the same structure as for the
+  `FSi\Component\Files\DirectUpload\Controller\DirectUploadController::params`. It will return a JSON object with
+  the following structure:
+
+  ```jsonc
+  {
+      "uploadId": "35d5dbc8-7c3a-44f0-8161-bae7232c2a0d", // ID of the created multipart upload
+      "key": "prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf", // path of the file in the target filesystem
+      "publicUrl": "/uploaded/prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf" // public URL of the uploaded file which can be null
+  }
+  ```
+
+- `FSi\Component\Files\DirectUpload\Controller\DirectUploadController::listParts` - this action can be used to
+  return the list of already uploaded parts for the specific multipart upload. It must be called with a JSON object
+  with the following structure
+
+  ```jsonc
+  {
+      // common parameters
+      "uploadId": "35d5dbc8-7c3a-44f0-8161-bae7232c2a0d", // multipart upload ID returned from the createMultipart controller 
+      "key": "prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf" // path of the file in the target filesystem returned by the createMultipart controller
+  }
+  ```
+
+  Returned JSON will be in the following format:
+    
+  ```jsonc
+  [
+    {
+      "PartNumber": 1, // index of the part inside the multipart upload
+      "ETag": "..." // used to indentify tha part along with its number when completing the multipart upload
+    },
+    // subsequent parts
+  ]
+  ```
+  
+- `FSi\Component\Files\DirectUpload\Controller\DirectUploadController::signPart` - this action must be called to
+  prepare each part of the uploaded file for the real upload. It must be called with a JSON object with the following
+  structure:
+
+  ```jsonc
+  {
+      // common parameters
+      "uploadId": "35d5dbc8-7c3a-44f0-8161-bae7232c2a0d", // multipart upload ID returned from the createMultipart
+      "key": "prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf" // path of the file in the target filesystem returned by the createMultipart controller
+      "partNumber": 1, // index of the part inside the multipart upload
+  }
+  ```
+
+  The action will return a JSON object with the following structure:
+
+  ```jsonc
+  {
+      "url": "/upload/filesystem/prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf?uploadId=35d5dbc8-7c3a-44f0-8161-bae7232c2a0d&part=1", // upload URL that should be used to upload the part
+  }
+  ```
+
+- `FSi\Component\Files\DirectUpload\Controller\DirectUploadController::completeMultipart` - this action must be
+  called to complete multipart upload and combine all the uploaded parts into a single file. It must be called with
+  a JSON object with the following structure:
+
+  ```jsonc
+  {
+      // common parameters
+      "parts": [
+          {
+            "PartNumber": 1, // index of the part inside the multipart upload
+            "ETag": "..." // used to indentify tha part along with its number when completing the multipart upload
+          },
+          // subsequent parts
+      ]
+  }
+  ```
+
+  The action will return empty response with status code 200 on success. In such a case the uploader should save the
+  `key` of the uploaded file in the `[path]` input field. The uploader could also use `publicUrl` returned from
+  `createMultipart`, if it does not equal to `null`, to display preview of the uploaded file.
+
+- `FSi\Component\Files\DirectUpload\Controller\DirectUploadController::abortMultipart` - this action may be called
+  when the User wants to abort the multipart upload. It must be called with a JSON object with the following structure:
+
+  ```jsonc
+  {
+      // common parameters
+      "uploadId": "35d5dbc8-7c3a-44f0-8161-bae7232c2a0d", // multipart upload ID returned from the createMultipart
+      "key": "prefix/012/345/678/90abcdef0123456789abcdef/somefile.pdf" // path of the file in the target filesystem returned by the createMultipart controller
+  }
+  ``` 
+
+  The action will return empty response with status code 200 on success.
+
+
 ## Doctrine\ORM
 
 Integration with `Doctrine\ORM` is very easy:
@@ -117,8 +303,8 @@ Integration with `Doctrine\ORM` is very easy:
 in their relative entity configuration.
 2. Register the `FSi\Component\Files\Integration\Doctrine\ORM\EntityFileSubscriber`
 as an event subscriber. It will listen on the relevant `Doctrine` events and fire up
-corresponding `FSi\Component\Files\Entity\File*` services (remember these need to be
-registered as well). This will be done automatically if Symfony bundle is used.
+corresponding `FSi\Component\Files\Entity\File*` services (remember that these needs to be
+registered as well). This will be done automatically if the Symfony bundle is used.
 
 Embeddables are supported. Just create a configuration for the embeddable class
 the way you would for a standard entity. There is no need to duplicate the configuration
@@ -148,7 +334,7 @@ to the `1up-lab/OneupFlysystemBundle` itself.
 
 ## Twig
 
-If Twig bundle is registered, two additional filters and a function are made available:
+If the Twig bundle is registered, two additional filters and a function are made available:
 
 - `file_url` - returns a url as string from a `WebFile`. If a `null` is passed, will return
   an empty string. Uses `FSi\Component\Files\FileUrlResolver` to resolve an ul adapter
@@ -209,7 +395,7 @@ final class TestType extends AbstractType
             'image' => true,
             'required' => false,
             // An example on how to use the 'url_resolver' option to manually
-            // create a url to the file. However this method is not the proper
+            // create a url to the file. However, this method is not the proper
             // way and is instructional only.
             'url_resolver' => fn(WebFile $file): UriInterface
                 => $this->uriFactory->createUri($file->getPath())
@@ -291,15 +477,15 @@ fine to use a DTO object or a simple array in the form and pass the uploaded fil
 to the entity. As long as you do it before a flush, it will be saved.
 
 **Important** Unless you use the `removable` option and then check the checkbox
-for removing existing files, you do not need to re-upload file on every submission.
-An empty value will simply be ignored and the entity will receive the existing file
+for removing existing files, you do not need to re-upload the file on every submission.
+An empty value will simply be ignored, and the entity will receive the existing file
 on submission.
 
 ## Use case 2 - creating files through the file factory
 
 First, you need to configure an HTTP client for the `FileFactory` to use. Then
-you can create files simply by using any of it's methods. Below is how you would
-create one from a url.
+you can create files simply by using any of its methods. Below is how you would
+create one from a URL.
 
 ```php
 declare(strict_types=1);
@@ -338,11 +524,11 @@ final class TestController
 ```
 
 And that it is. Creating a file from a local path is even more straightforward,
-see `FileFactory::createFromPath`. In both of these cases the factory will attempt
+see `FileFactory::createFromPath`. In both of these cases, the factory will attempt
 to read the MIME type for you.
 
 You can also create manually from a stream, see `FileFactory::create` for the
-required parameters, however these are pretty standard and do not require an explanation.
+required parameters, however, these are pretty standard and do not require an explanation.
 
 ## Use case 3 - removing an existing file
 
@@ -375,8 +561,3 @@ final class TestController
     }
 }
 ```
-
-## Extending FileManager
-
-Sometimes you may wish to change how some aspects of file management are handled.
-For this purpose you may use the `FSi\Component\Files\FileManagerConfigurator`

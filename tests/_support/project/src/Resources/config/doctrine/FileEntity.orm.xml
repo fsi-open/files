@@ -15,9 +15,12 @@
             <generator strategy="AUTO"/>
         </id>
 
+        <field name="text" type="string" nullable="true" />
         <field name="filePath" nullable="true" />
         <field name="anotherFileKey" nullable="true" />
         <field name="privateFileKey" nullable="true" />
+        <field name="temporaryFileKey" nullable="true" />
+        <field name="directFileKey" nullable="true" />
         <embedded name="embeddedFile" class="Tests\FSi\App\Entity\EmbeddedFile" />
 
     </entity>

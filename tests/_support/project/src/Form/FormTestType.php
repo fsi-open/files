@@ -18,6 +18,7 @@ use FSi\Component\Files\WebFile;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -39,6 +40,11 @@ final class FormTestType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $builder->add('text', TextType::class, [
+            'constraints' => [new NotBlank()],
+            'label' => 'Text',
+        ]);
+
         $builder->add('file', WebFileType::class, [
             'label' => 'Standard file',
             'constraints' => [new UploadedWebFile()],
@@ -61,6 +67,30 @@ final class FormTestType extends AbstractType
             'image' => true,
             'required' => false,
             'resolve_url' => false
+        ]);
+
+        $builder->add('temporaryFile', WebFileType::class, [
+            'constraints' => [new NotBlank(), new UploadedWebFile()],
+            'label' => 'Directly uploaded temporary file',
+            'direct_upload' => [
+                'mode' => 'temporary',
+                'filesystem_name' => 'public',
+                'filesystem_prefix' => 'temporary',
+            ],
+            'required' => false,
+            'removable' => true,
+        ]);
+
+        $builder->add('directFile', WebFileType::class, [
+            'constraints' => [new NotBlank(), new UploadedWebFile()],
+            'label' => 'Directly uploaded file',
+            'direct_upload' => [
+                'mode' => 'entity',
+                'target_entity' => FileEntity::class,
+                'target_property' => 'directFile',
+            ],
+            'required' => false,
+            'removable' => true,
         ]);
 
         $builder->add('embeddedFile', EmbeddedFileType::class);
