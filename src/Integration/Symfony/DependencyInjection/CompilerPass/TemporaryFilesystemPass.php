@@ -27,9 +27,20 @@ final class TemporaryFilesystemPass implements CompilerPassInterface
             $container->getExtensionConfig('fsi_files')
         );
 
-        if (null !== $configuration['temporary_filesystem']) {
+        if (null !== $configuration['direct_upload']['temporary_filesystem']) {
             $webFileTypeDefinition = $container->getDefinition(WebFileType::class);
-            $webFileTypeDefinition->setArgument('$temporaryFileSystemName', $configuration['temporary_filesystem']);
+            $webFileTypeDefinition->setArgument(
+                '$temporaryFileSystemName',
+                $configuration['direct_upload']['temporary_filesystem']
+            );
+        }
+
+        if (null !== $configuration['direct_upload']['temporary_prefix']) {
+            $webFileTypeDefinition = $container->getDefinition(WebFileType::class);
+            $webFileTypeDefinition->setArgument(
+                '$temporaryFileSystemPrefix',
+                $configuration['direct_upload']['temporary_prefix']
+            );
         }
     }
 }

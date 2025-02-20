@@ -55,17 +55,20 @@ Below is a short example of bundle's configuration with comments:
 fsi_files:
     default_entity_filesystem: null # this filesystem will be used if any entity does not define
                                     # one for itself
-    temporary_filesystem: null # this filesystem will be taken as a default value for the direct_upload.filesystem_name
-                               # form option in the FSi\Component\Files\Integration\Symfony\Form\WebFileType form field
-                               # when direct_upload.mode form option is set to 'temporary'
     direct_upload:
-      signature_expiration: '+1 hour' # the time after which signed URLs for the direct upload will
+        temporary_filesystem: null # this filesystem will be taken as a default value for the direct_upload.filesystem_name
+          # form option in the FSi\Component\Files\Integration\Symfony\Form\WebFileType form field
+          # when direct_upload.mode form option is set to 'temporary'
+        temporary_prefix: null # this path prefix will be taken as a default value for the direct_upload.filesystem_prefix
+          # form option in the FSi\Component\Files\Integration\Symfony\Form\WebFileType form field
+          # when direct_upload.mode form option is set to 'temporary'
+        signature_expiration: '+1 hour' # the time after which signed URLs for the direct upload will
                                       # expire
-      local_upload_path: null # the path prefix at which FSi\Component\Files\DirectUpload\Controller\LocalUploadController
+        local_upload_path: null # the path prefix at which FSi\Component\Files\DirectUpload\Controller\LocalUploadController
                               # is imported to the router; when left null,
                               # FSi\Component\Files\Integration\FlySystem\DirectUpload\LocalAdapter will not be used
                               # for direct uploads to filesystems other than S3
-      local_upload_signature_algo: 'sha512' # the algorithm used to sign URLs to the local direct uploads
+        local_upload_signature_algo: 'sha512' # the algorithm used to sign URLs to the local direct uploads
     url_adapters:
         # Here you can assign a url adapter service to a filesystem. This will
         # add it to the `FileUrlResolver` and will be used for every file in the
@@ -122,12 +125,13 @@ The field can be furthered configured with these options:
       form's data. Value `entity` will cause instance of `FSi\Component\Files\DirectlyUploadedWebFile` to be created in
       form's data.
     - `filesystem_name` - when `mode` is set to `temporary` then this option takes default value from
-      `fsi_files.temporary_filesystem` bundle's configuration option, otherwise default value is `null`. When `mode` is
-      set to `entity` then this option's value is set to the filesystem configured for the entity and field chosen in
-      `target_entity` and `target_property` options.
-    - `filesystem_prefix` (default `null`) - path prefix for directly uploaded files in chosen filesystem. when `mode`
-      is set to `entity` then this option's value is set to the path prefix configured for the entity and field chosen
-      in `target_entity` and `target_property` options.
+      `fsi_files.direct_upload.temporary_filesystem` bundle's configuration option, otherwise default value is `null`.
+      When `mode` is set to `entity` then this option's value is set to the filesystem configured for the entity and
+      field chosen in `target_entity` and `target_property` options.
+    - `filesystem_prefix` (default `null`) - path prefix for directly uploaded files in chosen filesystem. When `mode`
+      is set to `temporary` then this option takes default value from `fsi_files.direct_upload.temporary_prefix`. When
+      `mode` is set to `entity` then this option's value is set to the path prefix configured for the entity and field
+      chosen in `target_entity` and `target_property` options.
     - `target_entity` - FQCN of the entity that will be used to store the directly uploaded file.
     - `target_property` - name of the property in the entity that will be used to store the directly uploaded file.
     - `target` - this option's default value is calculated as an encrypted value of `target_entity` and `target_property`

@@ -28,8 +28,9 @@ final class Configuration implements ConfigurationInterface
         /** @var NodeBuilder $rootChildren */
         $rootChildren = $root->children();
         $rootChildren->scalarNode('default_entity_filesystem')->defaultNull();
-        $rootChildren->scalarNode('temporary_filesystem')->defaultNull();
         $directUploadNode = $rootChildren->arrayNode('direct_upload')->addDefaultsIfNotSet()->children();
+        $directUploadNode->scalarNode('temporary_filesystem')->defaultNull();
+        $directUploadNode->scalarNode('temporary_prefix')->defaultNull();
         $directUploadNode->scalarNode('signature_expiration')->defaultValue('+1 hour')->end();
         $directUploadNode->scalarNode('local_upload_path')->defaultNull()->end();
         $directUploadNode->scalarNode('local_upload_signature_algo')->defaultValue('sha512')->end();

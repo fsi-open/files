@@ -62,6 +62,7 @@ final class BuildDirectUploadAdaptersPass implements CompilerPassInterface
                     $adapterConfig['awss3v3']['bucket'],
                     $adapterConfig['awss3v3']['path_prefix'] ?? '',
                     $adapterConfig['awss3v3']['options'] ?? [],
+                    $filesystem['visibility'],
                     $filesConfig['direct_upload']['signature_expiration'],
                 ]);
             } else {

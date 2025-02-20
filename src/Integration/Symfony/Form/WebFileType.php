@@ -60,6 +60,7 @@ final class WebFileType extends AbstractType
     private FilePropertyConfigurationResolver $filePropertyConfigurationResolver;
     private DirectUploadTargetEncryptor $directUploadTargetEncryptor;
     private ?string $temporaryFileSystemName;
+    private ?string $temporaryFileSystemPrefix;
     /**
      * @var array<MultipleFileTransformer>
      */
@@ -83,7 +84,8 @@ final class WebFileType extends AbstractType
         FilePropertyConfigurationResolver $filePropertyConfigurationResolver,
         DirectUploadTargetEncryptor $directUploadTargetEncryptor,
         iterable $fileTransformers,
-        ?string $temporaryFileSystemName = null
+        ?string $temporaryFileSystemName = null,
+        ?string $temporaryFileSystemPrefix = null
     ) {
         if (false === is_array($fileTransformers)) {
             $fileTransformers = iterator_to_array($fileTransformers);
@@ -98,6 +100,7 @@ final class WebFileType extends AbstractType
         $this->directUploadTargetEncryptor = $directUploadTargetEncryptor;
         $this->fileTransformers = $fileTransformers;
         $this->temporaryFileSystemName = $temporaryFileSystemName;
+        $this->temporaryFileSystemPrefix = $temporaryFileSystemPrefix;
     }
 
     /**
@@ -293,6 +296,33 @@ final class WebFileType extends AbstractType
                 );
 
                 return $filePropertyConfiguration->getFileSystemName();
+            });
+            $directUploadResolver->setDefault('filesystem_prefix', function (Options $options): ?string {
+                if ('temporary' === $options['mode']) {
+                    return $this->temporaryFileSystemPrefix;
+                }
+
+                if ('entity' !== $options['mode']) {
+                    return null;
+                }
+
+                if (null === $options['target_entity']) {
+                    throw new InvalidOptionsException(
+                        'Missing required option "target_entity" when direct_upload.mode option is set to "entity"'
+                    );
+                }
+                if (null === $options['target_property']) {
+                    throw new InvalidOptionsException(
+                        'Missing required option "target_property" when direct_upload.mode option is set to "entity"'
+                    );
+                }
+
+                $filePropertyConfiguration = $this->filePropertyConfigurationResolver->resolveFileProperty(
+                    $options['target_entity'],
+                    $options['target_property']
+                );
+
+                return $filePropertyConfiguration->getPathPrefix();
             });
             $directUploadResolver->setDefault('target', function (Options $options): ?string {
                 if ('entity' !== $options['mode']) {

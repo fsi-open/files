@@ -72,8 +72,9 @@ final class ConfigurationTest extends Unit
                         ]
                     ]
                 ],
-                'temporary_filesystem' => null,
                 'direct_upload' => [
+                    'temporary_filesystem' => null,
+                    'temporary_prefix' => null,
                     'signature_expiration' => '+1 hour',
                     'local_upload_path' => null,
                     'local_upload_signature_algo' => 'sha512',
