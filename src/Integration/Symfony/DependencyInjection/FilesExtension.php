@@ -55,7 +55,10 @@ final class FilesExtension extends Extension
         /**
          * @var array{
          *   default_entity_filesystem: string|null,
-         *   temporary_filesystem: string|null,
+         *   direct_upload: array{
+         *     temporary_filesystem: string|null,
+         *     temporary_prefix: string|null,
+         *   },
          *   entities: array<string, array{
          *     filesystem: string,
          *     prefix: string,
@@ -84,6 +87,10 @@ final class FilesExtension extends Extension
     /**
      * @param array{
      *   default_entity_filesystem: string|null,
+     *   direct_upload: array{
+     *     temporary_filesystem: string|null,
+     *     temporary_prefix: string|null,
+     *   },
      *   entities: array<string, array{
      *     filesystem: string|null,
      *     prefix: string,
