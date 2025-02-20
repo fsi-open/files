@@ -18,6 +18,7 @@ use FSi\Component\Files\DirectUpload\Controller\Response\Part;
 use FSi\Component\Files\DirectUpload\DirectUploadAdapter;
 use FSi\Component\Files\DirectUpload\Event\WebFileDirectUpload;
 use League\Flysystem\PathPrefixer;
+use League\Flysystem\Visibility;
 use Psr\Http\Message\UriInterface;
 
 use function array_map;
@@ -31,12 +32,10 @@ final class S3Adapter implements DirectUploadAdapter
      * @var array<string, mixed>
      */
     private array $options;
+    private ?string $visibility;
     private string $signatureExpiration;
 
     /**
-     * @param S3ClientInterface $client
-     * @param string $bucket
-     * @param string $prefix
      * @param array<string, mixed> $options
      */
     public function __construct(
@@ -44,22 +43,21 @@ final class S3Adapter implements DirectUploadAdapter
         string $bucket,
         string $prefix = '',
         array $options = [],
+        ?string $visibility = null,
         string $signatureExpiration = '+1 hour'
     ) {
         $this->client = $client;
         $this->bucket = $bucket;
         $this->prefix = new PathPrefixer($prefix);
         $this->options = $options;
+        $this->visibility = $visibility;
         $this->signatureExpiration = $signatureExpiration;
     }
 
     public function prepare(WebFileDirectUpload $event): Params
     {
         $key = $this->prefix->prefixPath($event->getWebFile()->getPath());
-        $cmd = $this->client->getCommand('PutObject', [
-            'Bucket' => $this->bucket,
-            'Key' => $key,
-        ] + $event->getOptions() + $this->options);
+        $cmd = $this->client->getCommand('PutObject', $this->getObjectOptions($key) + $event->getOptions());
 
         $signedRequest = $this->client->createPresignedRequest($cmd, $this->signatureExpiration);
 
@@ -69,10 +67,8 @@ final class S3Adapter implements DirectUploadAdapter
     public function multipart(WebFileDirectUpload $event): Multipart
     {
         $key = $this->prefix->prefixPath($event->getWebFile()->getPath());
-        $cmd = $this->client->getCommand(
-            'CreateMultipartUpload',
-            ['Bucket' => $this->bucket, 'Key' => $key] + $event->getOptions()
-        );
+        $cmd = $this->client->getCommand('CreateMultipartUpload', $this->getObjectOptions($key) + $event->getOptions());
+
         $result = $this->client->execute($cmd);
 
         return new Multipart($result->get('UploadId'), $key);
@@ -146,5 +142,17 @@ final class S3Adapter implements DirectUploadAdapter
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    /**
+     * @return array<string, string>>
+     */
+    private function getObjectOptions(string $key): array
+    {
+        return $this->options + [
+            'Bucket' => $this->bucket,
+            'Key' => $key,
+            'ACL' => (Visibility::PUBLIC === $this->visibility) ? 'public-read' : 'private',
+        ];
     }
 }
