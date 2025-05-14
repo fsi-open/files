@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+    push:
+        branches:
+            - 'master'
+            - '2.1'
+            - '2.0'
+            - '1.x'
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    test:
+        strategy:
+            matrix:
+                php-version: [8.1, 8.2, 8.3, 8.4]
+        runs-on: ubuntu-22.04
+        container:
+            image: fsiopenpl/docker-php-apache:alpine-${{ matrix.php-version }}
+            env:
+                COMPOSER_FLAGS: ${{ matrix.php-version == '8.1' && ' --prefer-lowest' || '' }}
+        timeout-minutes: 10
+        steps:
+            - name: Checkout source
+              uses: actions/checkout@v1
+            - name: Validate composer config
+              run: composer validate
+            - name: Install dependencies
+              run: composer update ${COMPOSER_FLAGS}
+            - name: Code quality
+              run: composer sniffer
+            - name: Build codeception helpers
+              run: composer cept build
+            - name: Code static analysis
+              run: composer stan
+            - name: Unit tests
+              run: composer cept run unit
+            - name: Functional tests
+              run: composer cept run functional
