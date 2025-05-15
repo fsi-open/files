@@ -84,7 +84,7 @@ final class ConstraintViolationAssertion
     public function __construct(
         ExecutionContextInterface $context,
         string $message,
-        Constraint $constraint = null,
+        ?Constraint $constraint = null,
         array $assertions = []
     ) {
         $this->context = $context;
