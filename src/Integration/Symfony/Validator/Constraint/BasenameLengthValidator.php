@@ -41,14 +41,6 @@ final class BasenameLengthValidator extends ConstraintValidator
             ));
         }
 
-        if (true === $value instanceof Files\WebFile && false === $value instanceof Files\UploadedWebFile) {
-            return;
-        }
-
-        if (false === $value instanceof Files\UploadedWebFile) {
-            throw new UnexpectedValueException($value, Files\UploadedWebFile::class);
-        }
-
         $min = $constraint->min;
         $max = $constraint->max;
         if (null === $min && null === $max) {
@@ -71,7 +63,18 @@ final class BasenameLengthValidator extends ConstraintValidator
             throw new RuntimeException("Max parameter of \"{$max}\"is not greater than 0");
         }
 
-        $fileName = $value->getOriginalName();
+        if (
+            true === $value instanceof Files\TemporaryWebFile
+            || true === $value instanceof Files\DirectlyUploadedWebFile
+        ) {
+            $fileName = basename($value->getPath());
+        } elseif (true === $value instanceof Files\UploadedWebFile) {
+            $fileName = $value->getOriginalName();
+        } elseif (true === $value instanceof Files\WebFile) {
+            return;
+        } else {
+            throw new UnexpectedValueException($value, Files\UploadedWebFile::class);
+        }
         $fileNameLength = mb_strlen($fileName);
         if (0 === $fileNameLength) {
             // Unable to perform validation, probably an upload error

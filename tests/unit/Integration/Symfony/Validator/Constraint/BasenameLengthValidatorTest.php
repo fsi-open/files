@@ -13,6 +13,7 @@ namespace Tests\FSi\Component\Files\Integration\Symfony\Validator\Constraint;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use FSi\Component\Files\DirectlyUploadedWebFile;
 use FSi\Component\Files\Integration\FlySystem;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\BasenameLength;
 use FSi\Component\Files\Integration\Symfony\Validator\Constraint\BasenameLengthValidator;
@@ -96,6 +97,41 @@ final class BasenameLengthValidatorTest extends Unit
     {
         $file = $this->makeEmpty(UploadedWebFile::class, [
             'getOriginalName' => Expected::once('1234567')
+        ]);
+
+        $this->validator->initialize($this->createContext());
+        $this->validator->validate($file, new BasenameLength(['min' => null, 'max' => 6]));
+
+        $this->buildViolation(
+            'This value is too long. It should have {{ limit }} character or less.'
+            . '|This value is too long. It should have {{ limit }} characters or less.'
+        )
+            ->setParameter('{{ limit }}', '6')
+            ->setPlural(6)
+            ->setInvalidValue('1234567')
+            ->assertRaised()
+        ;
+    }
+
+    public function testMaximumLengthMetOnDirectlyUploadedWebFile(): void
+    {
+        $file = $this->makeEmpty(DirectlyUploadedWebFile::class, [
+            'getPath' => Expected::exactly(2, 'really-very-long-prefix/12345')
+        ]);
+
+        $this->validator->initialize($this->createContext());
+
+        $this->validator->validate($file, new BasenameLength(['min' => null, 'max' => 5]));
+        $this->assertNoViolation();
+
+        $this->validator->validate($file, new BasenameLength(['min' => null, 'max' => 6]));
+        $this->assertNoViolation();
+    }
+
+    public function testMaximumLengthExceededOnDirectlyUploadedWebFile(): void
+    {
+        $file = $this->makeEmpty(DirectlyUploadedWebFile::class, [
+            'getPath' => Expected::once('really-very-long-prefix/1234567')
         ]);
 
         $this->validator->initialize($this->createContext());
