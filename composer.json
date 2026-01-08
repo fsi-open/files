@@ -100,7 +100,8 @@
         "doctrine/persistence": "<2.0",
         "oneup/flysystem-bundle": "<4.0",
         "symfony/yaml": ">=7.0",
-        "symfony/doctrine-bridge": ">=7.0"
+        "symfony/doctrine-bridge": ">=7.0",
+        "symfony/property-info": ">=8.0"
     },
     "config": {
         "bin-dir": "vendor/bin",
