@@ -39,6 +39,8 @@ use function codecept_data_dir;
 use function count;
 use function fopen;
 
+use const PHP_VERSION_ID;
+
 /**
  * This is a copy of Symfony FileValidator test, adjusted for the slight differences
  * between implementation of file upload.
@@ -368,7 +370,9 @@ final class UploadedWebFileValidatorTest extends Unit
         // access FileValidator::factorizeSizes() private method to format max file size
         $reflection = new ReflectionClass(UploadedWebFileValidator::class);
         $method = $reflection->getMethod('factorizeSizes');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80500) {
+            $method->setAccessible(true);
+        }
         [, $limit, $suffix] = $method->invokeArgs(
             new UploadedWebFileValidator($this->createMock(Files\FileManager::class)),
             [0, UploadedFile::getMaxFilesize(), false]

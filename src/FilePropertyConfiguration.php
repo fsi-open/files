@@ -24,6 +24,8 @@ use function count;
 use function get_parent_class;
 use function ltrim;
 
+use const PHP_VERSION_ID;
+
 final class FilePropertyConfiguration
 {
     /**
@@ -171,7 +173,9 @@ final class FilePropertyConfiguration
         }
 
         $propertyReflection = new ReflectionProperty($checkedClass, $property);
-        $propertyReflection->setAccessible(true);
+        if (PHP_VERSION_ID < 80500) {
+            $propertyReflection->setAccessible(true);
+        }
 
         return $propertyReflection;
     }
