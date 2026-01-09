@@ -29,7 +29,7 @@ final class CompoundWebFileTransformer implements DataTransformerInterface
         $this->fileField = $fileField;
     }
 
-    public function transform($value)
+    public function transform(mixed $value): mixed
     {
         if (null === $value) {
             return [];
@@ -38,7 +38,7 @@ final class CompoundWebFileTransformer implements DataTransformerInterface
         return [$this->fileField => $value];
     }
 
-    public function reverseTransform($value)
+    public function reverseTransform(mixed $value): mixed
     {
         if (false === is_array($value)) {
             return null;
