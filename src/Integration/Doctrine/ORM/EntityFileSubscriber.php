@@ -12,10 +12,8 @@ declare(strict_types=1);
 namespace FSi\Component\Files\Integration\Doctrine\ORM;
 
 use ArrayAccess;
-use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Event\PreFlushEventArgs;
-use Doctrine\ORM\Events;
 use Doctrine\ORM\Mapping\ClassMetadata as ORMClassMetadata;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Doctrine\Persistence\Mapping\ClassMetadata;
@@ -29,7 +27,7 @@ use function array_walk;
 use function get_class;
 use function method_exists;
 
-final class EntityFileSubscriber implements EventSubscriber
+final class EntityFileSubscriber
 {
     private FileRemover $fileRemover;
     private FileUpdater $fileUpdater;
@@ -43,11 +41,6 @@ final class EntityFileSubscriber implements EventSubscriber
         $this->fileLoader = $fileLoader;
         $this->fileUpdater = $fileUpdater;
         $this->fileRemover = $fileRemover;
-    }
-
-    public function getSubscribedEvents(): array
-    {
-        return [Events::postLoad, Events::prePersist, Events::preRemove, Events::preFlush, Events::postFlush];
     }
 
     /**
