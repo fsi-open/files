@@ -9,7 +9,11 @@
             <argument type="service" id="FSi\Component\Files\Entity\FileLoader" />
             <argument type="service" id="FSi\Component\Files\Entity\FileUpdater" />
             <argument type="service" id="FSi\Component\Files\Entity\FileRemover" />
-            <tag name="doctrine.event_subscriber" />
+            <tag name="doctrine.event_listener" event="postLoad" />
+            <tag name="doctrine.event_listener" event="prePersist" />
+            <tag name="doctrine.event_listener" event="preRemove" />
+            <tag name="doctrine.event_listener" event="preFlush" />
+            <tag name="doctrine.event_listener" event="postFlush" />
         </service>
 
     </services>
