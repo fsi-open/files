@@ -385,13 +385,8 @@ final class WebFileType extends AbstractType
                 return false;
             }
 
-            if (
-                true === $options['removable']
-                || true === $options['image']
-            ) {
-                throw new InvalidOptionsException(
-                    "'multiple' option is forbidden when 'removable' or 'image' option is set"
-                );
+            if (true === $options['removable']) {
+                throw new InvalidOptionsException("'multiple' option is forbidden when 'removable' option is set");
             }
 
             if ('none' !== $options['direct_upload']['mode']) {
