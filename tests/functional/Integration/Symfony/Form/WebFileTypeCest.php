@@ -259,7 +259,7 @@ final class WebFileTypeCest
             new InvalidOptionsException(
                 sprintf(
                     'An error has occurred resolving the options of the form "%s": '
-                        . "'multiple' option is forbidden when 'removable' or 'image' option is set",
+                        . "'multiple' option is forbidden when 'removable' option is set",
                     WebFileType::class
                 )
             ),
@@ -267,22 +267,6 @@ final class WebFileTypeCest
                 $formFactory->create(WebFileType::class, null, [
                     'removable' => true,
                     'multiple' => true,
-                ]);
-            }
-        );
-
-        $I->expectThrowable(
-            new InvalidOptionsException(
-                sprintf(
-                    'An error has occurred resolving the options of the form "%s": '
-                        . "'multiple' option is forbidden when 'removable' or 'image' option is set",
-                    WebFileType::class
-                )
-            ),
-            static function () use ($formFactory): void {
-                $formFactory->create(WebFileType::class, null, [
-                    'multiple' => true,
-                    'image' => true,
                 ]);
             }
         );
