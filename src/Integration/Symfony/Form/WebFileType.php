@@ -27,6 +27,7 @@ use FSi\Component\Files\UploadedWebFile;
 use FSi\Component\Files\WebFile;
 use Psr\Http\Message\UriInterface;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -41,6 +42,7 @@ use function array_replace;
 use function implode;
 use function is_array;
 use function iterator_to_array;
+use function reset;
 use function sprintf;
 
 final class WebFileType extends AbstractType
@@ -218,7 +220,7 @@ final class WebFileType extends AbstractType
         /** @var callable|null $urlResolver */
         $urlResolver = $options['url_resolver'];
         $view->vars = array_replace($view->vars, [
-            'basename' => (false === $removable && 'none' === $options['direct_upload']['mode'] && false === $multiple)
+            'basename' => ('none' === $options['direct_upload']['mode'] && true === $data instanceof WebFile)
                 ? $this->createFileBasename($data)
                 : null,
             'image' => $options['image'],
@@ -226,7 +228,7 @@ final class WebFileType extends AbstractType
             'multipart' => true,
             'removable' => $removable,
             'type' => 'file',
-            'url' => (false === $options['compound'] && false === $multiple && true === $resolveUrl)
+            'url' => (false === $options['compound'] && true === $resolveUrl && true === $data instanceof WebFile)
                 ? $this->createFileUrl($data, $urlResolver)
                 : null,
             'value' => '',
