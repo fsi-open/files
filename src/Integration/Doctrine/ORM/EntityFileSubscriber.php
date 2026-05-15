@@ -138,20 +138,20 @@ final class EntityFileSubscriber
                 $manager,
                 $metadata
             ): void {
-                if (
-                    true === $embeddedClassMapping instanceof EmbeddedClassMapping
-                    && (
+                if (true === $embeddedClassMapping instanceof EmbeddedClassMapping) {
+                    if (
                         null !== $embeddedClassMapping->declaredField
                         || null !== $embeddedClassMapping->originalField
-                    )
-                ) {
-                    return;
-                }
-                if (
-                    null !== $embeddedClassMapping['declaredField']
-                    || null !== $embeddedClassMapping['originalField']
-                ) {
-                    return;
+                    ) {
+                        return;
+                    }
+                } else {
+                    if (
+                        null !== $embeddedClassMapping['declaredField']
+                        || null !== $embeddedClassMapping['originalField']
+                    ) {
+                        return;
+                    }
                 }
 
                 $embeddable = $metadata->getFieldValue($object, $property);

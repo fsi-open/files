@@ -13,6 +13,7 @@ namespace Tests\FSi\App;
 
 use Aws\MockHandler;
 use Aws\S3\S3Client;
+use Composer\InstalledVersions;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use FSi\Component\Files\DirectUpload\DirectUploadTargetEncryptor;
 use FSi\Component\Files\Integration\AmazonS3\UrlAdapter\S3PrivateUrlAdapter;
@@ -105,6 +106,23 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
             'paths' => [sprintf('%s/../templates', __DIR__)]
         ]);
 
+        $doctrineOrmConfig = [
+            'naming_strategy' => 'doctrine.orm.naming_strategy.underscore',
+            'auto_mapping' => true,
+            'mappings' => [
+                'shared_kernel' => [
+                    'type' => 'xml',
+                    'dir' => sprintf('%s/Resources/config/doctrine', __DIR__),
+                    'alias' => 'FSi',
+                    'prefix' => 'Tests\FSi\App\Entity',
+                    'is_bundle' => false,
+                ],
+            ],
+        ];
+        if (InstalledVersions::getVersion('doctrine/doctrine-bundle') < '3.0.0') {
+            $doctrineOrmConfig['auto_generate_proxy_classes'] = true;
+        }
+
         $container->loadFromExtension('doctrine', [
             'dbal' => [
                 'driver' => 'pdo_sqlite',
@@ -112,20 +130,7 @@ final class Kernel extends HttpKernel\Kernel implements CompilerPassInterface
                 'charset' => 'UTF8',
                 'path' => sprintf('%s/../var/data.sqlite', __DIR__),
             ],
-            'orm' => [
-                'auto_generate_proxy_classes' => true,
-                'naming_strategy' => 'doctrine.orm.naming_strategy.underscore',
-                'auto_mapping' => true,
-                'mappings' => [
-                    'shared_kernel' => [
-                        'type' => 'xml',
-                        'dir' => sprintf('%s/Resources/config/doctrine', __DIR__),
-                        'alias' => 'FSi',
-                        'prefix' => 'Tests\FSi\App\Entity',
-                        'is_bundle' => false,
-                    ],
-                ],
-            ],
+            'orm' => $doctrineOrmConfig,
         ]);
 
         $container->loadFromExtension('oneup_flysystem', [
